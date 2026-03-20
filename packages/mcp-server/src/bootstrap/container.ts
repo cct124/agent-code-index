@@ -1,8 +1,10 @@
 /**
  * 应用依赖容器的最小骨架定义。
  */
+import type { ProjectMetadataRepository } from "@agent-code-index/core";
 import {
   createSurrealClient,
+  SurrealProjectMetadataRepository,
   type SurrealClient,
   type SurrealConnectionConfig,
 } from "@agent-code-index/infra";
@@ -17,15 +19,22 @@ export interface AppContainer {
   config: AppConfig;
   /** SurrealDB 客户端骨架实例。 */
   surrealClient: SurrealClient;
+  /** 项目元数据仓储。 */
+  projectMetadataRepository: ProjectMetadataRepository;
 }
 
 /**
  * 基于当前配置创建应用依赖容器。
  */
 export function createContainer(config: AppConfig): AppContainer {
+  const surrealClient = createSurrealClient(toSurrealConnectionConfig(config));
+
   return {
     config,
-    surrealClient: createSurrealClient(toSurrealConnectionConfig(config)),
+    surrealClient,
+    projectMetadataRepository: new SurrealProjectMetadataRepository(
+      surrealClient,
+    ),
   };
 }
 
