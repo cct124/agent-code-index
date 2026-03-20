@@ -409,9 +409,9 @@ interface Parser {
 
 说明：
 
-1. 第一版允许使用保守的 fallback parser
+1. 第一版同时支持 AST 驱动切块与保守的 fallback parser
 2. 优先保证可用性，再逐步增强语言感知能力
-3. 不要求一开始就引入复杂 AST 解析器
+3. AST 解析能力由 `packages/infra` 提供，`core` 只依赖抽象接口
 
 ### 7.6 ContextBuilder
 
@@ -535,7 +535,7 @@ interface ContextBuilder {
 
 ### 9.3 解析与扫描
 
-第一版解析策略建议务实：
+第一版解析策略建议务实，但不再只依赖纯文本切块，而是优先采用 AST 或语法树驱动的语义切块。
 
 1. `local-file-scanner.ts` 仅负责本地文件发现
 2. `parser-factory.ts` 根据扩展名选择解析器
@@ -543,11 +543,109 @@ interface ContextBuilder {
 
 这些实现同样建议位于 `packages/infra`，由 `mcp-server` 在启动时装配。
 
-在没有成熟 AST 策略前，fallback parser 只需要做到：
+### 9.3.1 AST 工具选型
+
+v1 解析层建议采用 `tree-sitter` 的 Node.js 原生绑定方案，作为 Python 与 TypeScript 的统一解析底座。
+
+建议依赖：
+
+1. `tree-sitter`
+2. `tree-sitter-typescript`
+3. `tree-sitter-python`
+
+选择该方案的原因：
+
+1. 当前主工程是 Node.js + TypeScript，接入成本低
+2. 同一套解析框架即可同时覆盖 Python 和 TypeScript
+3. 后续扩展到更多语言时，迁移成本更低
+4. `core` 无需感知底层是原生绑定还是其他实现方式
+
+这里的使用方式不是“直接引用 Rust 源码”，而是通过 npm 包使用 tree-sitter 对 Node.js 暴露的 API。底层实现细节由库本身封装，业务代码只在 TypeScript 中调用解析接口。
+
+### 9.3.2 Node.js 集成方式
+
+v1 采用方式一，也就是 Node 原生绑定方案。
+
+推荐集成方式：
+
+1. 在 `packages/infra/package.json` 中声明 tree-sitter 相关依赖
+2. 在 `packages/infra/src/parsing` 中封装 parser 初始化逻辑
+3. 按文件扩展名选择 TypeScript 或 Python grammar
+4. 向上只暴露 `core/contracts/parser.ts` 所要求的 `Parser` 接口
+
+建议目录补充为：
+
+```text
+packages/infra/
+  src/
+    parsing/
+      parser-factory.ts
+      fallback-parser.ts
+      tree-sitter/
+        tree-sitter-parser.ts
+        languages/
+          typescript-parser.ts
+          python-parser.ts
+```
+
+职责建议如下：
+
+1. `tree-sitter-parser.ts`：封装通用 parser 初始化、语言切换和节点遍历工具
+2. `typescript-parser.ts`：提取 TypeScript 的类、函数、方法等 symbol chunk
+3. `python-parser.ts`：提取 Python 的类、函数、方法等 symbol chunk
+4. `fallback-parser.ts`：当语言不支持、解析失败或 chunk 过大时提供退化策略
+
+### 9.3.3 切块策略
+
+对于 Python 和 TypeScript，v1 建议按语义边界切块，而不是只按固定窗口切块。
+
+优先切出的节点包括：
+
+1. class
+2. function
+3. method
+4. 可选的 top-level variable 或 export block
+
+每个 chunk 至少应携带以下元数据：
+
+1. `filePath`
+2. `language`
+3. `symbolName`
+4. `symbolKind`
+5. `startLine`
+6. `endLine`
+7. `parentSymbol`
+8. `repositoryId`
+
+建议规则：
+
+1. 优先按完整函数或类切块
+2. 当单个 symbol 过大时，再使用 fallback 策略做二次切块
+3. 保留文件路径与父级符号信息，便于检索结果回溯
+4. 对于无法可靠识别语义结构的文件，退回通用文本切块
+
+### 9.3.4 Fallback 策略
+
+在没有成熟 AST 策略前，或者在以下场景下，fallback parser 仍然需要保留：
+
+1. 文件语言暂不支持
+2. tree-sitter 解析失败
+3. 单个函数或类过大，需要进一步切分
+4. 非代码文本文件仍需进入索引链路
+
+fallback parser 至少需要做到：
 
 1. 能按固定大小和重叠窗口切块
 2. 保留行号范围
 3. 尽量维持块的可读性
+
+### 9.3.5 工程约束
+
+由于 tree-sitter 采用 Node 原生绑定方案，工程上需要额外注意：
+
+1. 在本地开发、CI 和容器环境中验证依赖安装流程
+2. 将 tree-sitter 及 grammar 依赖限制在 `packages/infra`，避免泄漏到 `core`
+3. 通过 `parser-factory.ts` 隔离具体库，保留未来替换为 ts-morph、LibCST 或 WASM 方案的空间
 
 ## 10. MCP 适配层设计
 
