@@ -517,6 +517,105 @@ interface ContextBuilder {
 3. embedding 向量
 4. 可过滤字段，例如语言、路径、标签
 
+### 9.1.1 本地与云端部署支持策略
+
+第一版支持两种 SurrealDB 部署方式：
+
+1. 本地自部署 SurrealDB
+2. 云端托管的 SurrealDB
+
+这两种部署方式在架构上不应被视为两种不同数据库适配，而应视为同一 `Surreal` provider 的两种运行配置。
+
+因此，v1 不需要修改 `core`、不需要新增新的 repository contract，也不需要改变三包结构。主要变化应限制在 `packages/infra` 与 `packages/mcp-server`：
+
+1. `packages/infra` 负责统一连接抽象
+2. `packages/mcp-server` 负责配置读取与启动校验
+3. 本地与云端差异不得泄漏到 `core`
+
+### 9.1.2 Surreal 客户端抽象要求
+
+`surreal-client.ts` 应作为 Surreal 接入的唯一入口，负责屏蔽本地与云端部署差异。
+
+建议职责包括：
+
+1. 建立连接
+2. 处理认证
+3. 执行基础 query 或 transaction
+4. 统一错误包装
+5. 提供连接探测与能力校验接口
+
+建议保持以下边界：
+
+1. 本地与云端连接差异优先收敛在 `surreal-client.ts`
+2. `surreal-chunk-repository.ts` 不直接处理部署差异
+3. `surreal-search-repository.ts` 不直接处理部署差异
+
+只有当未来云端与本地差异显著扩大，才考虑拆分为 `local-surreal-client.ts` 与 `cloud-surreal-client.ts`。v1 不建议预先拆分。
+
+### 9.1.3 配置模型要求
+
+为同时支持本地与云端部署，配置模型应显式覆盖连接方式与认证信息。
+
+建议配置字段包括：
+
+1. `SURREAL_URL`
+2. `SURREAL_NAMESPACE`
+3. `SURREAL_DATABASE`
+4. `SURREAL_USERNAME`
+5. `SURREAL_PASSWORD`
+6. `SURREAL_TOKEN`
+7. `SURREAL_USE_TLS`
+8. `SURREAL_DEPLOYMENT_MODE=local|cloud`
+
+设计要求：
+
+1. 不在 `core` 中分支判断本地或云端
+2. 通过统一配置对象驱动 `surreal-client.ts`
+3. 由配置决定认证方式、TLS 和连接细节
+
+### 9.1.4 启动校验与能力探测
+
+为了降低本地与云端环境差异带来的运行时问题，建议在应用启动时增加数据库校验步骤。
+
+建议至少校验：
+
+1. 数据库连通性
+2. 鉴权是否成功
+3. namespace 与 database 是否可用
+4. 向量检索相关能力是否满足当前实现要求
+
+这部分逻辑建议由 `packages/mcp-server` 在启动阶段调用，并依赖 `packages/infra` 暴露的健康检查能力。
+
+### 9.1.5 Schema 与迁移要求
+
+为保证本地与云端行为一致，建议尽早将 schema 初始化与索引创建视为基础设施责任，而不是人工前置步骤。
+
+建议要求：
+
+1. 表结构定义保持一致
+2. 向量字段定义保持一致
+3. 检索依赖的索引在不同部署环境中保持一致
+4. schema 初始化过程可重复执行且可观测
+
+v1 可以先不实现完整 migration 系统，但至少应在设计上预留 schema initialization 能力。
+
+### 9.1.6 运行时差异处理
+
+本地与云端 SurrealDB 的主要差异通常体现在运行特性，而非业务语义。
+
+需要重点考虑：
+
+1. 云端环境的网络超时与重试
+2. TLS 与证书配置
+3. 权限与鉴权失败
+4. 不同环境的版本差异
+
+因此建议：
+
+1. 对连接错误、鉴权错误、能力不支持错误分别建模
+2. 对可重试错误采用有限重试
+3. 对配置错误和 schema 错误尽早失败
+
 ### 9.2 Voyage Embedding
 
 第一版 embedding 模型固定为 `voyage-code-3`。
@@ -718,10 +817,11 @@ MCP Request
 位于 `packages/mcp-server`，负责读取和校验配置，建议包括：
 
 1. Surreal 地址与认证信息
-2. Voyage API Key
-3. Voyage 模型名
-4. 默认扫描忽略规则
-5. 默认检索 `topK`
+2. Surreal 本地或云端部署模式
+3. Voyage API Key
+4. Voyage 模型名
+5. 默认扫描忽略规则
+6. 默认检索 `topK`
 
 ### 11.2 container.ts
 
@@ -740,8 +840,9 @@ MCP Request
 
 1. 加载配置
 2. 初始化 container
-3. 创建 MCP server
-4. 启动服务
+3. 执行 Surreal 连接与能力校验
+4. 创建 MCP server
+5. 启动服务
 
 ### 11.4 v1 打包与部署策略
 
@@ -842,8 +943,11 @@ RepositoryId + FilePath
 3. `SURREAL_DATABASE`
 4. `SURREAL_USERNAME`
 5. `SURREAL_PASSWORD`
-6. `VOYAGE_API_KEY`
-7. `VOYAGE_MODEL=voyage-code-3`
+6. `SURREAL_TOKEN`
+7. `SURREAL_USE_TLS`
+8. `SURREAL_DEPLOYMENT_MODE=local`
+9. `VOYAGE_API_KEY`
+10. `VOYAGE_MODEL=voyage-code-3`
 
 ## 14. 演进路径
 
