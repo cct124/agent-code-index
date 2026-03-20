@@ -2,8 +2,8 @@
 
 本文档目录已拆分为两部分：
 
-1. [里程碑]( /home/janex/project/ai-agent/agent-code-index/doc/progress/milestones.md )：记录阶段性完成事项，适合回顾“已经完成了什么”
-2. [当前进度]( /home/janex/project/ai-agent/agent-code-index/doc/progress/current-progress.md )：记录当前可运行能力、剩余缺口、风险和下一步建议
+1. [里程碑](./milestones.md)：记录阶段性完成事项，适合回顾“已经完成了什么”
+2. [当前进度](./current-progress.md)：记录当前可运行能力、剩余缺口、风险和下一步建议
 
 截至 2026-03-20，仓库的最新状态是：
 
@@ -15,5 +15,5 @@
 
 建议阅读顺序：
 
-1. 先看 [里程碑]( /home/janex/project/ai-agent/agent-code-index/doc/progress/milestones.md ) 了解阶段成果
-2. 再看 [当前进度]( /home/janex/project/ai-agent/agent-code-index/doc/progress/current-progress.md ) 判断下一步开发优先级
+1. 先看 [里程碑](./milestones.md) 了解阶段成果
+2. 再看 [当前进度](./current-progress.md) 判断下一步开发优先级
