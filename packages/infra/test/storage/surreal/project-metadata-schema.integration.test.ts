@@ -24,11 +24,13 @@ describe("SurrealProjectMetadataSchema", () => {
     expect(connect).toHaveBeenCalledTimes(1);
     expect(query).toHaveBeenCalledTimes(1);
     expect(query).toHaveBeenCalledWith(
-      expect.stringContaining("DEFINE TABLE project_metadata SCHEMAFULL;"),
+      expect.stringContaining(
+        "DEFINE TABLE IF NOT EXISTS project_metadata SCHEMAFULL;",
+      ),
     );
     expect(query).toHaveBeenCalledWith(
       expect.stringContaining(
-        "DEFINE FIELD embeddingVectorDimension ON TABLE project_metadata TYPE int;",
+        "DEFINE FIELD IF NOT EXISTS embeddingVectorDimension ON TABLE project_metadata TYPE int;",
       ),
     );
   });

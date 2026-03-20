@@ -4,15 +4,15 @@
 import type { SurrealClient } from "./surreal-client.js";
 
 const PROJECT_METADATA_SCHEMA = `
-DEFINE TABLE project_metadata SCHEMAFULL;
-DEFINE FIELD projectSpace ON TABLE project_metadata TYPE string;
-DEFINE FIELD namespace ON TABLE project_metadata TYPE string;
-DEFINE FIELD database ON TABLE project_metadata TYPE string;
-DEFINE FIELD embeddingProvider ON TABLE project_metadata TYPE string;
-DEFINE FIELD embeddingModel ON TABLE project_metadata TYPE string;
-DEFINE FIELD embeddingVectorDimension ON TABLE project_metadata TYPE int;
-DEFINE FIELD createdAt ON TABLE project_metadata TYPE string;
-DEFINE FIELD updatedAt ON TABLE project_metadata TYPE string;
+DEFINE TABLE IF NOT EXISTS project_metadata SCHEMAFULL;
+DEFINE FIELD IF NOT EXISTS projectSpace ON TABLE project_metadata TYPE string;
+DEFINE FIELD IF NOT EXISTS namespace ON TABLE project_metadata TYPE string;
+DEFINE FIELD IF NOT EXISTS database ON TABLE project_metadata TYPE string;
+DEFINE FIELD IF NOT EXISTS embeddingProvider ON TABLE project_metadata TYPE string;
+DEFINE FIELD IF NOT EXISTS embeddingModel ON TABLE project_metadata TYPE string;
+DEFINE FIELD IF NOT EXISTS embeddingVectorDimension ON TABLE project_metadata TYPE int;
+DEFINE FIELD IF NOT EXISTS createdAt ON TABLE project_metadata TYPE string;
+DEFINE FIELD IF NOT EXISTS updatedAt ON TABLE project_metadata TYPE string;
 `;
 
 /**
