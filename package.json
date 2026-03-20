@@ -1,0 +1,21 @@
+{
+  "name": "agent-code-index",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "yarn@4.6.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "yarn workspaces foreach -Apt run build",
+    "typecheck": "yarn workspaces foreach -Apt run typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.11",
+    "prettier": "^3.8.1",
+    "typescript": "^5.8.2"
+  }
+}
