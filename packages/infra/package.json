@@ -12,7 +12,12 @@
     }
   },
   "dependencies": {
-    "@agent-code-index/core": "workspace:*"
+    "@agent-code-index/core": "workspace:*",
+    "surrealdb": "^2.0.3",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

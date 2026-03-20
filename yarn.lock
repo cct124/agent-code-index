@@ -16,6 +16,9 @@ __metadata:
   resolution: "@agent-code-index/infra@workspace:packages/infra"
   dependencies:
     "@agent-code-index/core": "workspace:*"
+    surrealdb: "npm:^2.0.3"
+    tslib: "npm:^2.8.1"
+    typescript: "npm:^5.8.2"
   languageName: unknown
   linkType: soft
 
@@ -27,6 +30,13 @@ __metadata:
     "@agent-code-index/infra": "workspace:*"
   languageName: unknown
   linkType: soft
+
+"@surrealdb/cbor@npm:2.0.0-alpha.4":
+  version: 2.0.0-alpha.4
+  resolution: "@surrealdb/cbor@npm:2.0.0-alpha.4"
+  checksum: 10c0/10dd241a4d5794ac643d925c5fb3d4a7336231350a5254a1282f389f83cb0269f284e7291c1cfc13a077b2841f129aa91d3bee8c9fa5dbdd9d86e5d1ebd81bf3
+  languageName: node
+  linkType: hard
 
 "@types/node@npm:^22.13.11":
   version: 22.19.15
@@ -56,6 +66,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"surrealdb@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "surrealdb@npm:2.0.3"
+  dependencies:
+    "@surrealdb/cbor": "npm:2.0.0-alpha.4"
+    uuidv7: "npm:^1.0.1"
+  peerDependencies:
+    tslib: ^2.6.3
+    typescript: ^5.0.0
+  checksum: 10c0/438b9d8677a0eb118e38620669ba96efa738e4a0b5e6baada3e7844f7fd0037c1852be58c81e4e3e4cf162adccb019e85352bfc32df05205fadf9056e59d6f25
+  languageName: node
+  linkType: hard
+
+"tslib@npm:^2.8.1":
+  version: 2.8.1
+  resolution: "tslib@npm:2.8.1"
+  checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
+  languageName: node
+  linkType: hard
+
 "typescript@npm:^5.8.2":
   version: 5.9.3
   resolution: "typescript@npm:5.9.3"
@@ -80,5 +110,14 @@ __metadata:
   version: 6.21.0
   resolution: "undici-types@npm:6.21.0"
   checksum: 10c0/c01ed51829b10aa72fc3ce64b747f8e74ae9b60eafa19a7b46ef624403508a54c526ffab06a14a26b3120d055e1104d7abe7c9017e83ced038ea5cf52f8d5e04
+  languageName: node
+  linkType: hard
+
+"uuidv7@npm:^1.0.1":
+  version: 1.1.0
+  resolution: "uuidv7@npm:1.1.0"
+  bin:
+    uuidv7: cli.js
+  checksum: 10c0/eceeb6cd682e323f14778cda6f221ebfafc339cd8bf8032a905b367cec547bffd5c717a60e956891525066c9a45f44fbe7688c269d1f95773ab940a212f1319c
   languageName: node
   linkType: hard
