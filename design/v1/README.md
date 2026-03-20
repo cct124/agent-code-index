@@ -11,6 +11,7 @@
 3. 聚焦索引、检索、上下文组装三项核心能力。
 4. 先支持 MCP，后续可扩展到 HTTP、CLI 或其他 Agent 协议。
 5. 底层先集成 Surreal 作为存储，`voyage-code-3` 作为 embedding 模型。
+6. 同一项目在同一时间只启用一个 embedding 模型，不同项目可以通过 MCP 环境变量指定不同模型。
 
 ## 2. 设计原则
 
@@ -44,6 +45,17 @@
 4. `infra -> core`
 
 不允许 `core` 依赖 `infra` 或 `adapters`。
+
+### 2.5 项目级配置优先于全局模型配置
+
+第一版采用项目级单模型配置策略。
+
+设计要求：
+
+1. 一个 MCP 配置实例只服务一个 `PROJECT_SPACE`
+2. 一个 `PROJECT_SPACE` 只绑定一个 embedding provider 和一个 embedding model
+3. 不同项目可通过环境变量选择不同模型
+4. 模型配置一旦在数据库中初始化落库，后续默认不允许原地修改
 
 ## 3. 目标与非目标
 
@@ -122,6 +134,7 @@ agent-code-index/
             surreal-search-repository.ts
 
         embedding/
+          provider-factory.ts
           voyage/
             voyage-client.ts
             voyage-embedding-provider.ts
@@ -288,6 +301,8 @@ agent-code-index/
 8. `endLine`
 9. `hash`
 10. `metadata`
+11. `embeddingProvider`
+12. `embeddingModel`
 
 ### 6.2 SearchQuery
 
@@ -339,6 +354,18 @@ interface EmbeddingProvider {
 1. 支持批量调用
 2. 由实现层决定重试、限流与模型名配置
 3. `core` 不感知 `voyage-code-3` 的细节
+4. 每次索引与检索都必须使用与项目已落库配置一致的 provider 和 model
+
+### 7.1.1 项目级模型约束
+
+第一版不支持在同一个 `PROJECT_SPACE` 中混用多个 embedding 模型。
+
+约束如下：
+
+1. 同一项目在任一时刻只允许一个 active model
+2. 不同项目可以使用不同 provider 和 model
+3. 一旦项目元数据写入数据库，provider 与 model 默认锁定
+4. 如果需要切换模型，建议新建 `PROJECT_SPACE` 并重新构建索引
 
 ### 7.2 ChunkRepository
 
@@ -532,6 +559,21 @@ interface ContextBuilder {
 2. `packages/mcp-server` 负责配置读取与启动校验
 3. 本地与云端差异不得泄漏到 `core`
 
+### 9.1.1.1 PROJECT_SPACE 与 namespace 的关系
+
+第一版采用方案 B：
+
+1. `PROJECT_SPACE` 作为逻辑项目标识
+2. SurrealDB `namespace` 由 `PROJECT_SPACE` 派生或按固定规则映射
+3. `PROJECT_SPACE` 是 MCP 配置入口
+4. `namespace` 是数据库隔离边界
+
+建议规则：
+
+1. 用户只配置 `PROJECT_SPACE`
+2. 应用根据统一规则生成或校验 `namespace`
+3. 不建议手工为同一项目分别维护不同的 `PROJECT_SPACE` 与 `namespace` 值
+
 ### 9.1.2 Surreal 客户端抽象要求
 
 `surreal-client.ts` 应作为 Surreal 接入的唯一入口，负责屏蔽本地与云端部署差异。
@@ -559,7 +601,7 @@ interface ContextBuilder {
 建议配置字段包括：
 
 1. `SURREAL_URL`
-2. `SURREAL_NAMESPACE`
+2. `PROJECT_SPACE`
 3. `SURREAL_DATABASE`
 4. `SURREAL_USERNAME`
 5. `SURREAL_PASSWORD`
@@ -572,6 +614,7 @@ interface ContextBuilder {
 1. 不在 `core` 中分支判断本地或云端
 2. 通过统一配置对象驱动 `surreal-client.ts`
 3. 由配置决定认证方式、TLS 和连接细节
+4. `namespace` 由 `PROJECT_SPACE` 派生，而不是要求使用者手工维护独立值
 
 ### 9.1.4 启动校验与能力探测
 
@@ -599,6 +642,29 @@ interface ContextBuilder {
 
 v1 可以先不实现完整 migration 系统，但至少应在设计上预留 schema initialization 能力。
 
+### 9.1.5.1 项目元数据与模型锁定
+
+为了支持“不同项目可用不同模型，但单个项目模型不可变”，数据库中必须保存项目级索引元数据。
+
+建议至少记录：
+
+1. `projectSpace`
+2. `namespace`
+3. `embeddingProvider`
+4. `embeddingModel`
+5. `vectorDimension`
+6. `indexVersion`
+7. `createdAt`
+8. `updatedAt`
+
+初始化规则：
+
+1. 如果项目元数据不存在，则按当前配置创建并写入
+2. 如果项目元数据已存在，则启动时校验当前配置是否与落库配置一致
+3. 如果 provider、model 或 vector dimension 不一致，则拒绝继续索引
+
+这样可以把“模型锁定”从约定提升为系统规则。
+
 ### 9.1.6 运行时差异处理
 
 本地与云端 SurrealDB 的主要差异通常体现在运行特性，而非业务语义。
@@ -616,14 +682,23 @@ v1 可以先不实现完整 migration 系统，但至少应在设计上预留 sc
 2. 对可重试错误采用有限重试
 3. 对配置错误和 schema 错误尽早失败
 
-### 9.2 Voyage Embedding
+### 9.2 Embedding Provider 策略
 
-第一版 embedding 模型固定为 `voyage-code-3`。
+第一版默认 provider 为 Voyage，默认模型为 `voyage-code-3`，但整体设计需要允许后续扩展到其他 embedding provider。
 
 建议职责拆分，代码位于 `packages/infra`：
 
-1. `voyage-client.ts`：封装 SDK 或 HTTP 调用细节
-2. `voyage-embedding-provider.ts`：实现 `EmbeddingProvider`
+1. `embedding/provider-factory.ts`：根据配置选择具体 provider
+2. `embedding/voyage/voyage-client.ts`：封装 Voyage SDK 或 HTTP 调用细节
+3. `embedding/voyage/voyage-embedding-provider.ts`：实现 `EmbeddingProvider`
+4. 后续可新增 `embedding/<other-provider>/...`
+
+第一版的实现策略：
+
+1. 同一项目只启用一个 provider
+2. 不同项目可启用不同 provider
+3. 默认使用 `voyage-code-3`
+4. provider 与 model 一旦为项目初始化，即默认锁定
 
 应由实现层处理：
 
@@ -631,6 +706,25 @@ v1 可以先不实现完整 migration 系统，但至少应在设计上预留 sc
 2. 重试与超时
 3. 模型名配置
 4. API Key 注入
+5. 向量维度声明与校验
+
+### 9.2.1 项目级 Embedding 配置
+
+配置模型应从 `VoyageConfig` 演进为通用的 `EmbeddingConfig`。
+
+建议字段包括：
+
+1. `EMBEDDING_PROVIDER`
+2. `EMBEDDING_MODEL`
+3. `EMBEDDING_VECTOR_DIMENSION`
+4. `EMBEDDING_API_KEY`
+5. `EMBEDDING_BASE_URL`
+
+说明：
+
+1. Voyage 相关变量可以作为第一版兼容写法保留
+2. 但内部配置模型应按 provider-neutral 的方式建模
+3. 这样后续新增其他 provider 时，不需要改动 `core`
 
 ### 9.3 解析与扫描
 
@@ -818,21 +912,33 @@ MCP Request
 
 1. Surreal 地址与认证信息
 2. Surreal 本地或云端部署模式
-3. Voyage API Key
-4. Voyage 模型名
+3. `PROJECT_SPACE`
+4. 通用 embedding provider 配置
 5. 默认扫描忽略规则
 6. 默认检索 `topK`
+
+其中：
+
+1. `PROJECT_SPACE` 是逻辑项目标识
+2. `namespace` 应由 `PROJECT_SPACE` 派生
+3. embedding 配置应在启动时与数据库中已落库的项目元数据做一致性校验
 
 ### 11.2 container.ts
 
 位于 `packages/mcp-server`，负责手工依赖注入，建议完成以下绑定：
 
-1. `EmbeddingProvider -> VoyageEmbeddingProvider`
+1. `EmbeddingProvider -> 由 provider-factory 根据项目配置选择的具体实现`
 2. `ChunkRepository -> SurrealChunkRepository`
 3. `SearchRepository -> SurrealSearchRepository`
 4. `FileScanner -> LocalFileScanner`
 5. `Parser -> ParserFactory / FallbackParser`
 6. `ContextBuilder -> 默认上下文构建实现`
+
+其中 embedding 相关装配建议遵循：
+
+1. 默认 provider 为 Voyage
+2. 默认模型为 `voyage-code-3`
+3. 具体 provider 实现由配置驱动选择，而不是在 container 中写死
 
 ### 11.3 app.ts
 
@@ -841,8 +947,9 @@ MCP Request
 1. 加载配置
 2. 初始化 container
 3. 执行 Surreal 连接与能力校验
-4. 创建 MCP server
-5. 启动服务
+4. 校验 `PROJECT_SPACE` 的项目元数据与模型配置是否一致
+5. 创建 MCP server
+6. 启动服务
 
 ### 11.4 v1 打包与部署策略
 
@@ -895,6 +1002,12 @@ Repository Root
   -> Index Summary
 ```
 
+补充约束：
+
+1. 索引开始前必须先确认当前 `PROJECT_SPACE` 已绑定的 provider 与 model
+2. 如果项目未初始化，则创建项目元数据并写入当前模型配置
+3. 如果项目已初始化但模型配置不一致，则拒绝继续索引
+
 ### 12.2 检索流程
 
 ```text
@@ -939,15 +1052,22 @@ RepositoryId + FilePath
 建议在 `.env.example` 中明确：
 
 1. `SURREAL_URL`
-2. `SURREAL_NAMESPACE`
+2. `PROJECT_SPACE`
 3. `SURREAL_DATABASE`
 4. `SURREAL_USERNAME`
 5. `SURREAL_PASSWORD`
 6. `SURREAL_TOKEN`
 7. `SURREAL_USE_TLS`
 8. `SURREAL_DEPLOYMENT_MODE=local`
-9. `VOYAGE_API_KEY`
-10. `VOYAGE_MODEL=voyage-code-3`
+9. `EMBEDDING_PROVIDER=voyage`
+10. `EMBEDDING_MODEL=voyage-code-3`
+11. `EMBEDDING_VECTOR_DIMENSION`
+12. `EMBEDDING_API_KEY`
+
+兼容性建议：
+
+1. 第一版可以同时保留 `VOYAGE_API_KEY` 与 `VOYAGE_MODEL`
+2. 但内部应优先向通用 `EMBEDDING_*` 配置模型收敛
 
 ## 14. 演进路径
 
@@ -959,6 +1079,7 @@ RepositoryId + FilePath
 4. 在 `packages/infra` 下增加其他模型供应商
 5. 在 `packages/core/services` 中新增 `explain-impact-service`
 6. 引入更强的语言感知 parser 或 AST 图谱能力
+7. 为模型切换提供“新建 PROJECT_SPACE 并重建索引”的迁移工具
 
 ## 15. v1 结论
 
