@@ -118,7 +118,7 @@ export class DefaultSurrealClient implements SurrealClient {
    */
   public async healthCheck(): Promise<SurrealClientHealthStatus> {
     await this.connect();
-    await this.driver.health();
+    await this.driver.query("RETURN true;");
 
     return {
       ok: true,
