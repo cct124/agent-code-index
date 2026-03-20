@@ -189,6 +189,9 @@ function toChunk(record: StoredSearchChunk): Chunk {
     startLine: record.startLine,
     endLine: record.endLine,
     hash: record.hash,
+    embedding: Array.isArray(record.embedding)
+      ? (record.embedding as number[])
+      : undefined,
     metadata: {
       ...record.metadata,
     },

@@ -20,6 +20,7 @@ function createChunk(overrides: Partial<Chunk> = {}): Chunk {
     startLine: 1,
     endLine: 1,
     hash: "hash-1",
+    embedding: [1, 0, 0],
     metadata: {
       symbolName: "one",
       symbolKind: "const",
@@ -46,6 +47,7 @@ describe("SurrealChunkRepository", () => {
           startLine: data.startLine,
           endLine: data.endLine,
           hash: data.hash,
+          embedding: data.embedding,
           metadata: data.metadata,
         };
 
@@ -110,6 +112,7 @@ describe("SurrealChunkRepository", () => {
       startLine: 5,
       endLine: 5,
       hash: "hash-2",
+      embedding: [0.6, 0.8, 0],
       metadata: {
         symbolName: "two",
         symbolKind: "const",
@@ -146,6 +149,7 @@ describe("SurrealChunkRepository", () => {
           startLine: data.startLine,
           endLine: data.endLine,
           hash: data.hash,
+          embedding: data.embedding,
           metadata: data.metadata,
         };
 

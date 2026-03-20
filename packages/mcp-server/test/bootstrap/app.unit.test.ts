@@ -3,11 +3,11 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ProjectMetadata } from "@agent-code-index/core";
+import type { ProjectMetadata } from "../../../core/src/domain/project-metadata.js";
 
 import type { AppContainer } from "../../src/bootstrap/container.js";
 import type { AppConfig } from "../../src/bootstrap/config.js";
-import type { SurrealClientHealthStatus } from "@agent-code-index/infra";
+import type { SurrealClientHealthStatus } from "../../../infra/src/index.js";
 
 const { loadConfigMock, createContainerMock } = vi.hoisted(() => ({
   loadConfigMock: vi.fn(),
@@ -90,6 +90,11 @@ function createTestContainer(events: string[]): AppContainer {
         return healthStatus;
       }),
     },
+    chunkSchema: {
+      ensure: vi.fn(async () => {
+        events.push("chunkSchemaEnsure");
+      }),
+    } as unknown as AppContainer["chunkSchema"],
     projectMetadataSchema: {
       ensure: vi.fn(async () => {
         events.push("schemaEnsure");
@@ -132,6 +137,7 @@ describe("createApp", () => {
     expect(app.config).toBe(config);
     expect(events).toEqual([
       "healthCheck",
+      "chunkSchemaEnsure",
       "schemaEnsure",
       "getByProjectSpace",
       "save",
@@ -168,6 +174,7 @@ describe("createApp", () => {
     expect(container.projectMetadataRepository.save).not.toHaveBeenCalled();
     expect(events).toEqual([
       "healthCheck",
+      "chunkSchemaEnsure",
       "schemaEnsure",
       "getByProjectSpace",
     ]);

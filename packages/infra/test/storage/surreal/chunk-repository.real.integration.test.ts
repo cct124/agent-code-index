@@ -20,6 +20,7 @@ interface Chunk {
   startLine: number;
   endLine: number;
   hash: string;
+  embedding?: number[];
   metadata: {
     symbolName?: string;
     symbolKind?: string;
@@ -60,6 +61,7 @@ if (!isRealSurrealIntegrationEnabled()) {
           content: "export function beta() {}",
           searchText: "export function beta",
           hash: "hash-2",
+          embedding: [0.6, 0.8, 0],
           metadata: {
             symbolName: "beta",
             symbolKind: "function",
@@ -103,6 +105,7 @@ function createChunk(
     startLine: 1,
     endLine: 3,
     hash: "hash-1",
+    embedding: [1, 0, 0],
     metadata: {
       symbolName: "alpha",
       symbolKind: "function",

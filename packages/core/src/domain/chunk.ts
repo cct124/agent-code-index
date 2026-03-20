@@ -20,6 +20,8 @@ export interface Chunk {
   endLine: number;
   /** 当前 chunk 内容哈希。 */
   hash: string;
+  /** 可选的 embedding 向量。 */
+  embedding?: number[];
   /** 附加元数据。 */
   metadata: ChunkMetadata;
 }

@@ -25,6 +25,7 @@ interface StoredChunk extends Record<string, unknown> {
   startLine: number;
   endLine: number;
   hash: string;
+  embedding?: number[];
   metadata: ChunkMetadata;
 }
 
@@ -111,6 +112,7 @@ export class SurrealChunkRepository implements ChunkRepository {
       startLine: chunk.startLine,
       endLine: chunk.endLine,
       hash: chunk.hash,
+      embedding: chunk.embedding ? [...chunk.embedding] : undefined,
       metadata: { ...chunk.metadata },
     };
   }
@@ -126,6 +128,9 @@ export class SurrealChunkRepository implements ChunkRepository {
       startLine: record.startLine,
       endLine: record.endLine,
       hash: record.hash,
+      embedding: Array.isArray(record.embedding)
+        ? (record.embedding as number[])
+        : undefined,
       metadata: {
         ...record.metadata,
       },

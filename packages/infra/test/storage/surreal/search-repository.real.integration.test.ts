@@ -1,6 +1,7 @@
-import { RecordId } from "surrealdb";
 import { afterAll, describe, expect, it } from "vitest";
 
+import { SurrealChunkRepository } from "../../../src/storage/surreal/surreal-chunk-repository.js";
+import { SurrealChunkSchema } from "../../../src/storage/surreal/surreal-chunk-schema.js";
 import { SurrealSearchRepository } from "../../../src/storage/surreal/surreal-search-repository.js";
 import { DefaultSurrealClient } from "../../../src/storage/surreal/surreal-client.js";
 
@@ -11,8 +12,8 @@ import {
   namespaceFromProjectSpace,
 } from "./real-surreal-test-env.js";
 
-interface StoredSearchChunk extends Record<string, unknown> {
-  chunkId: string;
+interface Chunk {
+  id: string;
   repositoryId: string;
   filePath: string;
   language: string;
@@ -27,7 +28,7 @@ interface StoredSearchChunk extends Record<string, unknown> {
     parentSymbol?: string;
     tags?: string[];
   };
-  embedding: number[];
+  embedding?: number[];
 }
 
 if (!isRealSurrealIntegrationEnabled()) {
@@ -43,6 +44,8 @@ if (!isRealSurrealIntegrationEnabled()) {
     const client = new DefaultSurrealClient(
       createRealSurrealConnectionConfig(namespace),
     );
+    const chunkSchema = new SurrealChunkSchema(client);
+    const chunkRepository = new SurrealChunkRepository(client);
     const repository = new SurrealSearchRepository(client);
 
     afterAll(async () => {
@@ -58,55 +61,51 @@ if (!isRealSurrealIntegrationEnabled()) {
     });
 
     it("returns top-k chunks ordered by cosine similarity from real stored embeddings", async () => {
-      await client.connect();
-      await upsertStoredChunk(client, repositoryId, {
-        chunkId: "chunk-1",
-        repositoryId,
-        filePath: "src/example.ts",
-        language: "typescript",
-        content: "export function alpha() {}",
-        searchText: "export function alpha",
-        startLine: 1,
-        endLine: 3,
-        hash: "hash-1",
-        metadata: {
-          symbolName: "alpha",
-          symbolKind: "function",
-        },
-        embedding: [1, 0, 0],
-      });
-      await upsertStoredChunk(client, repositoryId, {
-        chunkId: "chunk-2",
-        repositoryId,
-        filePath: "src/example.ts",
-        language: "typescript",
-        content: "export function beta() {}",
-        searchText: "export function beta",
-        startLine: 8,
-        endLine: 10,
-        hash: "hash-2",
-        metadata: {
-          symbolName: "beta",
-          symbolKind: "function",
-        },
-        embedding: [0.6, 0.8, 0],
-      });
-      await upsertStoredChunk(client, repositoryId, {
-        chunkId: "chunk-3",
-        repositoryId,
-        filePath: "src/other.ts",
-        language: "typescript",
-        content: "export function gamma() {}",
-        searchText: "export function gamma",
-        startLine: 1,
-        endLine: 3,
-        hash: "hash-3",
-        metadata: {
-          symbolName: "gamma",
-          symbolKind: "function",
-        },
-        embedding: [0, 1, 0],
-      });
+      await chunkSchema.ensure();
+      await chunkRepository.upsertMany([
+        createChunk(repositoryId, {
+          id: "chunk-1",
+          filePath: "src/example.ts",
+          content: "export function alpha() {}",
+          searchText: "export function alpha",
+          startLine: 1,
+          endLine: 3,
+          hash: "hash-1",
+          metadata: {
+            symbolName: "alpha",
+            symbolKind: "function",
+          },
+          embedding: [1, 0, 0],
+        }),
+        createChunk(repositoryId, {
+          id: "chunk-2",
+          filePath: "src/example.ts",
+          content: "export function beta() {}",
+          searchText: "export function beta",
+          startLine: 8,
+          endLine: 10,
+          hash: "hash-2",
+          metadata: {
+            symbolName: "beta",
+            symbolKind: "function",
+          },
+          embedding: [0.6, 0.8, 0],
+        }),
+        createChunk(repositoryId, {
+          id: "chunk-3",
+          filePath: "src/other.ts",
+          content: "export function gamma() {}",
+          searchText: "export function gamma",
+          startLine: 1,
+          endLine: 3,
+          hash: "hash-3",
+          metadata: {
+            symbolName: "gamma",
+            symbolKind: "function",
+          },
+          embedding: [0, 1, 0],
+        }),
+      ]);
 
       const results = await repository.semanticSearch({
         repositoryId,
@@ -125,14 +124,26 @@ if (!isRealSurrealIntegrationEnabled()) {
   });
 }
 
-async function upsertStoredChunk(
-  client: DefaultSurrealClient,
+function createChunk(
   repositoryId: string,
-  chunk: StoredSearchChunk,
-): Promise<void> {
-  await client.driver
-    .upsert<StoredSearchChunk>(
-      new RecordId("chunk", `${repositoryId}:${chunk.chunkId}`),
-    )
-    .content(chunk);
+  overrides: Partial<Chunk> = {},
+): Chunk {
+  return {
+    id: "chunk-1",
+    repositoryId,
+    filePath: "src/example.ts",
+    language: "typescript",
+    content: "export function alpha() {}",
+    searchText: "export function alpha",
+    startLine: 1,
+    endLine: 3,
+    hash: "hash-1",
+    embedding: [1, 0, 0],
+    metadata: {
+      symbolName: "alpha",
+      symbolKind: "function",
+      tags: ["export"],
+    },
+    ...overrides,
+  };
 }

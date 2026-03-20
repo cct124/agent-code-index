@@ -24,6 +24,7 @@ export async function createApp(): Promise<App> {
   const container = createContainer(config);
 
   await container.surrealClient.healthCheck();
+  await container.chunkSchema.ensure();
   await container.projectMetadataSchema.ensure();
   await ensureProjectMetadata(container);
 

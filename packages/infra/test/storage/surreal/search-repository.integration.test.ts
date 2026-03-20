@@ -12,6 +12,7 @@ interface Chunk {
   startLine: number;
   endLine: number;
   hash: string;
+  embedding?: number[];
   metadata: {
     symbolName?: string;
     symbolKind?: string;
@@ -122,6 +123,7 @@ describe("SurrealSearchRepository", () => {
           startLine: 1,
           endLine: 1,
           hash: "hash-1",
+          embedding: [1, 0, 0],
           metadata: {
             symbolName: "one",
             symbolKind: "const",
@@ -141,6 +143,7 @@ describe("SurrealSearchRepository", () => {
           startLine: 8,
           endLine: 10,
           hash: "hash-1",
+          embedding: [0.6, 0.8, 0],
           metadata: {
             symbolName: "two",
             symbolKind: "function",
