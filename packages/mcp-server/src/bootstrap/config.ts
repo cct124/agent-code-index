@@ -12,7 +12,7 @@ export type SurrealDeploymentMode = "local" | "cloud";
 export interface SurrealConfig {
   /** SurrealDB 服务地址。 */
   url: string;
-  /** SurrealDB namespace。 */
+  /** 逻辑项目空间派生出的 SurrealDB namespace。 */
   namespace: string;
   /** SurrealDB database。 */
   database: string;
@@ -29,13 +29,24 @@ export interface SurrealConfig {
 }
 
 /**
- * Voyage embedding 服务配置。
+ * Embedding 服务提供方。
  */
-export interface VoyageConfig {
-  /** Voyage API Key。 */
-  apiKey: string;
-  /** Voyage 模型名称。 */
+export type EmbeddingProvider = "voyage";
+
+/**
+ * Embedding 服务配置。
+ */
+export interface EmbeddingConfig {
+  /** 当前项目使用的 embedding provider。 */
+  provider: EmbeddingProvider;
+  /** 当前项目绑定的 embedding 模型名称。 */
   model: string;
+  /** 向量维度，用于与存储层索引结构保持一致。 */
+  vectorDimension: number;
+  /** 调用 embedding 服务的访问密钥。 */
+  apiKey?: string;
+  /** 第三方 embedding 服务的可选基础地址。 */
+  baseUrl?: string;
 }
 
 /**
@@ -52,10 +63,12 @@ export interface IndexingConfig {
  * 应用完整运行时配置对象。
  */
 export interface AppConfig {
+  /** MCP 当前绑定的逻辑项目空间。 */
+  projectSpace: string;
   /** SurrealDB 相关配置。 */
   surreal: SurrealConfig;
-  /** Voyage 相关配置。 */
-  voyage: VoyageConfig;
+  /** Embedding 相关配置。 */
+  embedding: EmbeddingConfig;
   /** 索引过程默认参数。 */
   indexing: IndexingConfig;
 }
@@ -69,9 +82,12 @@ type EnvMap = Record<string, string | undefined>;
  * 从环境变量中加载并校验应用运行时配置。
  */
 export function loadConfig(env: EnvMap = process.env): AppConfig {
+  const projectSpace = projectSpaceEnv(env, "PROJECT_SPACE");
+  const namespace = namespaceFromProjectSpace(projectSpace);
+
   const surreal: SurrealConfig = {
     url: requireEnv(env, "SURREAL_URL"),
-    namespace: requireEnv(env, "SURREAL_NAMESPACE"),
+    namespace,
     database: requireEnv(env, "SURREAL_DATABASE"),
     username: optionalEnv(env, "SURREAL_USERNAME"),
     password: optionalEnv(env, "SURREAL_PASSWORD"),
@@ -82,12 +98,20 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
 
   validateSurrealAuth(surreal);
 
+  const embedding: EmbeddingConfig = {
+    provider: embeddingProviderEnv(env, "EMBEDDING_PROVIDER", "voyage"),
+    model: optionalEnv(env, "EMBEDDING_MODEL") ?? "voyage-code-3",
+    vectorDimension: integerEnv(env, "EMBEDDING_VECTOR_DIMENSION"),
+    apiKey: optionalEnv(env, "EMBEDDING_API_KEY"),
+    baseUrl: optionalEnv(env, "EMBEDDING_BASE_URL"),
+  };
+
+  validateEmbeddingConfig(embedding);
+
   return {
+    projectSpace,
     surreal,
-    voyage: {
-      apiKey: requireEnv(env, "VOYAGE_API_KEY"),
-      model: optionalEnv(env, "VOYAGE_MODEL") ?? "voyage-code-3",
-    },
+    embedding,
     indexing: {
       defaultTopK: integerEnv(env, "DEFAULT_TOP_K", 10),
       ignorePatterns: csvEnv(env, "DEFAULT_SCAN_IGNORE_PATTERNS", [
@@ -123,6 +147,21 @@ function optionalEnv(env: EnvMap, key: string): string | undefined {
 }
 
 /**
+ * 读取逻辑项目空间并校验格式。
+ */
+function projectSpaceEnv(env: EnvMap, key: string): string {
+  const value = requireEnv(env, key).toLowerCase();
+
+  if (!/^[a-z0-9][a-z0-9_-]*$/.test(value)) {
+    throw new Error(
+      `Environment variable ${key} must match /^[a-z0-9][a-z0-9_-]*$/`,
+    );
+  }
+
+  return value;
+}
+
+/**
  * 将环境变量解析为布尔值。
  */
 function booleanEnv(env: EnvMap, key: string, fallback: boolean): boolean {
@@ -146,10 +185,14 @@ function booleanEnv(env: EnvMap, key: string, fallback: boolean): boolean {
 /**
  * 将环境变量解析为正整数。
  */
-function integerEnv(env: EnvMap, key: string, fallback: number): number {
+function integerEnv(env: EnvMap, key: string, fallback?: number): number {
   const value = optionalEnv(env, key);
 
   if (value === undefined) {
+    if (fallback === undefined) {
+      throw new Error(`Missing required environment variable: ${key}`);
+    }
+
     return fallback;
   }
 
@@ -200,6 +243,34 @@ function deploymentModeEnv(
 }
 
 /**
+ * 解析 embedding provider 配置。
+ */
+function embeddingProviderEnv(
+  env: EnvMap,
+  key: string,
+  fallback: EmbeddingProvider,
+): EmbeddingProvider {
+  const value = optionalEnv(env, key);
+
+  if (value === undefined) {
+    return fallback;
+  }
+
+  if (value === "voyage") {
+    return value;
+  }
+
+  throw new Error(`Environment variable ${key} must be 'voyage'`);
+}
+
+/**
+ * 基于 PROJECT_SPACE 生成稳定的 namespace。
+ */
+function namespaceFromProjectSpace(projectSpace: string): string {
+  return projectSpace.replace(/-/g, "_");
+}
+
+/**
  * 校验 SurrealDB 至少提供一种可用的认证方式。
  */
 function validateSurrealAuth(config: SurrealConfig): void {
@@ -210,5 +281,14 @@ function validateSurrealAuth(config: SurrealConfig): void {
     throw new Error(
       "SurrealDB authentication requires either SURREAL_USERNAME and SURREAL_PASSWORD, or SURREAL_TOKEN",
     );
+  }
+}
+
+/**
+ * 校验 embedding 配置是否满足当前 provider 的要求。
+ */
+function validateEmbeddingConfig(config: EmbeddingConfig): void {
+  if (config.provider === "voyage" && !config.apiKey) {
+    throw new Error("Voyage embedding requires EMBEDDING_API_KEY");
   }
 }

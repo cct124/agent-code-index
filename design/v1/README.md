@@ -1064,11 +1064,6 @@ RepositoryId + FilePath
 11. `EMBEDDING_VECTOR_DIMENSION`
 12. `EMBEDDING_API_KEY`
 
-兼容性建议：
-
-1. 第一版可以同时保留 `VOYAGE_API_KEY` 与 `VOYAGE_MODEL`
-2. 但内部应优先向通用 `EMBEDDING_*` 配置模型收敛
-
 ## 14. 演进路径
 
 在保持分层稳定的前提下，后续可按如下方向演进：
