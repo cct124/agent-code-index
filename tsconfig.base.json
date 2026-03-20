@@ -3,11 +3,6 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "baseUrl": ".",
-    "paths": {
-      "@agent-code-index/core": ["packages/core/src/index.ts"],
-      "@agent-code-index/infra": ["packages/infra/src/index.ts"]
-    },
     "strict": true,
     "declaration": true,
     "sourceMap": true,

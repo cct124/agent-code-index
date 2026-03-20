@@ -8,8 +8,8 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "yarn workspaces foreach -Apt run build",
-    "typecheck": "yarn workspaces foreach -Apt run typecheck",
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b tsconfig.json --force",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
