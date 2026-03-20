@@ -642,6 +642,8 @@ interface ContextBuilder {
 
 v1 可以先不实现完整 migration 系统，但至少应在设计上预留 schema initialization 能力。
 
+当前最小实现可以先在应用启动阶段显式执行 `project_metadata` 的 `DEFINE TABLE` 与 `DEFINE FIELD`，保证模型锁定依赖的元数据表不是人工预置步骤。
+
 ### 9.1.5.1 项目元数据与模型锁定
 
 为了支持“不同项目可用不同模型，但单个项目模型不可变”，数据库中必须保存项目级索引元数据。

@@ -5,6 +5,7 @@ import type { ProjectMetadataRepository } from "@agent-code-index/core";
 import {
   createSurrealClient,
   SurrealProjectMetadataRepository,
+  SurrealProjectMetadataSchema,
   type SurrealClient,
   type SurrealConnectionConfig,
 } from "@agent-code-index/infra";
@@ -19,6 +20,8 @@ export interface AppContainer {
   config: AppConfig;
   /** SurrealDB 客户端骨架实例。 */
   surrealClient: SurrealClient;
+  /** project_metadata 表的 schema 初始化器。 */
+  projectMetadataSchema: SurrealProjectMetadataSchema;
   /** 项目元数据仓储。 */
   projectMetadataRepository: ProjectMetadataRepository;
 }
@@ -32,6 +35,7 @@ export function createContainer(config: AppConfig): AppContainer {
   return {
     config,
     surrealClient,
+    projectMetadataSchema: new SurrealProjectMetadataSchema(surrealClient),
     projectMetadataRepository: new SurrealProjectMetadataRepository(
       surrealClient,
     ),

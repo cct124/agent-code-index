@@ -7,6 +7,7 @@ export {
 } from "./storage/surreal/surreal-client.js";
 export { SurrealChunkRepository } from "./storage/surreal/surreal-chunk-repository.js";
 export { SurrealProjectMetadataRepository } from "./storage/surreal/surreal-project-metadata-repository.js";
+export { SurrealProjectMetadataSchema } from "./storage/surreal/surreal-project-metadata-schema.js";
 export { SurrealSearchRepository } from "./storage/surreal/surreal-search-repository.js";
 export type {
   SurrealClient,
