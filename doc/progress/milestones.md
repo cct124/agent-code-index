@@ -18,6 +18,7 @@
 10. metadata 驱动的 searchText 增强与 OpenAI-compatible / SiliconFlow 实网验证落地
 11. `query text -> query embedding -> search` 正式检索用例落地
 12. Surreal 原生向量检索迁移与 3.0.4 基线验证落地
+13. VoyageAI 真实 embedding 兼容性验证落地
 
 ## 2. 里程碑一：架构设计与工程骨架完成
 
@@ -228,7 +229,21 @@
 2. `3.0.4` 已成为当前开发环境下经过真实测试验证的 Surreal 向量检索版本基线
 3. 后续对更复杂过滤组合和候选窗口调优的工作，已经建立在真实可观测的数据库执行计划之上
 
-## 14. 当前里程碑结论
+## 14. 里程碑十三：VoyageAI 真实 embedding 兼容性验证落地
+
+已完成：
+
+1. 新增 `.env.development.voyageai` 作为 Voyage 本地测试环境模板
+2. 新增 `VoyageEmbeddingProvider` 的真实集成测试
+3. 已验证 document/query 两类 embedding 调用均能正常返回向量
+4. 已确认当前 `VoyageEmbeddingProvider` 的模型、鉴权与维度校验路径可正常工作
+
+该里程碑的意义是：
+
+1. `voyage` provider 不再只有单元测试，而是具备真实 API 兼容性验证
+2. 后续补齐 Voyage + Surreal 端到端索引测试时，可以直接复用这条已验证的 provider 基线
+
+## 15. 当前里程碑结论
 
 截至当前，可以将阶段成果概括为：
 
@@ -245,8 +260,9 @@
 11. metadata 驱动的 searchText 增强与 OpenAI-compatible / SiliconFlow 实网验证已落地
 12. `query text -> query embedding -> search` 正式检索用例已落地
 13. Surreal 原生向量检索迁移与 `3.0.4` 基线验证已落地
+14. VoyageAI 真实 embedding 兼容性验证已落地
 
 下一阶段不再是补工程骨架，而是先将现有检索能力收敛为正式 use case：
 
 1. 将该检索用例通过 MCP tool 与上下文服务对外暴露
-2. 再增强排序、更复杂过滤组合验证、候选窗口调优与数据库侧向量能力
+2. 再补齐 Voyage + Surreal 端到端索引验证，并增强排序、更复杂过滤组合验证与候选窗口调优

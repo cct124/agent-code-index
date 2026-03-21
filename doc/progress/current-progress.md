@@ -18,7 +18,8 @@
 8. 启动、索引、embedding、parser 与 Surreal 存储主链路的第一版结构化日志已落地，并引入统一错误分类与日志脱敏策略
 9. 轻量集成测试、真实 SurrealDB 集成测试和基于真实模板文件的 parser 集成测试已覆盖当前主链路
 10. `query text -> query embedding -> search` 的 core service 已落地，检索已升级为正式用例
-11. MCP tool server 与具体工具实现仍未落地
+11. VoyageAI 真实 embedding 兼容性已补齐验证
+12. MCP tool server 与具体工具实现仍未落地
 
 ## 2. 当前项目结构
 
@@ -94,7 +95,8 @@
 5. provider factory 已支持 `voyage | openai-compatible`
 6. `searchText` 已承载高信号 metadata 语义头，并作为 document embedding 的直接输入
 7. 已补齐 opt-in 的真实 OpenAI-compatible / SiliconFlow provider 集成测试
-8. `DefaultSearchCodeContextService` 已在 `core` 中落地，负责 `query text -> query embedding -> semantic search`
+8. 已补齐基于 `.env.development.voyageai` 的 VoyageAI 真实兼容性测试
+9. `DefaultSearchCodeContextService` 已在 `core` 中落地，负责 `query text -> query embedding -> semantic search`
 
 ### 3.5 可观测性能力
 
@@ -151,6 +153,7 @@
 28. native HNSW 候选窗口配置项与注入路径单元测试
 29. `SurrealSearchRepository` 的 native 窗口参数与非法配置校验测试
 30. `SurrealSearchRepository` 的 `EXPLAIN FULL` 真实环境验证测试
+31. `VoyageEmbeddingProvider` 真实集成测试
 
 截至最近一次回归，以下验证已通过：
 
@@ -166,6 +169,7 @@
 10. 在干净的 `3.0.4` 环境中，`repositoryId + 多个精确过滤条件 + HNSW KNN` 的最小复现场景与真实仓储测试均已通过
 11. native HNSW 候选窗口参数配置化已完成，并通过 unit test 与真实 EXPLAIN FULL 测试验证
 12. native 主路径已切换为“全部过滤数据库下推 + KNN”，并通过 unit test 与真实 EXPLAIN FULL 计划断言验证
+13. VoyageAI 真实 embedding 兼容性测试已通过，document/query 两类向量生成均正常
 
 ## 4. 当前仍未完成内容
 
@@ -175,7 +179,7 @@
 2. 原生向量检索路径的进一步调优，例如更复杂过滤组合验证、`EF` 参数调优与候选窗口默认值调优
 3. MCP tool server 与具体工具实现
 4. 检索结果到 `ContextPacket` 的完整上下文组装服务
-5. Voyage provider 的实网端到端索引测试
+5. Voyage provider 的本地 SurrealDB + 真实 embedding provider 整链路测试
 6. parser metadata 的进一步增强，例如 imports、继承/implements、调用点与更完整的可见性/修饰信息
 7. requestId / indexingRunId 等跨请求链路追踪字段尚未贯穿到全部模块
 
@@ -187,7 +191,7 @@
 2. 开发环境从 `2.4.1` 切到 `3.0.4` 时无法直接复用旧 RocksDB 数据目录，后续若要做版本升级而不是空库重建，必须单独遵循官方升级路径
 3. native 路径虽然已支持候选窗口参数配置化，并有 `EXPLAIN FULL` 真实测试兜底，但当前默认值仍属于经验值，不是基于真实数据集调优后的最优值
 4. 当前 parser 已具备 TypeScript、TSX、JavaScript、JSX、Python 和 Markdown 的第一版结构感知能力，但更多语言尚未覆盖
-5. 当前已接入 Voyage 与 OpenAI-compatible provider，其中 OpenAI-compatible / SiliconFlow 已具备 opt-in 的实网验证；Voyage 的实网端到端验证仍未补齐
+5. 当前已接入 Voyage 与 OpenAI-compatible provider，其中 OpenAI-compatible / SiliconFlow 与 VoyageAI 的真实 embedding 兼容性均已验证；Voyage 的本地 SurrealDB 端到端索引验证仍未补齐
 6. `createApp()` 已经是异步启动流程，后续接入真实 MCP server 时必须正确 await
 7. 当前 embedding provider 已支持 `voyage` 与 `openai-compatible`，但 provider 级重试、限流和并发控制仍较薄
 8. 当前错误分类已覆盖第一版日志诊断需求，但尚未形成跨 provider / MCP / storage 的统一错误码文档
@@ -224,39 +228,57 @@
 
 建议先完成：
 
-1. `search-code-context-service`
-2. `get-file-context-service`
-3. MCP server 与 tool registration
+1. `get-file-context-service`
+2. MCP server 与 tool registration
+3. `search-code-context-service` 的 MCP tool 暴露
 4. index/search/file-context 三个 MCP tool 的输入输出适配
+5. 最小可用的 ContextPacket 组装逻辑
 
 原因：
 
 1. 当前索引写入主流程、provider、存储与 parser 都已经落地
 2. 项目当前最大的缺口已经变成“能力已存在，但还没有真正通过 MCP 对外暴露”
 
-### 6.2 第二优先级：增强检索与排序质量
+建议交付物：
+
+1. 一个可启动的 MCP server 进程
+2. 至少 3 个已注册并可调用的工具：index、search、get-file-context
+3. 一条从 query 到上下文返回的最小演示链路
+
+### 6.2 第二优先级：补齐 Voyage 端到端索引链路并增强检索质量
 
 建议内容：
 
-1. 丰富 `SearchRepository` 可过滤 metadata
-2. 引入更稳定的结果去重与轻量重排
-3. 在 `3.0.4` 基线下继续评估更复杂过滤组合、`EXPLAIN` 观测与候选窗口参数调优
+1. 增加 Voyage + Surreal 的真实 `prepare -> real embed -> upsert -> query embed -> search` 测试
+2. 丰富 `SearchRepository` 可过滤 metadata
+3. 引入更稳定的结果去重与轻量重排
+4. 在 `3.0.4` 基线下继续评估更复杂过滤组合、`EXPLAIN` 观测与候选窗口参数调优
 
-### 6.3 第三优先级：扩展更多语言 parser
+原因：
+
+1. Voyage 的真实 embedding 兼容性已验证，离端到端整链路只差 Surreal 索引集成一跳
+2. 先补齐 provider 端到端验证，再做检索调优，能避免调优建立在未完全闭环的 provider 路径上
+
+### 6.3 第三优先级：扩展更多语言 parser 与 metadata 深度
 
 建议内容：
 
-1. JavaScript / JSX
-2. 更完整的 TS/TSX metadata 提取
-3. Python 装饰器、类属性和更多语义结构提取
+1. 更完整的 TS/TSX metadata 提取
+2. Python 装饰器、类属性和更多语义结构提取
+3. 新增 Go / Java / Rust 中至少一门语言的 tree-sitter parser
 
-### 6.4 第四优先级：真实外部 provider 端到端验证
+建议交付物：
+
+1. 至少一门新增语言的 parser + 单元测试
+2. TS/Python 现有 parser 的 metadata 扩展用例
+
+### 6.4 第四优先级：provider 稳定性与工程化收口
 
 建议补齐：
 
-1. 真实 OpenAI-compatible provider 的集成测试
-2. Voyage provider 的本地 SurrealDB + 实际 embedding provider 整链路验证
-3. provider 重试、超时和限流策略验证
+1. provider 重试、超时和限流策略验证
+2. provider 级错误分类与日志字段统一
+3. `.env.development.*` 使用说明与本地测试手册
 
 ## 7. 当前进度结论
 
@@ -274,5 +296,6 @@
 当前最合理的开发重点是：
 
 1. 先把 MCP tool 层和上下文服务补齐
-2. 再增强检索排序和数据库侧向量能力
-3. 最后扩展更多语言 parser 与更多 provider 端到端验证
+2. 再补齐 Voyage + Surreal 的真实端到端索引验证，并增强检索排序能力
+3. 然后扩展更多语言 parser 与 metadata 深度
+4. 最后收口 provider 稳定性与工程化细节
