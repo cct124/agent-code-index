@@ -6,15 +6,20 @@ describe("SurrealChunkSchema", () => {
   it("executes idempotent chunk table and index definitions", async () => {
     const connect = vi.fn(async () => undefined);
     const query = vi.fn(async () => []);
-    const schema = new SurrealChunkSchema({
-      config: {} as never,
-      connect,
-      disconnect: vi.fn(async () => undefined),
-      driver: {
-        query,
-      } as never,
-      healthCheck: vi.fn(async () => ({}) as never),
-    });
+    const schema = new SurrealChunkSchema(
+      {
+        config: {} as never,
+        connect,
+        disconnect: vi.fn(async () => undefined),
+        driver: {
+          query,
+        } as never,
+        healthCheck: vi.fn(async () => ({}) as never),
+      },
+      {
+        embeddingVectorDimension: 4096,
+      },
+    );
 
     await schema.ensure();
 
@@ -31,6 +36,11 @@ describe("SurrealChunkSchema", () => {
     expect(query).toHaveBeenCalledWith(
       expect.stringContaining(
         "DEFINE INDEX IF NOT EXISTS chunk_repository_file_idx ON TABLE chunk FIELDS repositoryId, filePath;",
+      ),
+    );
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "DEFINE INDEX IF NOT EXISTS chunk_embedding_hnsw_idx ON TABLE chunk FIELDS embedding HNSW DIMENSION 4096 TYPE F32 DIST COSINE;",
       ),
     );
   });

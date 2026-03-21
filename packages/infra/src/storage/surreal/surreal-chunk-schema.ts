@@ -3,6 +3,11 @@
  */
 import type { SurrealClient } from "./surreal-client.js";
 
+export interface SurrealChunkSchemaOptions {
+  /** embedding 向量维度，必须与当前项目使用的模型维度一致。 */
+  embeddingVectorDimension: number;
+}
+
 /**
  * chunk 表及其字段、索引定义。
  *
@@ -11,7 +16,17 @@ import type { SurrealClient } from "./surreal-client.js";
  * 2. embedding 字段可被正式持久化
  * 3. repositoryId、filePath、hash 等常用过滤路径具备基础索引
  */
-const CHUNK_SCHEMA = `
+function createChunkSchema(embeddingVectorDimension: number): string {
+  if (
+    !Number.isInteger(embeddingVectorDimension) ||
+    embeddingVectorDimension <= 0
+  ) {
+    throw new Error(
+      "embeddingVectorDimension must be a positive integer for SurrealChunkSchema",
+    );
+  }
+
+  return `
 DEFINE TABLE IF NOT EXISTS chunk SCHEMAFULL;
 DEFINE FIELD IF NOT EXISTS chunkId ON TABLE chunk TYPE string;
 DEFINE FIELD IF NOT EXISTS repositoryId ON TABLE chunk TYPE string;
@@ -27,7 +42,9 @@ DEFINE FIELD IF NOT EXISTS metadata ON TABLE chunk FLEXIBLE TYPE object;
 DEFINE INDEX IF NOT EXISTS chunk_repository_idx ON TABLE chunk FIELDS repositoryId;
 DEFINE INDEX IF NOT EXISTS chunk_repository_file_idx ON TABLE chunk FIELDS repositoryId, filePath;
 DEFINE INDEX IF NOT EXISTS chunk_repository_hash_idx ON TABLE chunk FIELDS repositoryId, hash;
+DEFINE INDEX IF NOT EXISTS chunk_embedding_hnsw_idx ON TABLE chunk FIELDS embedding HNSW DIMENSION ${embeddingVectorDimension} TYPE F32 DIST COSINE;
 `;
+}
 
 /**
  * SurrealDB 中 chunk 表的 schema 初始化器。
@@ -37,12 +54,18 @@ DEFINE INDEX IF NOT EXISTS chunk_repository_hash_idx ON TABLE chunk FIELDS repos
 export class SurrealChunkSchema {
   /** 当前使用的 Surreal 客户端。 */
   private readonly client: SurrealClient;
+  /** 当前 chunk 表使用的 embedding 维度。 */
+  private readonly embeddingVectorDimension: number;
 
   /**
    * 初始化 chunk schema 初始化器。
    */
-  public constructor(client: SurrealClient) {
+  public constructor(
+    client: SurrealClient,
+    options: SurrealChunkSchemaOptions,
+  ) {
     this.client = client;
+    this.embeddingVectorDimension = options.embeddingVectorDimension;
   }
 
   /**
@@ -50,6 +73,8 @@ export class SurrealChunkSchema {
    */
   public async ensure(): Promise<void> {
     await this.client.connect();
-    await this.client.driver.query(CHUNK_SCHEMA);
+    await this.client.driver.query(
+      createChunkSchema(this.embeddingVectorDimension),
+    );
   }
 }

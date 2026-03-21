@@ -12,9 +12,15 @@ import type {
 
 import type { SurrealClient } from "./surreal-client.js";
 import {
+  classifySurrealError,
   createSurrealErrorLogFields,
   normalizeUnknownLogFields,
 } from "./surreal-log-utils.js";
+
+const DEFAULT_HNSW_EF_SEARCH = 100;
+const DEFAULT_NATIVE_CANDIDATE_MULTIPLIER = 20;
+const NATIVE_SEARCH_REASON = "surreal vector search";
+const FALLBACK_SEARCH_REASON = "application cosine fallback";
 
 /**
  * chunk 表中用于检索的存储记录结构。
@@ -46,6 +52,8 @@ interface StoredSearchChunk extends Record<string, unknown> {
   metadata: ChunkMetadata;
   /** 语义检索使用的 embedding 向量。 */
   embedding?: number[];
+  /** KNN 查询返回的距离值。 */
+  distance?: number;
 }
 
 /**
@@ -71,9 +79,8 @@ const FILTER_FIELD_MAP = {
 /**
  * SurrealDB 的 SearchRepository 默认实现。
  *
- * 当前第一版实现采用“两阶段检索”策略：
- * 1. 先通过 repositoryId 和精确过滤条件查询候选 chunk
- * 2. 再在应用层计算 embedding 余弦相似度并排序
+ * 当前实现默认优先走 Surreal 原生 HNSW KNN 查询；若原生向量查询不可用，
+ * 则回退到应用层余弦相似度排序路径。
  */
 export class SurrealSearchRepository implements SearchRepository {
   /** 当前使用的 Surreal 客户端。 */
@@ -127,46 +134,13 @@ export class SurrealSearchRepository implements SearchRepository {
       await this.client.connect();
 
       const filterState = buildFilterState(input.filters);
-      const [records] = await this.client.driver.query<[StoredSearchChunk[]]>(
-        [
-          "SELECT * FROM chunk",
-          "WHERE repositoryId = $repositoryId",
-          ...filterState.clauses,
-          ";",
-        ].join(" "),
-        {
-          repositoryId: input.repositoryId,
-          ...filterState.bindings,
-        },
+      const results = await this.executeWithNativeFallback(
+        input,
+        filterState,
+        logger,
       );
 
-      const results = (records ?? [])
-        .flatMap((record) => {
-          const score = cosineSimilarity(record.embedding, input.embedding);
-
-          if (score === null) {
-            return [];
-          }
-
-          return [
-            {
-              chunk: toChunk(record),
-              score,
-              reason: "cosine similarity",
-            },
-          ];
-        })
-        .sort(
-          (left, right) =>
-            right.score - left.score ||
-            left.chunk.filePath.localeCompare(right.chunk.filePath) ||
-            left.chunk.startLine - right.chunk.startLine ||
-            left.chunk.endLine - right.chunk.endLine,
-        )
-        .slice(0, input.topK);
-
       logger.info("Semantic search completed", {
-        candidateCount: records?.length ?? 0,
         resultCount: results.length,
       });
 
@@ -182,6 +156,207 @@ export class SurrealSearchRepository implements SearchRepository {
       );
       throw error;
     }
+  }
+
+  private async executeWithNativeFallback(
+    input: SemanticSearchInput,
+    filterState: ReturnType<typeof buildFilterState>,
+    logger: Logger,
+  ): Promise<SearchResult[]> {
+    try {
+      return await this.nativeVectorSearch(input, filterState, logger);
+    } catch (error) {
+      if (!shouldFallbackToApplicationCosine(error)) {
+        throw error;
+      }
+
+      logger.warn(
+        "Native vector search failed, falling back to application cosine search",
+        {
+          searchStrategy: "application-cosine-fallback",
+          repositoryId: input.repositoryId,
+          topK: input.topK,
+          filters: normalizeUnknownLogFields(input.filters),
+          ...createSurrealErrorLogFields(error),
+        },
+      );
+
+      return this.fallbackApplicationCosineSearch(input, filterState, logger);
+    }
+  }
+
+  private async nativeVectorSearch(
+    input: SemanticSearchInput,
+    _filterState: ReturnType<typeof buildFilterState>,
+    logger: Logger,
+  ): Promise<SearchResult[]> {
+    const topK = normalizeTopK(input.topK);
+    const candidateK = Math.max(
+      topK,
+      topK * DEFAULT_NATIVE_CANDIDATE_MULTIPLIER,
+    );
+    const efSearch = Math.max(DEFAULT_HNSW_EF_SEARCH, candidateK);
+    const queryText = [
+      "SELECT *, vector::distance::knn() AS distance FROM chunk",
+      "WHERE repositoryId = $repositoryId",
+      `AND embedding <|${candidateK},${efSearch}|> $embedding`,
+      "ORDER BY distance;",
+    ].join(" ");
+
+    const [records] = await this.client.driver.query<[StoredSearchChunk[]]>(
+      queryText,
+      {
+        repositoryId: input.repositoryId,
+        embedding: input.embedding,
+      },
+    );
+
+    logger.debug("Semantic search executed with native vector path", {
+      searchStrategy: "surreal-native-vector",
+      nativeVectorIndexUsed: true,
+      vectorDistanceMetric: "COSINE",
+      candidateCount: records?.length ?? 0,
+      candidateK,
+      efSearch,
+    });
+
+    return sortResults(
+      (records ?? []).flatMap((record) => {
+        if (
+          typeof record.distance !== "number" ||
+          Number.isNaN(record.distance)
+        ) {
+          return [];
+        }
+
+        if (!matchesSearchFilters(record, input.repositoryId, input.filters)) {
+          return [];
+        }
+
+        return [
+          {
+            chunk: toChunk(record),
+            score: distanceToScore(record.distance),
+            reason: NATIVE_SEARCH_REASON,
+          },
+        ];
+      }),
+    ).slice(0, topK);
+  }
+
+  private async fallbackApplicationCosineSearch(
+    input: SemanticSearchInput,
+    filterState: ReturnType<typeof buildFilterState>,
+    logger: Logger,
+  ): Promise<SearchResult[]> {
+    const [records] = await this.client.driver.query<[StoredSearchChunk[]]>(
+      [
+        "SELECT * FROM chunk",
+        "WHERE repositoryId = $repositoryId",
+        ...filterState.clauses,
+        ";",
+      ].join(" "),
+      {
+        repositoryId: input.repositoryId,
+        ...filterState.bindings,
+      },
+    );
+
+    logger.debug("Semantic search executed with application cosine fallback", {
+      searchStrategy: "application-cosine-fallback",
+      nativeVectorIndexUsed: false,
+      vectorDistanceMetric: "COSINE",
+      candidateCount: records?.length ?? 0,
+    });
+
+    return sortResults(
+      (records ?? []).flatMap((record) => {
+        const score = cosineSimilarity(record.embedding, input.embedding);
+
+        if (score === null) {
+          return [];
+        }
+
+        return [
+          {
+            chunk: toChunk(record),
+            score,
+            reason: FALLBACK_SEARCH_REASON,
+          },
+        ];
+      }),
+    ).slice(0, normalizeTopK(input.topK));
+  }
+}
+
+function matchesSearchFilters(
+  record: StoredSearchChunk,
+  repositoryId: string,
+  filters?: Record<string, unknown>,
+): boolean {
+  if (record.repositoryId !== repositoryId) {
+    return false;
+  }
+
+  if (!filters) {
+    return true;
+  }
+
+  for (const [key, value] of Object.entries(filters)) {
+    if (key === "tags") {
+      const requiredTags = Array.isArray(value) ? value : [value];
+      const recordTags = Array.isArray(record.metadata?.tags)
+        ? record.metadata.tags
+        : [];
+
+      if (
+        requiredTags.some(
+          (tag) => typeof tag !== "string" || !recordTags.includes(tag),
+        )
+      ) {
+        return false;
+      }
+
+      continue;
+    }
+
+    if (readFilterValue(record, key) !== value) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function readFilterValue(
+  record: StoredSearchChunk,
+  key: keyof typeof FILTER_FIELD_MAP | string,
+): unknown {
+  switch (key) {
+    case "filePath":
+      return record.filePath;
+    case "language":
+      return record.language;
+    case "hash":
+      return record.hash;
+    case "startLine":
+      return record.startLine;
+    case "endLine":
+      return record.endLine;
+    case "symbolName":
+      return record.metadata?.symbolName;
+    case "symbolKind":
+      return record.metadata?.symbolKind;
+    case "parentSymbol":
+      return record.metadata?.parentSymbol;
+    case "heading":
+      return record.metadata?.heading;
+    case "docType":
+      return record.metadata?.docType;
+    case "sectionLevel":
+      return record.metadata?.sectionLevel;
+    default:
+      return undefined;
   }
 }
 
@@ -293,6 +468,37 @@ function cosineSimilarity(
   }
 
   return dotProduct / Math.sqrt(candidateMagnitude * queryMagnitude);
+}
+
+function distanceToScore(distance: number): number {
+  const normalizedDistance = Math.max(distance, 0);
+  return 1 / (1 + normalizedDistance);
+}
+
+function sortResults(results: SearchResult[]): SearchResult[] {
+  return results.sort(
+    (left, right) =>
+      right.score - left.score ||
+      left.chunk.filePath.localeCompare(right.chunk.filePath) ||
+      left.chunk.startLine - right.chunk.startLine ||
+      left.chunk.endLine - right.chunk.endLine,
+  );
+}
+
+function normalizeTopK(topK: number): number {
+  return Math.max(1, Math.trunc(topK));
+}
+
+function shouldFallbackToApplicationCosine(error: unknown): boolean {
+  const classified = classifySurrealError(error);
+
+  if (classified.errCode !== "surreal_query_error") {
+    return false;
+  }
+
+  return /hnsw|knn|vector|distance|parse|syntax|index|unexpected/.test(
+    classified.error.message.toLowerCase(),
+  );
 }
 
 /**

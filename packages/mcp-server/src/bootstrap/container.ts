@@ -120,7 +120,9 @@ export function createContainer(config: AppConfig): AppContainer {
     logger,
     embeddingProvider,
     surrealClient,
-    chunkSchema: new SurrealChunkSchema(surrealClient),
+    chunkSchema: new SurrealChunkSchema(surrealClient, {
+      embeddingVectorDimension: config.embedding.vectorDimension,
+    }),
     projectMetadataSchema: new SurrealProjectMetadataSchema(surrealClient),
     chunkPreparationService,
     chunkRepository,

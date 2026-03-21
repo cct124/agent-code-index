@@ -44,7 +44,9 @@ if (!isRealSurrealIntegrationEnabled()) {
     const client = new DefaultSurrealClient(
       createRealSurrealConnectionConfig(namespace),
     );
-    const chunkSchema = new SurrealChunkSchema(client);
+    const chunkSchema = new SurrealChunkSchema(client, {
+      embeddingVectorDimension: 3,
+    });
     const chunkRepository = new SurrealChunkRepository(client);
     const repository = new SurrealSearchRepository(client);
 
@@ -60,7 +62,7 @@ if (!isRealSurrealIntegrationEnabled()) {
       }
     });
 
-    it("returns top-k chunks ordered by cosine similarity from real stored embeddings", async () => {
+    it("returns top-k chunks from the native HNSW vector path", async () => {
       await chunkSchema.ensure();
       await chunkRepository.upsertMany([
         createChunk(repositoryId, {
@@ -120,6 +122,8 @@ if (!isRealSurrealIntegrationEnabled()) {
       expect(results[0]?.chunk.id).toBe("chunk-1");
       expect(results[1]?.chunk.id).toBe("chunk-2");
       expect(results[0]?.score).toBeGreaterThan(results[1]?.score ?? 0);
+      expect(results[0]?.reason).toBe("surreal vector search");
+      expect(results[1]?.reason).toBe("surreal vector search");
     });
   });
 }

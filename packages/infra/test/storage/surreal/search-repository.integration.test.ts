@@ -73,25 +73,25 @@ describe("SurrealSearchRepository", () => {
     };
   }
 
-  it("sorts results by cosine similarity and applies exact-match filters", async () => {
+  it("uses native HNSW query path and maps distance to sortable scores", async () => {
     const connect = vi.fn(async () => undefined);
     const query = vi.fn(async () => [
       [
+        createStoredChunk({
+          chunkId: "chunk-3",
+          id: "chunk:repo-a:chunk-3",
+          filePath: "src/other.ts",
+          distance: 1,
+        }),
         createStoredChunk({
           chunkId: "chunk-2",
           id: "chunk:repo-a:chunk-2",
           startLine: 8,
           endLine: 10,
-          embedding: [0.6, 0.8, 0],
           metadata: { symbolName: "two", symbolKind: "function" },
+          distance: 0.4,
         }),
-        createStoredChunk(),
-        createStoredChunk({
-          chunkId: "chunk-3",
-          id: "chunk:repo-a:chunk-3",
-          filePath: "src/other.ts",
-          embedding: [0, 1, 0],
-        }),
+        createStoredChunk({ distance: 0 }),
       ],
     ]);
 
@@ -117,60 +117,35 @@ describe("SurrealSearchRepository", () => {
 
     expect(connect).toHaveBeenCalledTimes(1);
     expect(query).toHaveBeenCalledWith(
-      expect.stringContaining("AND language = $filter_language"),
+      expect.stringContaining("AND embedding <|40,100|> $embedding"),
       expect.objectContaining({
         repositoryId: "repo-a",
-        filter_language: "typescript",
-        filter_filePath: "src/index.ts",
+        embedding: [1, 0, 0],
       }),
     );
-    expect(results).toEqual([
-      {
-        chunk: {
-          id: "chunk-1",
-          repositoryId: "repo-a",
-          filePath: "src/index.ts",
-          language: "typescript",
-          content: "export const one = 1;",
-          searchText: "export const one = 1",
-          startLine: 1,
-          endLine: 1,
-          hash: "hash-1",
-          embedding: [1, 0, 0],
-          metadata: {
-            symbolName: "one",
-            symbolKind: "const",
-          },
-        },
-        score: 1,
-        reason: "cosine similarity",
-      },
-      {
-        chunk: {
-          id: "chunk-2",
-          repositoryId: "repo-a",
-          filePath: "src/index.ts",
-          language: "typescript",
-          content: "export const one = 1;",
-          searchText: "export const one = 1",
-          startLine: 8,
-          endLine: 10,
-          hash: "hash-1",
-          embedding: [0.6, 0.8, 0],
-          metadata: {
-            symbolName: "two",
-            symbolKind: "function",
-          },
-        },
-        score: 0.6,
-        reason: "cosine similarity",
-      },
-    ]);
+    expect(results).toHaveLength(2);
+    expect(results[0]?.chunk.id).toBe("chunk-1");
+    expect(results[0]?.score).toBe(1);
+    expect(results[0]?.reason).toBe("surreal vector search");
+    expect(results[1]?.chunk.id).toBe("chunk-2");
+    expect(results[1]?.score).toBeCloseTo(1 / 1.4, 8);
+    expect(results[1]?.reason).toBe("surreal vector search");
   });
 
   it("supports filtering by tags using string and string array values", async () => {
     const connect = vi.fn(async () => undefined);
-    const query = vi.fn(async () => [[createStoredChunk()]]);
+    const query = vi.fn(async () => [
+      [
+        createStoredChunk({
+          metadata: {
+            symbolName: "one",
+            symbolKind: "const",
+            tags: ["static", "async", "property"],
+          },
+          distance: 0,
+        }),
+      ],
+    ]);
     const repository = new SurrealSearchRepository({
       config: {} as never,
       connect,
@@ -181,7 +156,7 @@ describe("SurrealSearchRepository", () => {
       healthCheck: vi.fn(async () => ({}) as never),
     });
 
-    await repository.semanticSearch({
+    const arrayTagResults = await repository.semanticSearch({
       repositoryId: "repo-a",
       embedding: [1, 0, 0],
       topK: 2,
@@ -190,16 +165,16 @@ describe("SurrealSearchRepository", () => {
       },
     });
 
+    expect(arrayTagResults).toHaveLength(1);
     expect(query).toHaveBeenCalledWith(
-      expect.stringContaining("metadata.tags CONTAINS $filter_tags_0"),
+      expect.stringContaining("embedding <|40,100|> $embedding"),
       expect.objectContaining({
         repositoryId: "repo-a",
-        filter_tags_0: "static",
-        filter_tags_1: "async",
+        embedding: [1, 0, 0],
       }),
     );
 
-    await repository.semanticSearch({
+    const singleTagResults = await repository.semanticSearch({
       repositoryId: "repo-a",
       embedding: [1, 0, 0],
       topK: 2,
@@ -208,11 +183,84 @@ describe("SurrealSearchRepository", () => {
       },
     });
 
-    expect(query).toHaveBeenLastCalledWith(
-      expect.stringContaining("metadata.tags CONTAINS $filter_tags_0"),
+    expect(singleTagResults).toHaveLength(1);
+  });
+
+  it("falls back to application cosine search when native vector query is unsupported", async () => {
+    const logger = createLogger();
+    const connect = vi.fn(async () => undefined);
+    const query = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Parse error: unsupported KNN operator"))
+      .mockResolvedValueOnce([
+        [
+          createStoredChunk(),
+          createStoredChunk({
+            chunkId: "chunk-2",
+            id: "chunk:repo-a:chunk-2",
+            startLine: 8,
+            endLine: 10,
+            embedding: [0.6, 0.8, 0],
+            metadata: { symbolName: "two", symbolKind: "function" },
+          }),
+        ],
+      ]);
+
+    const repository = new SurrealSearchRepository(
+      {
+        config: {} as never,
+        connect,
+        disconnect: vi.fn(async () => undefined),
+        driver: {
+          query,
+        } as never,
+        healthCheck: vi.fn(async () => ({}) as never),
+      },
+      logger,
+    );
+
+    const results = await repository.semanticSearch({
+      repositoryId: "repo-a",
+      embedding: [1, 0, 0],
+      topK: 2,
+      filters: {
+        filePath: "src/index.ts",
+      },
+    });
+
+    expect(connect).toHaveBeenCalledTimes(1);
+    expect(query).toHaveBeenCalledTimes(2);
+    expect(query).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining("embedding <|40,100|> $embedding"),
       expect.objectContaining({
         repositoryId: "repo-a",
-        filter_tags_0: "property",
+        embedding: [1, 0, 0],
+      }),
+    );
+    expect(query).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining(
+        "SELECT * FROM chunk WHERE repositoryId = $repositoryId",
+      ),
+      expect.objectContaining({
+        repositoryId: "repo-a",
+        filter_filePath: "src/index.ts",
+      }),
+    );
+    expect(results).toHaveLength(2);
+    expect(results[0]?.chunk.id).toBe("chunk-1");
+    expect(results[0]?.score).toBe(1);
+    expect(results[0]?.reason).toBe("application cosine fallback");
+    expect(results[1]?.chunk.id).toBe("chunk-2");
+    expect(results[1]?.score).toBeCloseTo(0.6, 8);
+    expect(results[1]?.reason).toBe("application cosine fallback");
+    expect(logger.warn).toHaveBeenCalledWith(
+      "Native vector search failed, falling back to application cosine search",
+      expect.objectContaining({
+        searchStrategy: "application-cosine-fallback",
+        repositoryId: "repo-a",
+        errCode: "surreal_query_error",
       }),
     );
   });
