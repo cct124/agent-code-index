@@ -55,10 +55,23 @@ describe("loadConfig", () => {
       ".git",
       "dist",
     ]);
+    expect(config.indexing.nativeCandidateMultiplier).toBe(20);
+    expect(config.indexing.nativeEfSearchMin).toBe(100);
     expect(config.logging).toEqual({
       level: "info",
       pretty: true,
     });
+  });
+
+  it("loads native search tuning configuration", () => {
+    const config = loadConfig({
+      ...createBaseEnv(),
+      SEARCH_NATIVE_CANDIDATE_MULTIPLIER: "12",
+      SEARCH_NATIVE_EF_SEARCH_MIN: "180",
+    });
+
+    expect(config.indexing.nativeCandidateMultiplier).toBe(12);
+    expect(config.indexing.nativeEfSearchMin).toBe(180);
   });
 
   it("loads logging configuration", () => {
@@ -109,6 +122,22 @@ describe("loadConfig", () => {
         EMBEDDING_VECTOR_DIMENSION: "0",
       }),
     ).toThrow(/EMBEDDING_VECTOR_DIMENSION/);
+  });
+
+  it("fails when native search tuning values are not positive integers", () => {
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        SEARCH_NATIVE_CANDIDATE_MULTIPLIER: "0",
+      }),
+    ).toThrow(/SEARCH_NATIVE_CANDIDATE_MULTIPLIER/);
+
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        SEARCH_NATIVE_EF_SEARCH_MIN: "-1",
+      }),
+    ).toThrow(/SEARCH_NATIVE_EF_SEARCH_MIN/);
   });
 
   it("accepts surreal token auth without username and password", () => {

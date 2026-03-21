@@ -265,6 +265,51 @@ describe("SurrealSearchRepository", () => {
     );
   });
 
+  it("uses configured native candidate window parameters", async () => {
+    const connect = vi.fn(async () => undefined);
+    const query = vi.fn(async () => [
+      [
+        createStoredChunk({
+          distance: 0,
+        }),
+      ],
+    ]);
+
+    const repository = new SurrealSearchRepository(
+      {
+        config: {} as never,
+        connect,
+        disconnect: vi.fn(async () => undefined),
+        driver: {
+          query,
+        } as never,
+        healthCheck: vi.fn(async () => ({}) as never),
+      },
+      createLogger(),
+      {
+        nativeCandidateMultiplier: 7,
+        nativeEfSearchMin: 55,
+      },
+    );
+
+    await repository.semanticSearch({
+      repositoryId: "repo-a",
+      embedding: [1, 0, 0],
+      topK: 3,
+      filters: {
+        filePath: "src/index.ts",
+      },
+    });
+
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining("AND embedding <|21,55|> $embedding"),
+      expect.objectContaining({
+        repositoryId: "repo-a",
+        embedding: [1, 0, 0],
+      }),
+    );
+  });
+
   it("rejects unsupported filters before querying the database", async () => {
     const query = vi.fn(async () => [[]]);
     const repository = new SurrealSearchRepository({
@@ -352,5 +397,45 @@ describe("SurrealSearchRepository", () => {
         httpStatus: 503,
       }),
     );
+  });
+
+  it("rejects invalid native search option values", () => {
+    expect(
+      () =>
+        new SurrealSearchRepository(
+          {
+            config: {} as never,
+            connect: vi.fn(async () => undefined),
+            disconnect: vi.fn(async () => undefined),
+            driver: {
+              query: vi.fn(async () => [[]]),
+            } as never,
+            healthCheck: vi.fn(async () => ({}) as never),
+          },
+          createLogger(),
+          {
+            nativeCandidateMultiplier: 0,
+          },
+        ),
+    ).toThrow(/nativeCandidateMultiplier/);
+
+    expect(
+      () =>
+        new SurrealSearchRepository(
+          {
+            config: {} as never,
+            connect: vi.fn(async () => undefined),
+            disconnect: vi.fn(async () => undefined),
+            driver: {
+              query: vi.fn(async () => [[]]),
+            } as never,
+            healthCheck: vi.fn(async () => ({}) as never),
+          },
+          createLogger(),
+          {
+            nativeEfSearchMin: 0,
+          },
+        ),
+    ).toThrow(/nativeEfSearchMin/);
   });
 });

@@ -57,6 +57,10 @@ export interface IndexingConfig {
   defaultTopK: number;
   /** 扫描仓库时默认忽略的路径模式。 */
   ignorePatterns: string[];
+  /** native HNSW 路径的候选窗口倍数。 */
+  nativeCandidateMultiplier: number;
+  /** native HNSW 路径的最小 efSearch。 */
+  nativeEfSearchMin: number;
 }
 
 /**
@@ -141,6 +145,12 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
         "build",
         ".next",
       ]),
+      nativeCandidateMultiplier: integerEnv(
+        env,
+        "SEARCH_NATIVE_CANDIDATE_MULTIPLIER",
+        20,
+      ),
+      nativeEfSearchMin: integerEnv(env, "SEARCH_NATIVE_EF_SEARCH_MIN", 100),
     },
     logging: {
       level: logLevelEnv(env, "LOG_LEVEL", "info"),

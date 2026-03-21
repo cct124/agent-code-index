@@ -26,6 +26,7 @@ import {
   SurrealSearchRepository,
   type SurrealClient,
   type SurrealConnectionConfig,
+  type SurrealSearchRepositoryOptions,
 } from "@agent-code-index/infra";
 
 import type { AppConfig } from "./config.js";
@@ -92,6 +93,7 @@ export function createContainer(config: AppConfig): AppContainer {
   const searchRepository = new SurrealSearchRepository(
     surrealClient,
     logger.child({ module: "search-repository" }),
+    toSurrealSearchRepositoryOptions(config),
   );
   const chunkPreparationService = new DefaultRepositoryChunkPreparationService(
     new LocalFileScanner(config.indexing.ignorePatterns),
@@ -148,5 +150,14 @@ function toSurrealConnectionConfig(config: AppConfig): SurrealConnectionConfig {
     token: config.surreal.token,
     useTls: config.surreal.useTls,
     deploymentMode: config.surreal.deploymentMode,
+  };
+}
+
+function toSurrealSearchRepositoryOptions(
+  config: AppConfig,
+): SurrealSearchRepositoryOptions {
+  return {
+    nativeCandidateMultiplier: config.indexing.nativeCandidateMultiplier,
+    nativeEfSearchMin: config.indexing.nativeEfSearchMin,
   };
 }

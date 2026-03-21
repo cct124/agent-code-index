@@ -201,7 +201,80 @@ if (!isRealSurrealIntegrationEnabled()) {
       expect(results[0]?.chunk.metadata.parentSymbol).toBe("ExampleModule");
       expect(results[0]?.reason).toBe("surreal vector search");
     });
+
+    it("shows configured native candidate window values in EXPLAIN FULL output", async () => {
+      await chunkSchema.ensure();
+      await chunkRepository.upsertMany([
+        createChunk(repositoryId, {
+          id: "chunk-explain-1",
+          filePath: "src/explain.ts",
+          content: "export function explainOne() {}",
+          searchText: "export function explainOne",
+          startLine: 1,
+          endLine: 3,
+          hash: "hash-explain-1",
+          metadata: {
+            symbolName: "explainOne",
+            symbolKind: "function",
+          },
+          embedding: [1, 0, 0],
+        }),
+      ]);
+
+      const topK = 2;
+      const nativeCandidateMultiplier = 9;
+      const nativeEfSearchMin = 64;
+      const candidateK = topK * nativeCandidateMultiplier;
+      const efSearch = Math.max(nativeEfSearchMin, candidateK);
+      const plan = await client.driver.query<Array<Record<string, unknown>>>(
+        [
+          "SELECT *, vector::distance::knn() AS distance FROM chunk",
+          "WHERE repositoryId = $repositoryId",
+          `AND embedding <|${candidateK},${efSearch}|> $embedding`,
+          "ORDER BY distance",
+          "EXPLAIN FULL;",
+        ].join(" "),
+        {
+          repositoryId,
+          embedding: [1, 0, 0],
+        },
+      );
+
+      const knnScanNode = findExplainOperator(plan, "KnnScan");
+
+      expect(plan.length).toBeGreaterThan(0);
+      expect(knnScanNode).toBeDefined();
+      expect(knnScanNode?.attributes).toEqual(
+        expect.objectContaining({
+          index: "chunk_embedding_hnsw_idx",
+          k: String(candidateK),
+          ef: String(efSearch),
+        }),
+      );
+    });
   });
+}
+
+function findExplainOperator(
+  nodes: Array<Record<string, unknown>>,
+  operator: string,
+): Record<string, unknown> | undefined {
+  for (const node of nodes) {
+    if (node.operator === operator) {
+      return node;
+    }
+
+    const children = Array.isArray(node.children)
+      ? (node.children as Array<Record<string, unknown>>)
+      : [];
+    const nested = findExplainOperator(children, operator);
+
+    if (nested) {
+      return nested;
+    }
+  }
+
+  return undefined;
 }
 
 function createChunk(

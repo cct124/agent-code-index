@@ -17,10 +17,36 @@ import {
   normalizeUnknownLogFields,
 } from "./surreal-log-utils.js";
 
+/** native HNSW 查询在未显式配置时使用的最小 efSearch。 */
 const DEFAULT_HNSW_EF_SEARCH = 100;
+/**
+ * native HNSW 查询在未显式配置时使用的候选窗口倍数。
+ *
+ * 例如 `topK=5` 时，默认会先向数据库请求 `5 * 20 = 100` 个候选，
+ * 然后再在应用层执行剩余过滤与截断。
+ */
 const DEFAULT_NATIVE_CANDIDATE_MULTIPLIER = 20;
+/** 原生向量检索路径写入 SearchResult.reason 的固定文案。 */
 const NATIVE_SEARCH_REASON = "surreal vector search";
+/** 应用层余弦回退路径写入 SearchResult.reason 的固定文案。 */
 const FALLBACK_SEARCH_REASON = "application cosine fallback";
+
+export interface SurrealSearchRepositoryOptions {
+  /**
+   * native HNSW 路径用于放大 topK 的候选窗口倍数。
+   *
+   * 最终参与 `<|K,EF|>` 中 `K` 计算的值为：
+   * `max(topK, topK * nativeCandidateMultiplier)`。
+   */
+  nativeCandidateMultiplier?: number;
+  /**
+   * native HNSW 路径使用的最小 efSearch。
+   *
+   * 最终参与 `<|K,EF|>` 中 `EF` 计算的值为：
+   * `max(nativeEfSearchMin, candidateK)`。
+   */
+  nativeEfSearchMin?: number;
+}
 
 /**
  * chunk 表中用于检索的存储记录结构。
@@ -79,29 +105,50 @@ const FILTER_FIELD_MAP = {
 /**
  * SurrealDB 的 SearchRepository 默认实现。
  *
- * 当前实现默认优先走 Surreal 原生 HNSW KNN 查询；若原生向量查询不可用，
- * 则回退到应用层余弦相似度排序路径。
+ * 当前实现采用“两段式”检索策略：
+ *
+ * 1. 默认优先走 Surreal 原生 HNSW KNN 查询，只在数据库侧保留 `repositoryId`
+ *    这个稳定约束，并取回一批候选结果。
+ * 2. 再在应用层执行剩余精确过滤条件，最后完成分值映射、排序与 topK 截断。
+ * 3. 若 native 查询因语法、索引或能力限制失败，则自动回退到应用层余弦相似度排序路径。
+ *
+ * 之所以保留应用层二次过滤，是因为仓库曾在旧版真实环境中观察到
+ * “多精确过滤条件 + KNN” 的不稳定行为；当前实现选择优先保证稳定性。
  */
 export class SurrealSearchRepository implements SearchRepository {
   /** 当前使用的 Surreal 客户端。 */
   private readonly client: SurrealClient;
   /** 结构化日志接口。 */
   private readonly logger: Logger;
+  /** native HNSW 查询参数。 */
+  private readonly options: Required<SurrealSearchRepositoryOptions>;
 
   /**
    * 初始化 SurrealSearchRepository。
    */
-  public constructor(client: SurrealClient, logger: Logger = NOOP_LOGGER) {
+  public constructor(
+    client: SurrealClient,
+    logger: Logger = NOOP_LOGGER,
+    options: SurrealSearchRepositoryOptions = {},
+  ) {
     this.client = client;
     this.logger = logger.child({
       package: "infra",
       module: "surreal-search-repository",
       component: "SurrealSearchRepository",
     });
+    this.options = normalizeSearchOptions(options);
   }
 
   /**
    * 基于向量和过滤条件执行语义检索。
+   *
+   * 执行流程：
+   *
+   * 1. 校验 `topK` 与查询向量是否有效。
+   * 2. 将 filters 预先编译为可复用的查询片段与绑定参数。
+   * 3. 优先尝试 native HNSW 路径。
+   * 4. 若 native 路径命中可回退错误，则切换到应用层余弦排序路径。
    *
    * 当 `topK` 非正数或查询向量为空时，直接返回空结果，避免无意义查询。
    */
@@ -158,11 +205,24 @@ export class SurrealSearchRepository implements SearchRepository {
     }
   }
 
+  /**
+   * 在 native HNSW 路径与应用层余弦 fallback 路径之间做统一调度。
+   *
+   * 该方法本身不负责构造查询，只负责：
+   *
+   * 1. 先尝试执行 native 向量检索
+   * 2. 判断错误是否属于“可降级”的查询兼容性问题
+   * 3. 必要时记录 warn 日志并切换到 fallback 路径
+   */
   private async executeWithNativeFallback(
     input: SemanticSearchInput,
     filterState: ReturnType<typeof buildFilterState>,
     logger: Logger,
   ): Promise<SearchResult[]> {
+    /**
+     * 只有明确属于 Surreal 查询能力或语法层面的错误才回退，
+     * 其余错误继续向上抛出，避免把真实故障伪装成“可用但变慢”。
+     */
     try {
       return await this.nativeVectorSearch(input, filterState, logger);
     } catch (error) {
@@ -185,17 +245,37 @@ export class SurrealSearchRepository implements SearchRepository {
     }
   }
 
+  /**
+   * 执行默认的 Surreal 原生 HNSW 检索路径。
+   *
+   * 当前策略是：
+   *
+   * 1. 根据 `topK` 与仓储配置计算 `candidateK` 和 `efSearch`
+   * 2. 在数据库侧执行 `repositoryId + HNSW KNN` 查询
+   * 3. 对返回候选执行应用层二次过滤
+   * 4. 将 distance 映射为 score，并返回最终排序结果
+   *
+   * 这里刻意没有把全部精确过滤条件都下推到 SQL，
+   * 以降低旧环境下多过滤条件与 KNN 组合的不确定性。
+   */
   private async nativeVectorSearch(
     input: SemanticSearchInput,
     _filterState: ReturnType<typeof buildFilterState>,
     logger: Logger,
   ): Promise<SearchResult[]> {
+    /**
+     * native 路径当前只把 `repositoryId` 下推到数据库，
+     * 其余精确过滤仍在应用层执行。
+     *
+     * 这样做的目的不是因为 Surreal 官方语义不支持过滤组合，
+     * 而是为了在当前仓库里保留一条更稳健的兼容策略。
+     */
     const topK = normalizeTopK(input.topK);
     const candidateK = Math.max(
       topK,
-      topK * DEFAULT_NATIVE_CANDIDATE_MULTIPLIER,
+      topK * this.options.nativeCandidateMultiplier,
     );
-    const efSearch = Math.max(DEFAULT_HNSW_EF_SEARCH, candidateK);
+    const efSearch = Math.max(this.options.nativeEfSearchMin, candidateK);
     const queryText = [
       "SELECT *, vector::distance::knn() AS distance FROM chunk",
       "WHERE repositoryId = $repositoryId",
@@ -222,6 +302,10 @@ export class SurrealSearchRepository implements SearchRepository {
 
     return sortResults(
       (records ?? []).flatMap((record) => {
+        /**
+         * native 路径要求数据库返回有效 distance，
+         * 否则该条结果不具备可排序意义，直接丢弃。
+         */
         if (
           typeof record.distance !== "number" ||
           Number.isNaN(record.distance)
@@ -229,6 +313,10 @@ export class SurrealSearchRepository implements SearchRepository {
           return [];
         }
 
+        /**
+         * 应用层二次过滤发生在这里。
+         * 只有通过所有精确过滤条件的候选，才会被映射为最终 SearchResult。
+         */
         if (!matchesSearchFilters(record, input.repositoryId, input.filters)) {
           return [];
         }
@@ -244,11 +332,24 @@ export class SurrealSearchRepository implements SearchRepository {
     ).slice(0, topK);
   }
 
+  /**
+   * 执行应用层余弦相似度回退路径。
+   *
+   * 该路径会把全部精确过滤条件直接下推到普通 SQL 查询，
+   * 然后在应用层计算余弦相似度并完成排序。
+   *
+   * 它的定位不是默认主路径，而是在 native HNSW 查询不可用时，
+   * 提供一个语义上兼容、性能上较保守的兜底实现。
+   */
   private async fallbackApplicationCosineSearch(
     input: SemanticSearchInput,
     filterState: ReturnType<typeof buildFilterState>,
     logger: Logger,
   ): Promise<SearchResult[]> {
+    /**
+     * fallback 路径会把全部精确过滤条件直接写进 SQL，
+     * 再在应用层对返回记录计算余弦相似度。
+     */
     const [records] = await this.client.driver.query<[StoredSearchChunk[]]>(
       [
         "SELECT * FROM chunk",
@@ -289,6 +390,11 @@ export class SurrealSearchRepository implements SearchRepository {
   }
 }
 
+/**
+ * 对 native 路径返回的候选记录执行应用层精确过滤。
+ *
+ * 当前支持普通标量字段精确匹配，以及 `tags` 的“全部包含”匹配。
+ */
 function matchesSearchFilters(
   record: StoredSearchChunk,
   repositoryId: string,
@@ -328,6 +434,10 @@ function matchesSearchFilters(
   return true;
 }
 
+/**
+ * 从存储层记录中读取某个 filter 对应的实际值，
+ * 用于应用层二次过滤时做精确匹配。
+ */
 function readFilterValue(
   record: StoredSearchChunk,
   key: keyof typeof FILTER_FIELD_MAP | string,
@@ -363,7 +473,10 @@ function readFilterValue(
 /**
  * 将外部过滤条件转换为 Surreal 查询片段与绑定参数。
  *
- * 当前仅支持字符串、数字和布尔值的精确匹配过滤。
+ * 当前仅支持：
+ *
+ * 1. 字符串、数字和布尔值的精确匹配
+ * 2. `tags` 的 `CONTAINS` 多值过滤
  */
 function buildFilterState(filters?: Record<string, unknown>): {
   clauses: string[];
@@ -412,6 +525,11 @@ function buildFilterState(filters?: Record<string, unknown>): {
   };
 }
 
+/**
+ * 将 tags 过滤转换为多个 `metadata.tags CONTAINS ...` 子句。
+ *
+ * 多个 tag 之间采用 AND 语义，即要求记录包含全部给定标签。
+ */
 function appendTagFilter(
   clauses: string[],
   bindings: Record<string, string | number | boolean>,
@@ -470,11 +588,23 @@ function cosineSimilarity(
   return dotProduct / Math.sqrt(candidateMagnitude * queryMagnitude);
 }
 
+/**
+ * 将 Surreal 返回的距离值映射为“越大越相关”的分值。
+ *
+ * 这里采用 `1 / (1 + distance)` 的单调映射，
+ * 主要目标是保持排序方向正确，而不是复刻余弦相似度的绝对数值语义。
+ */
 function distanceToScore(distance: number): number {
   const normalizedDistance = Math.max(distance, 0);
   return 1 / (1 + normalizedDistance);
 }
 
+/**
+ * 统一对搜索结果做稳定排序。
+ *
+ * 主排序键是 score 倒序；当 score 一致时，再按文件路径和行号打破平局，
+ * 让结果在测试与日志中更稳定。
+ */
 function sortResults(results: SearchResult[]): SearchResult[] {
   return results.sort(
     (left, right) =>
@@ -485,10 +615,56 @@ function sortResults(results: SearchResult[]): SearchResult[] {
   );
 }
 
+/** 将用户输入的 topK 收敛为最小值为 1 的整数。 */
 function normalizeTopK(topK: number): number {
   return Math.max(1, Math.trunc(topK));
 }
 
+/**
+ * 将外部 options 归一化为仓储内部始终可用的完整配置。
+ */
+function normalizeSearchOptions(
+  options: SurrealSearchRepositoryOptions,
+): Required<SurrealSearchRepositoryOptions> {
+  return {
+    nativeCandidateMultiplier: positiveIntegerOrDefault(
+      options.nativeCandidateMultiplier,
+      DEFAULT_NATIVE_CANDIDATE_MULTIPLIER,
+      "nativeCandidateMultiplier",
+    ),
+    nativeEfSearchMin: positiveIntegerOrDefault(
+      options.nativeEfSearchMin,
+      DEFAULT_HNSW_EF_SEARCH,
+      "nativeEfSearchMin",
+    ),
+  };
+}
+
+/**
+ * 读取一个正整数配置值；未提供时返回默认值，提供但非法时直接抛错。
+ */
+function positiveIntegerOrDefault(
+  value: number | undefined,
+  fallback: number,
+  key: keyof SurrealSearchRepositoryOptions,
+): number {
+  if (value === undefined) {
+    return fallback;
+  }
+
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(`${key} must be a positive integer`);
+  }
+
+  return value;
+}
+
+/**
+ * 判断某个查询错误是否适合自动降级到应用层余弦检索。
+ *
+ * 这里故意只匹配与 HNSW/KNN/向量能力相关的查询错误，
+ * 避免把网络故障、权限问题等非兼容性错误错误地吞掉。
+ */
 function shouldFallbackToApplicationCosine(error: unknown): boolean {
   const classified = classifySurrealError(error);
 
