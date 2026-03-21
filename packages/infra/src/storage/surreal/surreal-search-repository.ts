@@ -57,6 +57,9 @@ const FILTER_FIELD_MAP = {
   symbolName: "metadata.symbolName",
   symbolKind: "metadata.symbolKind",
   parentSymbol: "metadata.parentSymbol",
+  heading: "metadata.heading",
+  docType: "metadata.docType",
+  sectionLevel: "metadata.sectionLevel",
 } as const;
 
 /**

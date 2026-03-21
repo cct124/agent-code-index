@@ -36,6 +36,18 @@ export interface ChunkMetadata {
   symbolKind?: string;
   /** 父级符号名称。 */
   parentSymbol?: string;
+  /** Markdown section 标题。 */
+  heading?: string;
+  /** Markdown 标题路径。 */
+  headingPath?: string[];
+  /** Markdown section 对应的标题层级。 */
+  sectionLevel?: number;
+  /** Markdown 文档类型。 */
+  docType?: string;
+  /** 解析出的 frontmatter 字段。 */
+  frontmatter?: Record<string, string>;
   /** 额外标签。 */
   tags?: string[];
+  /** 允许逐步扩展更多解析元数据。 */
+  [key: string]: unknown;
 }

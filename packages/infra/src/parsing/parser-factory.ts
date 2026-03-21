@@ -1,9 +1,17 @@
+import path from "node:path";
+
 import type { Parser } from "@agent-code-index/core";
 
 import {
   FallbackParser,
   type FallbackParserOptions,
 } from "./fallback-parser.js";
+import {
+  MarkdownParser,
+  type MarkdownParserOptions,
+} from "./markdown/markdown-parser.js";
+import { PythonTreeSitterParser } from "./tree-sitter/languages/python-parser.js";
+import { TypeScriptTreeSitterParser } from "./tree-sitter/languages/typescript-parser.js";
 
 /**
  * 解析器工厂。
@@ -14,18 +22,41 @@ import {
 export class ParserFactory {
   /** 当前默认使用的 fallback parser。 */
   private readonly fallbackParser: Parser;
+  /** Markdown 专用解析器。 */
+  private readonly markdownParser: Parser;
+  /** TypeScript 解析器。 */
+  private readonly typeScriptParser: Parser;
+  /** TSX 解析器。 */
+  private readonly tsxParser: Parser;
+  /** Python 解析器。 */
+  private readonly pythonParser: Parser;
 
   /**
    * 初始化解析器工厂。
    */
   public constructor(options: FallbackParserOptions = {}) {
     this.fallbackParser = new FallbackParser(options);
+    this.markdownParser = new MarkdownParser(options);
+    this.typeScriptParser = new TypeScriptTreeSitterParser(".ts", options);
+    this.tsxParser = new TypeScriptTreeSitterParser(".tsx", options);
+    this.pythonParser = new PythonTreeSitterParser(options);
   }
 
   /**
    * 根据文件路径选择解析器。
    */
   public getParser(_filePath: string): Parser {
-    return this.fallbackParser;
+    switch (path.extname(_filePath).toLowerCase()) {
+      case ".md":
+        return this.markdownParser;
+      case ".ts":
+        return this.typeScriptParser;
+      case ".tsx":
+        return this.tsxParser;
+      case ".py":
+        return this.pythonParser;
+      default:
+        return this.fallbackParser;
+    }
   }
 }

@@ -61,13 +61,21 @@ describe("RepositoryChunkPreparationService", () => {
         repositoryId: "repo-a",
         filePath: "src/index.ts",
         startLine: 1,
-        endLine: 4,
+        endLine: 3,
+        metadata: expect.objectContaining({
+          symbolName: "alpha",
+          symbolKind: "function",
+        }),
       }),
       expect.objectContaining({
         repositoryId: "repo-a",
         filePath: "src/index.ts",
         startLine: 4,
         endLine: 6,
+        metadata: expect.objectContaining({
+          symbolName: "beta",
+          symbolKind: "function",
+        }),
       }),
     ]);
   });

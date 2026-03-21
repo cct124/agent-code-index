@@ -1,7 +1,6 @@
-import { createHash } from "node:crypto";
-import path from "node:path";
-
 import type { Chunk, ParseInput, Parser } from "@agent-code-index/core";
+
+import { createLineChunks, type LineChunkingOptions } from "./chunk-utils.js";
 
 /**
  * fallback parser 配置。
@@ -43,95 +42,12 @@ export class FallbackParser implements Parser {
    * 该实现优先保证可用性和稳定的行号范围，不尝试理解语言级语义结构。
    */
   public async parse(input: ParseInput): Promise<Chunk[]> {
-    if (!input.content.trim()) {
-      return [];
-    }
-
-    const lines = input.content.split(/\r?\n/);
-    const chunks: Chunk[] = [];
-    let startIndex = 0;
-
-    while (startIndex < lines.length) {
-      const endIndex = Math.min(
-        startIndex + this.maxLinesPerChunk,
-        lines.length,
-      );
-      const chunkLines = lines.slice(startIndex, endIndex);
-      const content = chunkLines.join("\n").trimEnd();
-
-      if (content.trim()) {
-        const startLine = startIndex + 1;
-        const endLine = endIndex;
-
-        chunks.push({
-          id: `${normalizeFilePath(input.filePath)}:${startLine}-${endLine}`,
-          repositoryId: input.repositoryId,
-          filePath: normalizeFilePath(input.filePath),
-          language: languageFromFilePath(input.filePath),
-          content,
-          searchText: normalizeSearchText(content),
-          startLine,
-          endLine,
-          hash: hashChunkContent(content),
-          metadata: {},
-        });
-      }
-
-      if (endIndex >= lines.length) {
-        break;
-      }
-
-      startIndex = Math.max(endIndex - this.overlapLines, startIndex + 1);
-    }
-
-    return chunks;
-  }
-}
-
-/**
- * 将多行文本折叠为便于检索的单行 searchText。
- */
-function normalizeSearchText(content: string): string {
-  return content.replace(/\s+/g, " ").trim();
-}
-
-/**
- * 计算 chunk 内容哈希，用于后续变更检测与去重。
- */
-function hashChunkContent(content: string): string {
-  return createHash("sha1").update(content).digest("hex");
-}
-
-/**
- * 统一文件路径分隔符，避免平台差异影响 chunk id 与 filePath。
- */
-function normalizeFilePath(filePath: string): string {
-  return filePath.split(path.sep).join("/");
-}
-
-/**
- * 根据文件扩展名推断语言名称。
- */
-function languageFromFilePath(filePath: string): string {
-  switch (path.extname(filePath).toLowerCase()) {
-    case ".ts":
-    case ".tsx":
-      return "typescript";
-    case ".js":
-    case ".jsx":
-    case ".mjs":
-    case ".cjs":
-      return "javascript";
-    case ".py":
-      return "python";
-    case ".md":
-      return "markdown";
-    case ".json":
-      return "json";
-    case ".yml":
-    case ".yaml":
-      return "yaml";
-    default:
-      return "text";
+    return createLineChunks({
+      repositoryId: input.repositoryId,
+      filePath: input.filePath,
+      content: input.content,
+      maxLinesPerChunk: this.maxLinesPerChunk,
+      overlapLines: this.overlapLines,
+    });
   }
 }
