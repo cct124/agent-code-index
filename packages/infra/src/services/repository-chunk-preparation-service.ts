@@ -2,9 +2,9 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import type {
-  Chunk,
   FileScanner,
   Logger,
+  PreparedChunk,
   PrepareRepositoryChunksInput,
   PrepareRepositoryChunksResult,
   RepositoryChunkPreparationService as RepositoryChunkPreparationServiceContract,
@@ -67,7 +67,7 @@ export class RepositoryChunkPreparationService implements RepositoryChunkPrepara
       rootPath: input.rootPath,
     });
     const files = await this.fileScanner.scan(input.rootPath);
-    const chunks: Chunk[] = [];
+    const chunks: PreparedChunk[] = [];
     const failedFiles: Array<{ filePath: string; reason: string }> = [];
     let parsedFileCount = 0;
     let skippedFileCount = 0;

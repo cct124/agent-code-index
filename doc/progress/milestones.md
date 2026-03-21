@@ -97,7 +97,7 @@
 1. chunk 采用稳定 record id 写入
 2. chunk 按 `startLine / endLine` 稳定排序返回
 3. search contract 与持久化映射已经稳定
-4. 该阶段的检索能力为后续 native 向量检索迁移提供了可回退基线
+4. 该阶段的检索能力为后续 native 向量检索迁移提供了稳定的存储与查询映射基础
 
 该里程碑的意义是：
 
@@ -212,8 +212,8 @@
 已完成：
 
 1. `SurrealChunkSchema` 已引入 HNSW 向量索引定义，并收敛 embedding 维度注入
-2. `SurrealSearchRepository` 已切换为 native HNSW 优先检索，保留应用层余弦 fallback
-3. 当前 native 路径已采用“全部精确过滤条件数据库下推 + HNSW KNN”的主策略
+2. `SurrealSearchRepository` 已切换为单一的 native HNSW 检索路径
+3. 当前 native 路径已采用“全部精确过滤条件数据库下推 + HNSW KNN”的正式策略
 4. 开发用 SurrealDB 已完成 `3.0.4` 空库重部署验证
 5. 已确认旧 `2.4.1` 数据目录不能直接被 `3.0.4` 复用，开发环境需走空库重建或官方升级路径
 6. `metadata` 字段 schema 已修正为兼容 `3.0.4` 的 `TYPE object FLEXIBLE` 语法顺序
@@ -226,7 +226,7 @@
 
 1. 仓库已经从“应用侧余弦排序”为主，演进到“数据库原生向量检索”为主的正式基线
 2. `3.0.4` 已成为当前开发环境下经过真实测试验证的 Surreal 向量检索版本基线
-3. 后续对更复杂过滤组合、候选窗口调优和 fallback 收敛的工作，已经建立在真实可观测的数据库执行计划之上
+3. 后续对更复杂过滤组合和候选窗口调优的工作，已经建立在真实可观测的数据库执行计划之上
 
 ## 14. 当前里程碑结论
 

@@ -45,8 +45,8 @@ interface StoredChunk extends Record<string, unknown> {
   endLine: number;
   /** 内容哈希。 */
   hash: string;
-  /** 可选的 embedding 向量。 */
-  embedding?: number[];
+  /** 语义检索使用的 embedding 向量。 */
+  embedding: number[];
   /** 附加元数据。 */
   metadata: ChunkMetadata;
 }
@@ -214,7 +214,7 @@ export class SurrealChunkRepository implements ChunkRepository {
       startLine: chunk.startLine,
       endLine: chunk.endLine,
       hash: chunk.hash,
-      embedding: chunk.embedding ? [...chunk.embedding] : undefined,
+      embedding: [...chunk.embedding],
       metadata: { ...chunk.metadata },
     };
   }
@@ -223,6 +223,12 @@ export class SurrealChunkRepository implements ChunkRepository {
    * 将存储层记录映射为领域层 Chunk 对象。
    */
   private toChunk(record: StoredChunk): Chunk {
+    if (!Array.isArray(record.embedding)) {
+      throw new Error(
+        `Stored chunk ${record.chunkId} is missing embedding data`,
+      );
+    }
+
     return {
       id: record.chunkId,
       repositoryId: record.repositoryId,
@@ -233,9 +239,7 @@ export class SurrealChunkRepository implements ChunkRepository {
       startLine: record.startLine,
       endLine: record.endLine,
       hash: record.hash,
-      embedding: Array.isArray(record.embedding)
-        ? (record.embedding as number[])
-        : undefined,
+      embedding: [...record.embedding],
       metadata: {
         ...record.metadata,
       },

@@ -1,7 +1,9 @@
 /**
- * 可被索引和检索的最小代码块定义。
+ * 预索引阶段使用的最小代码块定义。
+ *
+ * 该类型只描述解析与切块产物，不包含 embedding。
  */
-export interface Chunk {
+export interface PreparedChunk {
   /** Chunk 的唯一标识。 */
   id: string;
   /** 所属仓库标识。 */
@@ -20,10 +22,16 @@ export interface Chunk {
   endLine: number;
   /** 当前 chunk 内容哈希。 */
   hash: string;
-  /** 可选的 embedding 向量。 */
-  embedding?: number[];
   /** 附加元数据。 */
   metadata: ChunkMetadata;
+}
+
+/**
+ * 已完成 embedding 生成、可直接入库与检索的 chunk。
+ */
+export interface Chunk extends PreparedChunk {
+  /** 当前 chunk 对应的 embedding 向量。 */
+  embedding: number[];
 }
 
 /**

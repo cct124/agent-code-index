@@ -37,7 +37,9 @@ if (!isRealSurrealIntegrationEnabled()) {
 
     it("runs prepare -> embed -> upsert -> search against real SurrealDB", async () => {
       const context = createTestContext("index-repository");
-      const restoreEnv = applyTestEnv(context);
+      const restoreEnv = applyTestEnv(context, {
+        EMBEDDING_VECTOR_DIMENSION: "3",
+      });
       const tempRoot = await mkdtemp(
         path.join(os.tmpdir(), "agent-code-index-"),
       );

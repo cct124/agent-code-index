@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
 
-import type { Chunk, ChunkMetadata } from "@agent-code-index/core";
+import type { ChunkMetadata, PreparedChunk } from "@agent-code-index/core";
 
 /**
  * 行窗口切块所需参数。
@@ -101,7 +101,7 @@ export function createChunk(input: {
   endLine: number;
   language?: string;
   metadata?: ChunkMetadata;
-}): Chunk {
+}): PreparedChunk {
   const normalizedFilePath = normalizeFilePath(input.filePath);
 
   return {
@@ -125,13 +125,15 @@ export function createChunk(input: {
 /**
  * 按固定行窗口切分文本内容。
  */
-export function createLineChunks(options: LineChunkingOptions): Chunk[] {
+export function createLineChunks(
+  options: LineChunkingOptions,
+): PreparedChunk[] {
   if (!options.content.trim()) {
     return [];
   }
 
   const lines = options.content.split(/\r?\n/);
-  const chunks: Chunk[] = [];
+  const chunks: PreparedChunk[] = [];
   let startIndex = 0;
   const startLineOffset = options.startLineOffset ?? 0;
 
@@ -169,8 +171,8 @@ export function createLineChunks(options: LineChunkingOptions): Chunk[] {
 /**
  * 对 chunk 按行号排序并去重。
  */
-export function sortAndDedupeChunks(chunks: Chunk[]): Chunk[] {
-  const deduped = new Map<string, Chunk>();
+export function sortAndDedupeChunks(chunks: PreparedChunk[]): PreparedChunk[] {
+  const deduped = new Map<string, PreparedChunk>();
 
   for (const chunk of chunks) {
     const key = [

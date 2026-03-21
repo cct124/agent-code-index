@@ -96,7 +96,7 @@ if (
         );
         expect(searchResults).toHaveLength(2);
         expect(searchResults[0]?.chunk.filePath).toBe("shipping.ts");
-        expect(searchResults[0]?.chunk.embedding?.length).toBe(
+        expect(searchResults[0]?.chunk.embedding.length).toBe(
           app.container.embeddingProvider.vectorDimension,
         );
         expect(searchResults[0]?.score).toBeGreaterThan(

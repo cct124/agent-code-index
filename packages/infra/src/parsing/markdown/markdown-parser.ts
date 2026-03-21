@@ -4,10 +4,10 @@ import remarkParse from "remark-parse";
 
 import {
   NOOP_LOGGER,
-  type Chunk,
   type Logger,
   type ParseInput,
   type Parser,
+  type PreparedChunk,
 } from "@agent-code-index/core";
 
 import {
@@ -49,7 +49,7 @@ export class MarkdownParser implements Parser {
   /**
    * 解析 Markdown 文档，优先按章节边界切块。
    */
-  public async parse(input: ParseInput): Promise<Chunk[]> {
+  public async parse(input: ParseInput): Promise<PreparedChunk[]> {
     if (!input.content.trim()) {
       this.logger.debug("Markdown file is empty, skipping parse", {
         filePath: input.filePath,

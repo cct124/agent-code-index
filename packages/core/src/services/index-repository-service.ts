@@ -1,4 +1,4 @@
-import type { Chunk } from "../domain/chunk.js";
+import type { Chunk, PreparedChunk } from "../domain/chunk.js";
 import type { ChunkRepository } from "../contracts/chunk-repository.js";
 import type { EmbeddingProvider } from "../contracts/embedding-provider.js";
 import { NOOP_LOGGER, type Logger } from "../contracts/logger.js";
@@ -49,7 +49,7 @@ export interface PrepareRepositoryChunksResult {
   /** 被跳过的文件数。 */
   skippedFileCount: number;
   /** 解析得到的 chunk。 */
-  chunks: Chunk[];
+  chunks: PreparedChunk[];
   /** 失败文件列表。 */
   failedFiles: IndexRepositoryFailure[];
 }
@@ -116,8 +116,7 @@ export interface IndexRepositoryService {
  * 已完成 embedding 生成、可写入存储的索引 chunk。
  */
 export interface IndexedChunk extends Chunk {
-  /** 当前 chunk 对应的 embedding 向量。 */
-  embedding: number[];
+  /** `Chunk` 的语义化别名，表示已完成 embedding 的索引产物。 */
 }
 
 /**
@@ -238,7 +237,7 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
    * 按批次为 chunk 生成 embedding，并收紧为可写入存储的索引产物。
    */
   private async generateIndexedChunks(
-    chunks: Chunk[],
+    chunks: PreparedChunk[],
     batchSize: number,
     logger: Logger,
   ): Promise<IndexedChunk[]> {

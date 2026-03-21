@@ -20,7 +20,7 @@ interface Chunk {
   startLine: number;
   endLine: number;
   hash: string;
-  embedding?: number[];
+  embedding: number[];
   metadata: {
     symbolName?: string;
     symbolKind?: string;

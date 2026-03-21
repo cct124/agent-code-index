@@ -1,4 +1,4 @@
-import type { Chunk, ParseInput, Parser } from "@agent-code-index/core";
+import type { ParseInput, Parser, PreparedChunk } from "@agent-code-index/core";
 
 import { createLineChunks, type LineChunkingOptions } from "./chunk-utils.js";
 
@@ -41,7 +41,7 @@ export class FallbackParser implements Parser {
    *
    * 该实现优先保证可用性和稳定的行号范围，不尝试理解语言级语义结构。
    */
-  public async parse(input: ParseInput): Promise<Chunk[]> {
+  public async parse(input: ParseInput): Promise<PreparedChunk[]> {
     return createLineChunks({
       repositoryId: input.repositoryId,
       filePath: input.filePath,

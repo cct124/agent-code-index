@@ -23,13 +23,11 @@ const DEFAULT_HNSW_EF_SEARCH = 100;
  * native HNSW 查询在未显式配置时使用的候选窗口倍数。
  *
  * 例如 `topK=5` 时，默认会先向数据库请求 `5 * 20 = 100` 个候选，
- * 然后再在应用层执行剩余过滤与截断。
+ * 然后在应用层仅做分值映射、排序稳定化与截断。
  */
 const DEFAULT_NATIVE_CANDIDATE_MULTIPLIER = 20;
 /** 原生向量检索路径写入 SearchResult.reason 的固定文案。 */
 const NATIVE_SEARCH_REASON = "surreal vector search";
-/** 应用层余弦回退路径写入 SearchResult.reason 的固定文案。 */
-const FALLBACK_SEARCH_REASON = "application cosine fallback";
 
 export interface SurrealSearchRepositoryOptions {
   /**
@@ -51,7 +49,7 @@ export interface SurrealSearchRepositoryOptions {
 /**
  * chunk 表中用于检索的存储记录结构。
  *
- * 该结构基本对应持久化后的 chunk 记录，并允许携带 embedding 供语义检索使用。
+ * 该结构基本对应持久化后的 chunk 记录，并要求 embedding 始终存在。
  */
 interface StoredSearchChunk extends Record<string, unknown> {
   /** SurrealDB 内部记录 id。 */
@@ -77,7 +75,7 @@ interface StoredSearchChunk extends Record<string, unknown> {
   /** 附加元数据。 */
   metadata: ChunkMetadata;
   /** 语义检索使用的 embedding 向量。 */
-  embedding?: number[];
+  embedding: number[];
   /** KNN 查询返回的距离值。 */
   distance?: number;
 }
@@ -105,14 +103,13 @@ const FILTER_FIELD_MAP = {
 /**
  * SurrealDB 的 SearchRepository 默认实现。
  *
- * 当前实现采用“数据库优先、应用层回退”的检索策略：
+ * 当前实现只保留单一的数据库原生检索路径：
  *
- * 1. 默认优先走 Surreal 原生 HNSW KNN 查询，并把全部精确过滤条件一并下推到数据库。
- * 2. 数据库返回结果后，仅执行分值映射、排序与 topK 截断。
- * 3. 若 native 查询因语法、索引或能力限制失败，则自动回退到应用层余弦相似度排序路径。
+ * 1. Surreal 原生 HNSW KNN 查询承担全部精确过滤条件与向量召回。
+ * 2. 应用层仅负责分值映射、排序稳定化与 topK 截断。
  *
  * 当前开发基线已验证 SurrealDB 3.0.4 下“多精确过滤条件 + KNN”可以稳定工作，
- * 因此 native 主路径不再保留应用层二次精确过滤。
+ * 因此 v1 不再维护应用层余弦 fallback。
  */
 export class SurrealSearchRepository implements SearchRepository {
   /** 当前使用的 Surreal 客户端。 */
@@ -146,8 +143,7 @@ export class SurrealSearchRepository implements SearchRepository {
    *
    * 1. 校验 `topK` 与查询向量是否有效。
    * 2. 将 filters 预先编译为可复用的查询片段与绑定参数。
-   * 3. 优先尝试 native HNSW 路径。
-   * 4. 若 native 路径命中可回退错误，则切换到应用层余弦排序路径。
+   * 3. 执行单一的 native HNSW 路径。
    *
    * 当 `topK` 非正数或查询向量为空时，直接返回空结果，避免无意义查询。
    */
@@ -180,11 +176,7 @@ export class SurrealSearchRepository implements SearchRepository {
       await this.client.connect();
 
       const filterState = buildFilterState(input.filters);
-      const results = await this.executeWithNativeFallback(
-        input,
-        filterState,
-        logger,
-      );
+      const results = await this.nativeVectorSearch(input, filterState, logger);
 
       logger.info("Semantic search completed", {
         resultCount: results.length,
@@ -201,46 +193,6 @@ export class SurrealSearchRepository implements SearchRepository {
         }),
       );
       throw error;
-    }
-  }
-
-  /**
-   * 在 native HNSW 路径与应用层余弦 fallback 路径之间做统一调度。
-   *
-   * 该方法本身不负责构造查询，只负责：
-   *
-   * 1. 先尝试执行 native 向量检索
-   * 2. 判断错误是否属于“可降级”的查询兼容性问题
-   * 3. 必要时记录 warn 日志并切换到 fallback 路径
-   */
-  private async executeWithNativeFallback(
-    input: SemanticSearchInput,
-    filterState: ReturnType<typeof buildFilterState>,
-    logger: Logger,
-  ): Promise<SearchResult[]> {
-    /**
-     * 只有明确属于 Surreal 查询能力或语法层面的错误才回退，
-     * 其余错误继续向上抛出，避免把真实故障伪装成“可用但变慢”。
-     */
-    try {
-      return await this.nativeVectorSearch(input, filterState, logger);
-    } catch (error) {
-      if (!shouldFallbackToApplicationCosine(error)) {
-        throw error;
-      }
-
-      logger.warn(
-        "Native vector search failed, falling back to application cosine search",
-        {
-          searchStrategy: "application-cosine-fallback",
-          repositoryId: input.repositoryId,
-          topK: input.topK,
-          filters: normalizeUnknownLogFields(input.filters),
-          ...createSurrealErrorLogFields(error),
-        },
-      );
-
-      return this.fallbackApplicationCosineSearch(input, filterState, logger);
     }
   }
 
@@ -308,63 +260,6 @@ export class SurrealSearchRepository implements SearchRepository {
         ];
       }),
     ).slice(0, topK);
-  }
-
-  /**
-   * 执行应用层余弦相似度回退路径。
-   *
-   * 该路径会把全部精确过滤条件直接下推到普通 SQL 查询，
-   * 然后在应用层计算余弦相似度并完成排序。
-   *
-   * 它的定位不是默认主路径，而是在 native HNSW 查询不可用时，
-   * 提供一个语义上兼容、性能上较保守的兜底实现。
-   */
-  private async fallbackApplicationCosineSearch(
-    input: SemanticSearchInput,
-    filterState: ReturnType<typeof buildFilterState>,
-    logger: Logger,
-  ): Promise<SearchResult[]> {
-    /**
-     * fallback 路径会把全部精确过滤条件直接写进 SQL，
-     * 再在应用层对返回记录计算余弦相似度。
-     */
-    const [records] = await this.client.driver.query<[StoredSearchChunk[]]>(
-      [
-        "SELECT * FROM chunk",
-        "WHERE repositoryId = $repositoryId",
-        ...filterState.clauses,
-        ";",
-      ].join(" "),
-      {
-        repositoryId: input.repositoryId,
-        ...filterState.bindings,
-      },
-    );
-
-    logger.debug("Semantic search executed with application cosine fallback", {
-      searchStrategy: "application-cosine-fallback",
-      nativeVectorIndexUsed: false,
-      vectorDistanceMetric: "COSINE",
-      candidateCount: records?.length ?? 0,
-    });
-
-    return sortResults(
-      (records ?? []).flatMap((record) => {
-        const score = cosineSimilarity(record.embedding, input.embedding);
-
-        if (score === null) {
-          return [];
-        }
-
-        return [
-          {
-            chunk: toChunk(record),
-            score,
-            reason: FALLBACK_SEARCH_REASON,
-          },
-        ];
-      }),
-    ).slice(0, normalizeTopK(input.topK));
   }
 }
 
@@ -450,43 +345,6 @@ function appendTagFilter(
 }
 
 /**
- * 计算候选向量与查询向量的余弦相似度。
- *
- * 若候选向量不存在、维度不一致或为空，则返回 `null` 表示该记录不可参与排序。
- */
-function cosineSimilarity(
-  candidate: number[] | undefined,
-  query: number[],
-): number | null {
-  if (
-    !candidate ||
-    candidate.length !== query.length ||
-    candidate.length === 0
-  ) {
-    return null;
-  }
-
-  let dotProduct = 0;
-  let candidateMagnitude = 0;
-  let queryMagnitude = 0;
-
-  for (let index = 0; index < candidate.length; index += 1) {
-    const candidateValue = candidate[index] ?? 0;
-    const queryValue = query[index] ?? 0;
-
-    dotProduct += candidateValue * queryValue;
-    candidateMagnitude += candidateValue * candidateValue;
-    queryMagnitude += queryValue * queryValue;
-  }
-
-  if (candidateMagnitude === 0 || queryMagnitude === 0) {
-    return 0;
-  }
-
-  return dotProduct / Math.sqrt(candidateMagnitude * queryMagnitude);
-}
-
-/**
  * 将 Surreal 返回的距离值映射为“越大越相关”的分值。
  *
  * 这里采用 `1 / (1 + distance)` 的单调映射，
@@ -558,27 +416,15 @@ function positiveIntegerOrDefault(
 }
 
 /**
- * 判断某个查询错误是否适合自动降级到应用层余弦检索。
- *
- * 这里故意只匹配与 HNSW/KNN/向量能力相关的查询错误，
- * 避免把网络故障、权限问题等非兼容性错误错误地吞掉。
- */
-function shouldFallbackToApplicationCosine(error: unknown): boolean {
-  const classified = classifySurrealError(error);
-
-  if (classified.errCode !== "surreal_query_error") {
-    return false;
-  }
-
-  return /hnsw|knn|vector|distance|parse|syntax|index|unexpected/.test(
-    classified.error.message.toLowerCase(),
-  );
-}
-
-/**
  * 将存储层记录映射为领域层 Chunk 对象。
  */
 function toChunk(record: StoredSearchChunk): Chunk {
+  if (!Array.isArray(record.embedding)) {
+    throw new Error(
+      `Stored search chunk ${record.chunkId} is missing embedding data`,
+    );
+  }
+
   return {
     id: record.chunkId,
     repositoryId: record.repositoryId,
@@ -589,9 +435,7 @@ function toChunk(record: StoredSearchChunk): Chunk {
     startLine: record.startLine,
     endLine: record.endLine,
     hash: record.hash,
-    embedding: Array.isArray(record.embedding)
-      ? (record.embedding as number[])
-      : undefined,
+    embedding: [...record.embedding],
     metadata: {
       ...record.metadata,
     },

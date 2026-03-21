@@ -1,4 +1,4 @@
-import type { Chunk, Logger, ParseInput } from "@agent-code-index/core";
+import type { Logger, ParseInput, PreparedChunk } from "@agent-code-index/core";
 import { type SyntaxNode } from "tree-sitter";
 import JavaScriptLanguage from "tree-sitter-javascript";
 
@@ -25,8 +25,11 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
   /**
    * 提取 JavaScript 中的类、函数和方法语义块。
    */
-  protected collectChunks(input: ParseInput, rootNode: SyntaxNode): Chunk[] {
-    const chunks: Chunk[] = [];
+  protected collectChunks(
+    input: ParseInput,
+    rootNode: SyntaxNode,
+  ): PreparedChunk[] {
+    const chunks: PreparedChunk[] = [];
     const pendingDefaultExports = new Set<string>();
 
     for (const node of rootNode.namedChildren) {
@@ -42,7 +45,7 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
   private collectTopLevelNode(
     input: ParseInput,
     node: SyntaxNode,
-    chunks: Chunk[],
+    chunks: PreparedChunk[],
     pendingDefaultExports: Set<string>,
   ): void {
     const exportState = extractExportState(node);
@@ -128,7 +131,7 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
     classNode: SyntaxNode,
     exportState: ExportState,
     pendingDefaultExports: Set<string>,
-  ): Chunk[] {
+  ): PreparedChunk[] {
     const className =
       classNode.childForFieldName("name")?.text ??
       (exportState.isDefault ? "default" : undefined);
@@ -227,8 +230,8 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
     node: SyntaxNode,
     exportState: ExportState,
     pendingDefaultExports: Set<string>,
-  ): Chunk[] {
-    const chunks: Chunk[] = [];
+  ): PreparedChunk[] {
+    const chunks: PreparedChunk[] = [];
 
     for (const child of node.namedChildren) {
       if (child.type !== "variable_declarator") {
@@ -402,7 +405,7 @@ function resolvePendingDefaultExportTags(
 }
 
 function applyDefaultExportToExistingChunks(
-  chunks: Chunk[],
+  chunks: PreparedChunk[],
   symbolName: string,
   pendingDefaultExports: Set<string>,
 ): void {

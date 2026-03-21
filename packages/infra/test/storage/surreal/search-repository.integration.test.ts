@@ -13,7 +13,7 @@ interface Chunk {
   startLine: number;
   endLine: number;
   hash: string;
-  embedding?: number[];
+  embedding: number[];
   metadata: {
     symbolName?: string;
     symbolKind?: string;
@@ -34,7 +34,7 @@ interface StoredSearchChunkRecord extends Record<string, unknown> {
   endLine: number;
   hash: string;
   metadata: Chunk["metadata"];
-  embedding?: number[];
+  embedding: number[];
 }
 
 function createStoredChunk(
@@ -194,52 +194,38 @@ describe("SurrealSearchRepository", () => {
     expect(singleTagResults).toHaveLength(1);
   });
 
-  it("falls back to application cosine search when native vector query is unsupported", async () => {
-    const logger = createLogger();
+  it("propagates native vector query errors without fallback", async () => {
     const connect = vi.fn(async () => undefined);
     const query = vi
       .fn()
-      .mockRejectedValueOnce(new Error("Parse error: unsupported KNN operator"))
-      .mockResolvedValueOnce([
-        [
-          createStoredChunk(),
-          createStoredChunk({
-            chunkId: "chunk-2",
-            id: "chunk:repo-a:chunk-2",
-            startLine: 8,
-            endLine: 10,
-            embedding: [0.6, 0.8, 0],
-            metadata: { symbolName: "two", symbolKind: "function" },
-          }),
-        ],
-      ]);
+      .mockRejectedValueOnce(
+        new Error("Parse error: unsupported KNN operator"),
+      );
 
-    const repository = new SurrealSearchRepository(
-      {
-        config: {} as never,
-        connect,
-        disconnect: vi.fn(async () => undefined),
-        driver: {
-          query,
-        } as never,
-        healthCheck: vi.fn(async () => ({}) as never),
-      },
-      logger,
-    );
-
-    const results = await repository.semanticSearch({
-      repositoryId: "repo-a",
-      embedding: [1, 0, 0],
-      topK: 2,
-      filters: {
-        filePath: "src/index.ts",
-      },
+    const repository = new SurrealSearchRepository({
+      config: {} as never,
+      connect,
+      disconnect: vi.fn(async () => undefined),
+      driver: {
+        query,
+      } as never,
+      healthCheck: vi.fn(async () => ({}) as never),
     });
 
+    await expect(
+      repository.semanticSearch({
+        repositoryId: "repo-a",
+        embedding: [1, 0, 0],
+        topK: 2,
+        filters: {
+          filePath: "src/index.ts",
+        },
+      }),
+    ).rejects.toThrow("Parse error: unsupported KNN operator");
+
     expect(connect).toHaveBeenCalledTimes(1);
-    expect(query).toHaveBeenCalledTimes(2);
-    expect(query).toHaveBeenNthCalledWith(
-      1,
+    expect(query).toHaveBeenCalledTimes(1);
+    expect(query).toHaveBeenCalledWith(
       expect.stringContaining(
         "WHERE repositoryId = $repositoryId AND filePath = $filter_filePath AND embedding <|40,100|> $embedding ORDER BY distance;",
       ),
@@ -247,31 +233,6 @@ describe("SurrealSearchRepository", () => {
         repositoryId: "repo-a",
         embedding: [1, 0, 0],
         filter_filePath: "src/index.ts",
-      }),
-    );
-    expect(query).toHaveBeenNthCalledWith(
-      2,
-      expect.stringContaining(
-        "SELECT * FROM chunk WHERE repositoryId = $repositoryId",
-      ),
-      expect.objectContaining({
-        repositoryId: "repo-a",
-        filter_filePath: "src/index.ts",
-      }),
-    );
-    expect(results).toHaveLength(2);
-    expect(results[0]?.chunk.id).toBe("chunk-1");
-    expect(results[0]?.score).toBe(1);
-    expect(results[0]?.reason).toBe("application cosine fallback");
-    expect(results[1]?.chunk.id).toBe("chunk-2");
-    expect(results[1]?.score).toBeCloseTo(0.6, 8);
-    expect(results[1]?.reason).toBe("application cosine fallback");
-    expect(logger.warn).toHaveBeenCalledWith(
-      "Native vector search failed, falling back to application cosine search",
-      expect.objectContaining({
-        searchStrategy: "application-cosine-fallback",
-        repositoryId: "repo-a",
-        errCode: "surreal_query_error",
       }),
     );
   });
@@ -296,7 +257,7 @@ describe("SurrealSearchRepository", () => {
         } as never,
         healthCheck: vi.fn(async () => ({}) as never),
       },
-      createLogger(),
+      undefined,
       {
         nativeCandidateMultiplier: 7,
         nativeEfSearchMin: 55,

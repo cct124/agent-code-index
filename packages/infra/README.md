@@ -54,7 +54,7 @@ src/
 
 当前能力：
 
-1. 当前统一由 `ParserFactory` 返回 fallback parser
+1. `ParserFactory` 已按扩展名分派到 tree-sitter、Markdown 和 fallback parser
 2. `FallbackParser` 支持固定窗口切块和重叠窗口切块
 3. 已能识别基础文件类型并为 chunk 填充语言信息
 
@@ -79,7 +79,7 @@ src/
 当前能力：
 
 1. 对齐并实现了 `core` 中定义的 `RepositoryChunkPreparationService` 抽象
-2. 串联“扫描目录 -> 读取文件 -> 选择解析器 -> 产出 chunk”主流程
+2. 串联“扫描目录 -> 读取文件 -> 选择解析器 -> 产出 PreparedChunk”主流程
 3. 处理二进制文件跳过逻辑
 
 ### storage
@@ -99,7 +99,7 @@ src/
 2. `project_metadata` schema 初始化与仓储读写
 3. chunk schema 初始化
 4. chunk 的写入、删除和按文件读取
-5. 基于已存储 embedding 的语义搜索
+5. 基于已存储 embedding 的数据库原生向量搜索
 
 ## 当前已经实现的功能
 

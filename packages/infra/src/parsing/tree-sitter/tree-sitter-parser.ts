@@ -2,10 +2,10 @@ import TSParser, { type SyntaxNode } from "tree-sitter";
 
 import {
   NOOP_LOGGER,
-  type Chunk,
   type Logger,
   type ParseInput,
   type Parser,
+  type PreparedChunk,
 } from "@agent-code-index/core";
 
 import {
@@ -57,7 +57,7 @@ export abstract class TreeSitterParser implements Parser {
   /**
    * 将代码文件解析为语义 chunk；若无法可靠提取则回退到固定窗口切块。
    */
-  public async parse(input: ParseInput): Promise<Chunk[]> {
+  public async parse(input: ParseInput): Promise<PreparedChunk[]> {
     if (!input.content.trim()) {
       this.logger.debug("Code file is empty, skipping semantic parse", {
         filePath: input.filePath,
@@ -104,7 +104,7 @@ export abstract class TreeSitterParser implements Parser {
   protected abstract collectChunks(
     input: ParseInput,
     rootNode: SyntaxNode,
-  ): Chunk[];
+  ): PreparedChunk[];
 
   /**
    * 基于语义节点生成一个或多个 chunk。
@@ -112,8 +112,8 @@ export abstract class TreeSitterParser implements Parser {
   protected createChunksForNode(
     input: ParseInput,
     node: SyntaxNode,
-    metadata: Chunk["metadata"],
-  ): Chunk[] {
+    metadata: PreparedChunk["metadata"],
+  ): PreparedChunk[] {
     const startLine = node.startPosition.row + 1;
     const endLine = node.endPosition.row + 1;
     const lineCount = endLine - startLine + 1;

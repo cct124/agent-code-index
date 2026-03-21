@@ -46,15 +46,17 @@ src/
 
 用于定义系统中的核心业务对象，目前已包含：
 
-1. `Chunk`
-2. `ProjectMetadata`
-3. `SearchResult`
+1. `PreparedChunk`
+2. `Chunk`
+3. `ProjectMetadata`
+4. `SearchResult`
 
 其中：
 
-1. `Chunk` 表示最小可索引、可检索单元
-2. `ProjectMetadata` 用于锁定项目级 embedding 配置
-3. `SearchResult` 表示语义检索返回结果
+1. `PreparedChunk` 表示解析与切块阶段产出的待嵌入单元
+2. `Chunk` 表示已完成 embedding、可直接存储和检索的单元
+3. `ProjectMetadata` 用于锁定项目级 embedding 配置
+4. `SearchResult` 表示语义检索返回结果
 
 ### services
 
@@ -64,9 +66,9 @@ src/
 
 该服务负责串联以下业务步骤：
 
-1. 调用仓库 chunk 准备服务生成待索引 chunk
+1. 调用仓库 chunk 准备服务生成待索引 `PreparedChunk`
 2. 按批次调用 `EmbeddingProvider` 生成向量
-3. 将结果收紧为带 embedding 的 `IndexedChunk`
+3. 将结果收紧为带 embedding 的 `Chunk / IndexedChunk`
 4. 调用 `ChunkRepository` 执行全量覆盖式写入
 
 ## 当前已经实现的功能
@@ -77,10 +79,11 @@ src/
 
 已实现：
 
-1. `Chunk`
-2. `ChunkMetadata`
-3. `ProjectMetadata`
-4. `SearchResult`
+1. `PreparedChunk`
+2. `Chunk`
+3. `ChunkMetadata`
+4. `ProjectMetadata`
+5. `SearchResult`
 
 ### 2. 外部依赖抽象定义
 
@@ -107,6 +110,11 @@ src/
 8. `IndexRepositoryService`
 
 这些模型用于描述从“仓库内容”到“可写入索引的 chunk”这条主链路中的输入、输出和中间产物。
+
+当前语义分层为：
+
+1. `PreparedChunk` 用于 parser / chunk preparation 阶段
+2. `Chunk` 与 `IndexedChunk` 用于 embedding 完成后的持久化与检索阶段
 
 ### 4. 默认索引服务实现
 

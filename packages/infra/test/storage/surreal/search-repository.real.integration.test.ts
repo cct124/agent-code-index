@@ -28,7 +28,7 @@ interface Chunk {
     parentSymbol?: string;
     tags?: string[];
   };
-  embedding?: number[];
+  embedding: number[];
 }
 
 if (!isRealSurrealIntegrationEnabled()) {

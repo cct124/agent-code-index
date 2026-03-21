@@ -1,4 +1,4 @@
-import type { Chunk } from "../domain/chunk.js";
+import type { PreparedChunk } from "../domain/chunk.js";
 
 /**
  * 解析器输入参数。
@@ -19,5 +19,5 @@ export interface Parser {
   /**
    * 将文件内容解析为 chunk。
    */
-  parse(input: ParseInput): Promise<Chunk[]>;
+  parse(input: ParseInput): Promise<PreparedChunk[]>;
 }

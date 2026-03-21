@@ -11,7 +11,7 @@
 1. v1 架构和工程基础已稳定
 2. 配置模型与项目级 embedding 锁定已落地
 3. `project_metadata` 启动链路已落地并通过真实 SurrealDB 验证
-4. `SurrealChunkRepository` 和 `SurrealSearchRepository` 已完成第一版实现，并已切换到 native HNSW 优先的检索路径
+4. `SurrealChunkRepository` 和 `SurrealSearchRepository` 已完成第一版实现，并已切换到数据库原生 HNSW 检索路径
 5. `DefaultIndexRepositoryService` 已完成并接入应用容器
 6. `EmbeddingProvider` contract、provider factory、`VoyageEmbeddingProvider` 与 `OpenAI-compatible provider` 已落地
 7. parser 与 chunking 已从 fallback 主流程演进到“tree-sitter 代码语义解析 + Markdown 章节切块 + fallback 兜底”的完整第一版实现
@@ -60,8 +60,8 @@
 1. `DefaultSurrealClient` 连接、鉴权、健康检查
 2. `SurrealProjectMetadataRepository` 真实读写
 3. `SurrealChunkRepository` 批量写入、按仓库删除、按文件读取
-4. `SurrealSearchRepository` 已切换为 native HNSW 优先检索，并保留应用层余弦 fallback
-5. 当前 native 检索已采用“全部精确过滤条件数据库下推 + HNSW KNN”的主路径
+4. `SurrealSearchRepository` 已收敛为单一的 native HNSW 检索路径
+5. 当前 native 检索已采用“全部精确过滤条件数据库下推 + HNSW KNN”的正式基线
 6. native HNSW 候选窗口参数已支持通过配置注入
 7. 已具备 `EXPLAIN FULL` 级别的真实环境验证，可校验 KnnScan 的 index、k、ef，以及多精确过滤条件已进入执行计划
 8. Surreal client、chunk repository、search repository 已接入统一结构化日志
@@ -79,7 +79,7 @@
 5. `PythonTreeSitterParser` 已可提取 class、top-level function、method、property getter/setter、classmethod、staticmethod、async method 和 `self.xxx` 实例字段
 6. `MarkdownParser` 已可按标题章节切块，并补充 `heading / headingPath / sectionLevel / docType / frontmatter`
 7. `ParserFactory` 已能按文件扩展名分派到 TypeScript、TSX、JavaScript、JSX、Python、Markdown 和 fallback parser
-8. `RepositoryChunkPreparationService` 的“扫描目录 -> 读取文件 -> 产出 Chunk[]”主流程
+8. `RepositoryChunkPreparationService` 的“扫描目录 -> 读取文件 -> 产出 PreparedChunk[]”主流程
 9. 二进制文件跳过逻辑
 10. 超大语义节点会自动回退到重叠窗口切块，而不是直接丢弃
 
@@ -172,7 +172,7 @@
 以下能力仍未真正落地：
 
 1. 更多语言的 tree-sitter 语义解析支持，例如 Go / Java / Rust
-2. 原生向量检索路径的进一步调优与回退策略收敛，例如更复杂过滤组合验证、`EF` 参数调优、候选窗口默认值调优与 fallback 收敛
+2. 原生向量检索路径的进一步调优，例如更复杂过滤组合验证、`EF` 参数调优与候选窗口默认值调优
 3. MCP tool server 与具体工具实现
 4. 检索结果到 `ContextPacket` 的完整上下文组装服务
 5. Voyage provider 的实网端到端索引测试
@@ -183,7 +183,7 @@
 
 ### 5.1 风险点
 
-1. `SurrealSearchRepository` 已默认采用“全部精确过滤条件数据库下推 + HNSW KNN”的主路径，但复杂过滤组合、不同数据分布和更大候选窗口下的表现仍需继续验证
+1. `SurrealSearchRepository` 已默认采用“全部精确过滤条件数据库下推 + HNSW KNN”的单一路径，但复杂过滤组合、不同数据分布和更大候选窗口下的表现仍需继续验证
 2. 开发环境从 `2.4.1` 切到 `3.0.4` 时无法直接复用旧 RocksDB 数据目录，后续若要做版本升级而不是空库重建，必须单独遵循官方升级路径
 3. native 路径虽然已支持候选窗口参数配置化，并有 `EXPLAIN FULL` 真实测试兜底，但当前默认值仍属于经验值，不是基于真实数据集调优后的最优值
 4. 当前 parser 已具备 TypeScript、TSX、JavaScript、JSX、Python 和 Markdown 的第一版结构感知能力，但更多语言尚未覆盖
@@ -204,22 +204,17 @@
 
 ### 5.3 embedding 领域决策
 
-当前关于 `Chunk.embedding` 的领域决策如下：
+当前关于 chunk 模型的领域决策如下：
 
-1. 对最终系统语义来说，embedding 应该是必选
-2. 对当前过渡代码来说，暂时保留为可选是可以接受的
-3. 这种“过渡性可选”状态不应长期保留
+1. `PreparedChunk` 只用于解析与切块阶段，不包含 embedding
+2. `Chunk` 只用于已完成 embedding 的存储与检索阶段，embedding 为必选字段
+3. 索引主链路通过显式的类型分层区分“待嵌入产物”和“可检索产物”
 
-原因是：
+这样做的原因是：
 
 1. 项目的核心目标是为 Agent 提供基于 RAG 的代码检索能力
-2. 真正进入索引与检索主链路的 chunk 最终都应具备 embedding
-3. 当前之所以暂时保留为可选，只是为了在分阶段落地时保持模型迁移成本可控
-
-后续收敛方向应为：
-
-1. 在索引主流程稳定后，将 embedding 从“过渡性可选”收紧为“面向索引产物的必选字段”
-2. 必要时区分“原始 chunk”和“已索引 chunk”模型，避免长期保持领域语义模糊
+2. 真正进入存储与检索主链路的 chunk 必须具备 embedding
+3. 解析阶段与检索阶段使用不同类型，能够避免长期保持领域语义模糊
 
 ## 6. 下一步开发建议
 
@@ -245,7 +240,7 @@
 
 1. 丰富 `SearchRepository` 可过滤 metadata
 2. 引入更稳定的结果去重与轻量重排
-3. 在 `3.0.4` 基线下继续评估更复杂过滤组合、`EXPLAIN` 观测、候选窗口参数调优与 fallback 收敛，逐步收紧 fallback 使用范围
+3. 在 `3.0.4` 基线下继续评估更复杂过滤组合、`EXPLAIN` 观测与候选窗口参数调优
 
 ### 6.3 第三优先级：扩展更多语言 parser
 
@@ -270,10 +265,11 @@
 同时，Surreal 原生向量检索的 v1 基线也已经稳定：
 
 1. 开发环境已完成 SurrealDB `3.0.4` 空库重部署验证
-2. native HNSW 检索已作为默认路径接入
+2. native HNSW 检索已作为唯一检索路径接入
 3. 多精确过滤条件场景已通过真实仓储测试回归
 4. 候选窗口参数已完成配置化，并补齐 `EXPLAIN FULL` 真实验证
 5. native 主路径已经切换为“全部过滤数据库下推 + KNN”
+6. `PreparedChunk` 与 `Chunk` 的语义边界已明确收紧
 
 当前最合理的开发重点是：
 

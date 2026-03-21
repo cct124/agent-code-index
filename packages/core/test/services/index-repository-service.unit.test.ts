@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type {
-  Chunk,
   ChunkRepository,
   EmbeddingProvider,
   Logger,
+  PreparedChunk,
   RepositoryChunkPreparationService,
 } from "../../src/index.js";
 import { DefaultIndexRepositoryService } from "../../src/index.js";
 
-function createChunk(overrides: Partial<Chunk> = {}): Chunk {
+function createChunk(overrides: Partial<PreparedChunk> = {}): PreparedChunk {
   return {
     id: "src/example.ts:1-3",
     repositoryId: "repo-a",

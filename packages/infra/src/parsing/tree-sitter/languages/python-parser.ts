@@ -1,4 +1,4 @@
-import type { Chunk, Logger, ParseInput } from "@agent-code-index/core";
+import type { Logger, ParseInput, PreparedChunk } from "@agent-code-index/core";
 import { type SyntaxNode } from "tree-sitter";
 import PythonLanguage from "tree-sitter-python";
 
@@ -21,8 +21,11 @@ export class PythonTreeSitterParser extends TreeSitterParser {
   /**
    * 提取 Python 中的类、函数和方法语义块。
    */
-  protected collectChunks(input: ParseInput, rootNode: SyntaxNode): Chunk[] {
-    const chunks: Chunk[] = [];
+  protected collectChunks(
+    input: ParseInput,
+    rootNode: SyntaxNode,
+  ): PreparedChunk[] {
+    const chunks: PreparedChunk[] = [];
 
     for (const node of rootNode.namedChildren) {
       const targetNode = unwrapDecoratedDefinition(node);
@@ -64,7 +67,7 @@ export class PythonTreeSitterParser extends TreeSitterParser {
     input: ParseInput,
     classNode: SyntaxNode,
     definitionMetadata: DefinitionMetadata,
-  ): Chunk[] {
+  ): PreparedChunk[] {
     const className = classNode.childForFieldName("name")?.text;
 
     if (!className) {
