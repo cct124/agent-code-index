@@ -61,9 +61,9 @@
 2. `SurrealProjectMetadataRepository` 真实读写
 3. `SurrealChunkRepository` 批量写入、按仓库删除、按文件读取
 4. `SurrealSearchRepository` 已切换为 native HNSW 优先检索，并保留应用层余弦 fallback
-5. 当前 native 检索采用“DB 侧 `repositoryId + KNN`，应用层二次精确过滤”的保守策略
+5. 当前 native 检索已采用“全部精确过滤条件数据库下推 + HNSW KNN”的主路径
 6. native HNSW 候选窗口参数已支持通过配置注入
-7. 已具备 `EXPLAIN FULL` 级别的真实环境验证，可校验 KnnScan 的 index、k、ef
+7. 已具备 `EXPLAIN FULL` 级别的真实环境验证，可校验 KnnScan 的 index、k、ef，以及多精确过滤条件已进入执行计划
 8. Surreal client、chunk repository、search repository 已接入统一结构化日志
 9. Surreal 存储主链路已具备 `errCode / retryable / httpStatus` 错误分类与日志脱敏策略
 10. 当前已支持通过 `metadata -> searchText` 的轻量语义头增强，让代码结构语义真正进入向量化输入
@@ -165,13 +165,14 @@
 9. 开发用 SurrealDB 已在空库重部署后验证通过 `3.0.4`，项目级真实 HNSW 搜索链路可用
 10. 在干净的 `3.0.4` 环境中，`repositoryId + 多个精确过滤条件 + HNSW KNN` 的最小复现场景与真实仓储测试均已通过
 11. native HNSW 候选窗口参数配置化已完成，并通过 unit test 与真实 EXPLAIN FULL 测试验证
+12. native 主路径已切换为“全部过滤数据库下推 + KNN”，并通过 unit test 与真实 EXPLAIN FULL 计划断言验证
 
 ## 4. 当前仍未完成内容
 
 以下能力仍未真正落地：
 
 1. 更多语言的 tree-sitter 语义解析支持，例如 Go / Java / Rust
-2. 原生向量检索路径的进一步调优与回退策略收敛，例如更多过滤条件下推、`EF` 参数调优、候选窗口默认值调优与 fallback 收敛
+2. 原生向量检索路径的进一步调优与回退策略收敛，例如更复杂过滤组合验证、`EF` 参数调优、候选窗口默认值调优与 fallback 收敛
 3. MCP tool server 与具体工具实现
 4. 检索结果到 `ContextPacket` 的完整上下文组装服务
 5. Voyage provider 的实网端到端索引测试
@@ -182,7 +183,7 @@
 
 ### 5.1 风险点
 
-1. `SurrealSearchRepository` 已默认采用数据库原生 HNSW KNN 检索，但当前仍保留“DB 侧 `repositoryId + KNN`，其余精确过滤在应用层二次过滤”的保守策略，后续仍需继续验证更激进的过滤条件下推
+1. `SurrealSearchRepository` 已默认采用“全部精确过滤条件数据库下推 + HNSW KNN”的主路径，但复杂过滤组合、不同数据分布和更大候选窗口下的表现仍需继续验证
 2. 开发环境从 `2.4.1` 切到 `3.0.4` 时无法直接复用旧 RocksDB 数据目录，后续若要做版本升级而不是空库重建，必须单独遵循官方升级路径
 3. native 路径虽然已支持候选窗口参数配置化，并有 `EXPLAIN FULL` 真实测试兜底，但当前默认值仍属于经验值，不是基于真实数据集调优后的最优值
 4. 当前 parser 已具备 TypeScript、TSX、JavaScript、JSX、Python 和 Markdown 的第一版结构感知能力，但更多语言尚未覆盖
@@ -244,7 +245,7 @@
 
 1. 丰富 `SearchRepository` 可过滤 metadata
 2. 引入更稳定的结果去重与轻量重排
-3. 在 `3.0.4` 基线下继续评估更多过滤条件下推、`EXPLAIN` 观测、候选窗口参数调优与 fallback 收敛，逐步减少应用侧二次过滤
+3. 在 `3.0.4` 基线下继续评估更复杂过滤组合、`EXPLAIN` 观测、候选窗口参数调优与 fallback 收敛，逐步收紧 fallback 使用范围
 
 ### 6.3 第三优先级：扩展更多语言 parser
 
@@ -272,6 +273,7 @@
 2. native HNSW 检索已作为默认路径接入
 3. 多精确过滤条件场景已通过真实仓储测试回归
 4. 候选窗口参数已完成配置化，并补齐 `EXPLAIN FULL` 真实验证
+5. native 主路径已经切换为“全部过滤数据库下推 + KNN”
 
 当前最合理的开发重点是：
 

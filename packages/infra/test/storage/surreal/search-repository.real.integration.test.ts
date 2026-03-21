@@ -252,6 +252,92 @@ if (!isRealSurrealIntegrationEnabled()) {
         }),
       );
     });
+
+    it("pushes exact-match filters into the native KNN query plan", async () => {
+      await chunkSchema.ensure();
+      await chunkRepository.upsertMany([
+        createChunk(repositoryId, {
+          id: "chunk-plan-1",
+          filePath: "src/a.ts",
+          language: "typescript",
+          content: "export function alpha() {}",
+          searchText: "export function alpha",
+          startLine: 1,
+          endLine: 3,
+          hash: "hash-plan-1",
+          metadata: {
+            symbolName: "alpha",
+            symbolKind: "function",
+            parentSymbol: "ExampleModule",
+            tags: ["export", "public"],
+          },
+          embedding: [1, 0, 0],
+        }),
+        createChunk(repositoryId, {
+          id: "chunk-plan-2",
+          filePath: "src/a.ts",
+          language: "typescript",
+          content: "export function beta() {}",
+          searchText: "export function beta",
+          startLine: 8,
+          endLine: 10,
+          hash: "hash-plan-2",
+          metadata: {
+            symbolName: "beta",
+            symbolKind: "function",
+            parentSymbol: "ExampleModule",
+            tags: ["export"],
+          },
+          embedding: [0.95, 0.05, 0],
+        }),
+      ]);
+
+      const plan = await client.driver.query<Array<Record<string, unknown>>>(
+        [
+          "SELECT *, vector::distance::knn() AS distance FROM chunk",
+          "WHERE repositoryId = $repositoryId",
+          "AND filePath = $filter_filePath",
+          "AND language = $filter_language",
+          "AND metadata.symbolName = $filter_symbolName",
+          "AND metadata.parentSymbol = $filter_parentSymbol",
+          "AND metadata.tags CONTAINS $filter_tags_0",
+          "AND embedding <|40,100|> $embedding",
+          "ORDER BY distance",
+          "EXPLAIN FULL;",
+        ].join(" "),
+        {
+          repositoryId,
+          embedding: [1, 0, 0],
+          filter_filePath: "src/a.ts",
+          filter_language: "typescript",
+          filter_symbolName: "alpha",
+          filter_parentSymbol: "ExampleModule",
+          filter_tags_0: "export",
+        },
+      );
+
+      const filterNode = findExplainOperator(plan, "Filter");
+      const knnScanNode = findExplainOperator(plan, "KnnScan");
+      const serializedPlan = JSON.stringify(plan).toLowerCase();
+
+      expect(plan.length).toBeGreaterThan(0);
+      expect(filterNode).toBeDefined();
+      expect(knnScanNode).toBeDefined();
+      expect(knnScanNode?.attributes).toEqual(
+        expect.objectContaining({
+          index: "chunk_embedding_hnsw_idx",
+          k: "40",
+          ef: "100",
+        }),
+      );
+      expect(serializedPlan).toContain("filepath = 'src/a.ts'");
+      expect(serializedPlan).toContain("language = 'typescript'");
+      expect(serializedPlan).toContain("metadata.symbolname = 'alpha'");
+      expect(serializedPlan).toContain(
+        "metadata.parentsymbol = 'examplemodule'",
+      );
+      expect(serializedPlan).toContain("metadata.tags contains 'export'");
+    });
   });
 }
 

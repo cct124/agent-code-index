@@ -105,15 +105,14 @@ const FILTER_FIELD_MAP = {
 /**
  * SurrealDB 的 SearchRepository 默认实现。
  *
- * 当前实现采用“两段式”检索策略：
+ * 当前实现采用“数据库优先、应用层回退”的检索策略：
  *
- * 1. 默认优先走 Surreal 原生 HNSW KNN 查询，只在数据库侧保留 `repositoryId`
- *    这个稳定约束，并取回一批候选结果。
- * 2. 再在应用层执行剩余精确过滤条件，最后完成分值映射、排序与 topK 截断。
+ * 1. 默认优先走 Surreal 原生 HNSW KNN 查询，并把全部精确过滤条件一并下推到数据库。
+ * 2. 数据库返回结果后，仅执行分值映射、排序与 topK 截断。
  * 3. 若 native 查询因语法、索引或能力限制失败，则自动回退到应用层余弦相似度排序路径。
  *
- * 之所以保留应用层二次过滤，是因为仓库曾在旧版真实环境中观察到
- * “多精确过滤条件 + KNN” 的不稳定行为；当前实现选择优先保证稳定性。
+ * 当前开发基线已验证 SurrealDB 3.0.4 下“多精确过滤条件 + KNN”可以稳定工作，
+ * 因此 native 主路径不再保留应用层二次精确过滤。
  */
 export class SurrealSearchRepository implements SearchRepository {
   /** 当前使用的 Surreal 客户端。 */
@@ -251,25 +250,14 @@ export class SurrealSearchRepository implements SearchRepository {
    * 当前策略是：
    *
    * 1. 根据 `topK` 与仓储配置计算 `candidateK` 和 `efSearch`
-   * 2. 在数据库侧执行 `repositoryId + HNSW KNN` 查询
-   * 3. 对返回候选执行应用层二次过滤
-   * 4. 将 distance 映射为 score，并返回最终排序结果
-   *
-   * 这里刻意没有把全部精确过滤条件都下推到 SQL，
-   * 以降低旧环境下多过滤条件与 KNN 组合的不确定性。
+   * 2. 在数据库侧执行“全部精确过滤条件 + HNSW KNN”查询
+   * 3. 将 distance 映射为 score，并返回最终排序结果
    */
   private async nativeVectorSearch(
     input: SemanticSearchInput,
-    _filterState: ReturnType<typeof buildFilterState>,
+    filterState: ReturnType<typeof buildFilterState>,
     logger: Logger,
   ): Promise<SearchResult[]> {
-    /**
-     * native 路径当前只把 `repositoryId` 下推到数据库，
-     * 其余精确过滤仍在应用层执行。
-     *
-     * 这样做的目的不是因为 Surreal 官方语义不支持过滤组合，
-     * 而是为了在当前仓库里保留一条更稳健的兼容策略。
-     */
     const topK = normalizeTopK(input.topK);
     const candidateK = Math.max(
       topK,
@@ -279,6 +267,7 @@ export class SurrealSearchRepository implements SearchRepository {
     const queryText = [
       "SELECT *, vector::distance::knn() AS distance FROM chunk",
       "WHERE repositoryId = $repositoryId",
+      ...filterState.clauses,
       `AND embedding <|${candidateK},${efSearch}|> $embedding`,
       "ORDER BY distance;",
     ].join(" ");
@@ -288,6 +277,7 @@ export class SurrealSearchRepository implements SearchRepository {
       {
         repositoryId: input.repositoryId,
         embedding: input.embedding,
+        ...filterState.bindings,
       },
     );
 
@@ -302,22 +292,10 @@ export class SurrealSearchRepository implements SearchRepository {
 
     return sortResults(
       (records ?? []).flatMap((record) => {
-        /**
-         * native 路径要求数据库返回有效 distance，
-         * 否则该条结果不具备可排序意义，直接丢弃。
-         */
         if (
           typeof record.distance !== "number" ||
           Number.isNaN(record.distance)
         ) {
-          return [];
-        }
-
-        /**
-         * 应用层二次过滤发生在这里。
-         * 只有通过所有精确过滤条件的候选，才会被映射为最终 SearchResult。
-         */
-        if (!matchesSearchFilters(record, input.repositoryId, input.filters)) {
           return [];
         }
 
@@ -387,86 +365,6 @@ export class SurrealSearchRepository implements SearchRepository {
         ];
       }),
     ).slice(0, normalizeTopK(input.topK));
-  }
-}
-
-/**
- * 对 native 路径返回的候选记录执行应用层精确过滤。
- *
- * 当前支持普通标量字段精确匹配，以及 `tags` 的“全部包含”匹配。
- */
-function matchesSearchFilters(
-  record: StoredSearchChunk,
-  repositoryId: string,
-  filters?: Record<string, unknown>,
-): boolean {
-  if (record.repositoryId !== repositoryId) {
-    return false;
-  }
-
-  if (!filters) {
-    return true;
-  }
-
-  for (const [key, value] of Object.entries(filters)) {
-    if (key === "tags") {
-      const requiredTags = Array.isArray(value) ? value : [value];
-      const recordTags = Array.isArray(record.metadata?.tags)
-        ? record.metadata.tags
-        : [];
-
-      if (
-        requiredTags.some(
-          (tag) => typeof tag !== "string" || !recordTags.includes(tag),
-        )
-      ) {
-        return false;
-      }
-
-      continue;
-    }
-
-    if (readFilterValue(record, key) !== value) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/**
- * 从存储层记录中读取某个 filter 对应的实际值，
- * 用于应用层二次过滤时做精确匹配。
- */
-function readFilterValue(
-  record: StoredSearchChunk,
-  key: keyof typeof FILTER_FIELD_MAP | string,
-): unknown {
-  switch (key) {
-    case "filePath":
-      return record.filePath;
-    case "language":
-      return record.language;
-    case "hash":
-      return record.hash;
-    case "startLine":
-      return record.startLine;
-    case "endLine":
-      return record.endLine;
-    case "symbolName":
-      return record.metadata?.symbolName;
-    case "symbolKind":
-      return record.metadata?.symbolKind;
-    case "parentSymbol":
-      return record.metadata?.parentSymbol;
-    case "heading":
-      return record.metadata?.heading;
-    case "docType":
-      return record.metadata?.docType;
-    case "sectionLevel":
-      return record.metadata?.sectionLevel;
-    default:
-      return undefined;
   }
 }
 

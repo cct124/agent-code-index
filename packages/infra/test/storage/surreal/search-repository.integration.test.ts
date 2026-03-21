@@ -117,10 +117,14 @@ describe("SurrealSearchRepository", () => {
 
     expect(connect).toHaveBeenCalledTimes(1);
     expect(query).toHaveBeenCalledWith(
-      expect.stringContaining("AND embedding <|40,100|> $embedding"),
+      expect.stringContaining(
+        "WHERE repositoryId = $repositoryId AND language = $filter_language AND filePath = $filter_filePath AND embedding <|40,100|> $embedding ORDER BY distance;",
+      ),
       expect.objectContaining({
         repositoryId: "repo-a",
         embedding: [1, 0, 0],
+        filter_language: "typescript",
+        filter_filePath: "src/index.ts",
       }),
     );
     expect(results).toHaveLength(2);
@@ -167,10 +171,14 @@ describe("SurrealSearchRepository", () => {
 
     expect(arrayTagResults).toHaveLength(1);
     expect(query).toHaveBeenCalledWith(
-      expect.stringContaining("embedding <|40,100|> $embedding"),
+      expect.stringContaining(
+        "WHERE repositoryId = $repositoryId AND metadata.tags CONTAINS $filter_tags_0 AND metadata.tags CONTAINS $filter_tags_1 AND embedding <|40,100|> $embedding ORDER BY distance;",
+      ),
       expect.objectContaining({
         repositoryId: "repo-a",
         embedding: [1, 0, 0],
+        filter_tags_0: "static",
+        filter_tags_1: "async",
       }),
     );
 
@@ -232,10 +240,13 @@ describe("SurrealSearchRepository", () => {
     expect(query).toHaveBeenCalledTimes(2);
     expect(query).toHaveBeenNthCalledWith(
       1,
-      expect.stringContaining("embedding <|40,100|> $embedding"),
+      expect.stringContaining(
+        "WHERE repositoryId = $repositoryId AND filePath = $filter_filePath AND embedding <|40,100|> $embedding ORDER BY distance;",
+      ),
       expect.objectContaining({
         repositoryId: "repo-a",
         embedding: [1, 0, 0],
+        filter_filePath: "src/index.ts",
       }),
     );
     expect(query).toHaveBeenNthCalledWith(
@@ -302,10 +313,72 @@ describe("SurrealSearchRepository", () => {
     });
 
     expect(query).toHaveBeenCalledWith(
-      expect.stringContaining("AND embedding <|21,55|> $embedding"),
+      expect.stringContaining(
+        "WHERE repositoryId = $repositoryId AND filePath = $filter_filePath AND embedding <|21,55|> $embedding ORDER BY distance;",
+      ),
       expect.objectContaining({
         repositoryId: "repo-a",
         embedding: [1, 0, 0],
+        filter_filePath: "src/index.ts",
+      }),
+    );
+  });
+
+  it("pushes mixed metadata and tag filters into the native query", async () => {
+    const connect = vi.fn(async () => undefined);
+    const query = vi.fn(async () => [
+      [
+        createStoredChunk({
+          distance: 0,
+          filePath: "src/a.ts",
+          language: "typescript",
+          metadata: {
+            symbolName: "alpha",
+            symbolKind: "function",
+            parentSymbol: "ExampleModule",
+            tags: ["export", "public"],
+          },
+        }),
+      ],
+    ]);
+
+    const repository = new SurrealSearchRepository({
+      config: {} as never,
+      connect,
+      disconnect: vi.fn(async () => undefined),
+      driver: {
+        query,
+      } as never,
+      healthCheck: vi.fn(async () => ({}) as never),
+    });
+
+    const results = await repository.semanticSearch({
+      repositoryId: "repo-a",
+      embedding: [1, 0, 0],
+      topK: 2,
+      filters: {
+        filePath: "src/a.ts",
+        language: "typescript",
+        symbolName: "alpha",
+        parentSymbol: "ExampleModule",
+        tags: ["export", "public"],
+      },
+    });
+
+    expect(results).toHaveLength(1);
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "WHERE repositoryId = $repositoryId AND filePath = $filter_filePath AND language = $filter_language AND metadata.symbolName = $filter_symbolName AND metadata.parentSymbol = $filter_parentSymbol AND metadata.tags CONTAINS $filter_tags_0 AND metadata.tags CONTAINS $filter_tags_1 AND embedding <|40,100|> $embedding ORDER BY distance;",
+      ),
+      expect.objectContaining({
+        repositoryId: "repo-a",
+        embedding: [1, 0, 0],
+        filter_filePath: "src/a.ts",
+        filter_language: "typescript",
+        filter_symbolName: "alpha",
+        filter_parentSymbol: "ExampleModule",
+        filter_tags_0: "export",
+        filter_tags_1: "public",
       }),
     );
   });
