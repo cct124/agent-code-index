@@ -11,7 +11,7 @@
 1. v1 架构和工程基础已稳定
 2. 配置模型与项目级 embedding 锁定已落地
 3. `project_metadata` 启动链路已落地并通过真实 SurrealDB 验证
-4. `SurrealChunkRepository` 和 `SurrealSearchRepository` 已完成第一版实现
+4. `SurrealChunkRepository` 和 `SurrealSearchRepository` 已完成第一版实现，并已切换到 native HNSW 优先的检索路径
 5. `DefaultIndexRepositoryService` 已完成并接入应用容器
 6. `EmbeddingProvider` contract、provider factory、`VoyageEmbeddingProvider` 与 `OpenAI-compatible provider` 已落地
 7. parser 与 chunking 已从 fallback 主流程演进到“tree-sitter 代码语义解析 + Markdown 章节切块 + fallback 兜底”的完整第一版实现
@@ -47,10 +47,11 @@
 1. 环境变量加载与校验
 2. `PROJECT_SPACE` 到 namespace 的派生规则
 3. embedding 必填配置校验
-4. Surreal 健康检查
-5. `project_metadata` schema 初始化
-6. 首次启动写入项目元数据
-7. 二次启动时 embedding 配置锁定校验
+4. native HNSW 候选窗口参数 `SEARCH_NATIVE_CANDIDATE_MULTIPLIER / SEARCH_NATIVE_EF_SEARCH_MIN` 已接入配置模型
+5. Surreal 健康检查
+6. `project_metadata` schema 初始化
+7. 首次启动写入项目元数据
+8. 二次启动时 embedding 配置锁定校验
 
 ### 3.2 Surreal 基础设施能力
 
@@ -59,10 +60,13 @@
 1. `DefaultSurrealClient` 连接、鉴权、健康检查
 2. `SurrealProjectMetadataRepository` 真实读写
 3. `SurrealChunkRepository` 批量写入、按仓库删除、按文件读取
-4. `SurrealSearchRepository` 基于已存储 embedding 的语义检索
-5. Surreal client、chunk repository、search repository 已接入统一结构化日志
-6. Surreal 存储主链路已具备 `errCode / retryable / httpStatus` 错误分类与日志脱敏策略
-7. 当前已支持通过 `metadata -> searchText` 的轻量语义头增强，让代码结构语义真正进入向量化输入
+4. `SurrealSearchRepository` 已切换为 native HNSW 优先检索，并保留应用层余弦 fallback
+5. 当前 native 检索采用“DB 侧 `repositoryId + KNN`，应用层二次精确过滤”的保守策略
+6. native HNSW 候选窗口参数已支持通过配置注入
+7. 已具备 `EXPLAIN FULL` 级别的真实环境验证，可校验 KnnScan 的 index、k、ef
+8. Surreal client、chunk repository、search repository 已接入统一结构化日志
+9. Surreal 存储主链路已具备 `errCode / retryable / httpStatus` 错误分类与日志脱敏策略
+10. 当前已支持通过 `metadata -> searchText` 的轻量语义头增强，让代码结构语义真正进入向量化输入
 
 ### 3.3 parser 与 chunking 能力
 
@@ -144,6 +148,9 @@
 25. 真实 OpenAI-compatible provider 集成测试
 26. 真实 SurrealDB + OpenAI-compatible provider 的 `prepare -> real embed -> upsert -> query embed -> search` 集成测试
 27. `DefaultSearchCodeContextService` 单元测试
+28. native HNSW 候选窗口配置项与注入路径单元测试
+29. `SurrealSearchRepository` 的 native 窗口参数与非法配置校验测试
+30. `SurrealSearchRepository` 的 `EXPLAIN FULL` 真实环境验证测试
 
 截至最近一次回归，以下验证已通过：
 
@@ -157,13 +164,14 @@
 8. `DefaultSearchCodeContextService` 单元测试已通过
 9. 开发用 SurrealDB 已在空库重部署后验证通过 `3.0.4`，项目级真实 HNSW 搜索链路可用
 10. 在干净的 `3.0.4` 环境中，`repositoryId + 多个精确过滤条件 + HNSW KNN` 的最小复现场景与真实仓储测试均已通过
+11. native HNSW 候选窗口参数配置化已完成，并通过 unit test 与真实 EXPLAIN FULL 测试验证
 
 ## 4. 当前仍未完成内容
 
 以下能力仍未真正落地：
 
 1. 更多语言的 tree-sitter 语义解析支持，例如 Go / Java / Rust
-2. 原生向量检索路径的进一步调优与回退策略收敛，例如更多过滤条件下推、`EF` 参数调优与 fallback 收敛
+2. 原生向量检索路径的进一步调优与回退策略收敛，例如更多过滤条件下推、`EF` 参数调优、候选窗口默认值调优与 fallback 收敛
 3. MCP tool server 与具体工具实现
 4. 检索结果到 `ContextPacket` 的完整上下文组装服务
 5. Voyage provider 的实网端到端索引测试
@@ -176,11 +184,12 @@
 
 1. `SurrealSearchRepository` 已默认采用数据库原生 HNSW KNN 检索，但当前仍保留“DB 侧 `repositoryId + KNN`，其余精确过滤在应用层二次过滤”的保守策略，后续仍需继续验证更激进的过滤条件下推
 2. 开发环境从 `2.4.1` 切到 `3.0.4` 时无法直接复用旧 RocksDB 数据目录，后续若要做版本升级而不是空库重建，必须单独遵循官方升级路径
-3. 当前 parser 已具备 TypeScript、TSX、JavaScript、JSX、Python 和 Markdown 的第一版结构感知能力，但更多语言尚未覆盖
-4. 当前已接入 Voyage 与 OpenAI-compatible provider，其中 OpenAI-compatible / SiliconFlow 已具备 opt-in 的实网验证；Voyage 的实网端到端验证仍未补齐
-5. `createApp()` 已经是异步启动流程，后续接入真实 MCP server 时必须正确 await
-6. 当前 embedding provider 已支持 `voyage` 与 `openai-compatible`，但 provider 级重试、限流和并发控制仍较薄
-7. 当前错误分类已覆盖第一版日志诊断需求，但尚未形成跨 provider / MCP / storage 的统一错误码文档
+3. native 路径虽然已支持候选窗口参数配置化，并有 `EXPLAIN FULL` 真实测试兜底，但当前默认值仍属于经验值，不是基于真实数据集调优后的最优值
+4. 当前 parser 已具备 TypeScript、TSX、JavaScript、JSX、Python 和 Markdown 的第一版结构感知能力，但更多语言尚未覆盖
+5. 当前已接入 Voyage 与 OpenAI-compatible provider，其中 OpenAI-compatible / SiliconFlow 已具备 opt-in 的实网验证；Voyage 的实网端到端验证仍未补齐
+6. `createApp()` 已经是异步启动流程，后续接入真实 MCP server 时必须正确 await
+7. 当前 embedding provider 已支持 `voyage` 与 `openai-compatible`，但 provider 级重试、限流和并发控制仍较薄
+8. 当前错误分类已覆盖第一版日志诊断需求，但尚未形成跨 provider / MCP / storage 的统一错误码文档
 
 ### 5.2 开发注意事项
 
@@ -235,7 +244,7 @@
 
 1. 丰富 `SearchRepository` 可过滤 metadata
 2. 引入更稳定的结果去重与轻量重排
-3. 在 `3.0.4` 基线下继续评估更多过滤条件下推、`EXPLAIN` 观测与 fallback 收敛，逐步减少应用侧二次过滤
+3. 在 `3.0.4` 基线下继续评估更多过滤条件下推、`EXPLAIN` 观测、候选窗口参数调优与 fallback 收敛，逐步减少应用侧二次过滤
 
 ### 6.3 第三优先级：扩展更多语言 parser
 
@@ -256,6 +265,13 @@
 ## 7. 当前进度结论
 
 当前项目已经越过“纯骨架”和“只有 fallback parser”的阶段，进入“索引主链路可运行、语义切块与文档结构化切块已落地”的阶段。
+
+同时，Surreal 原生向量检索的 v1 基线也已经稳定：
+
+1. 开发环境已完成 SurrealDB `3.0.4` 空库重部署验证
+2. native HNSW 检索已作为默认路径接入
+3. 多精确过滤条件场景已通过真实仓储测试回归
+4. 候选窗口参数已完成配置化，并补齐 `EXPLAIN FULL` 真实验证
 
 当前最合理的开发重点是：
 

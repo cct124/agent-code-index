@@ -11,8 +11,9 @@
 2. `project_metadata` 启动链路、真实 SurrealDB 验证、chunk/search 存储与检索已经完成
 3. `DefaultIndexRepositoryService` 与应用容器装配已经完成，索引写入主流程已闭环
 4. `voyage` 与 `openai-compatible` 两条 embedding provider 路径已经完成
-5. TypeScript/Python 的 tree-sitter 语义切块与 Markdown 结构化章节切块已经完成
-6. 当前最大的缺口已转为 MCP tool 层与上下文服务，而不是底层解析和索引能力
+5. TypeScript、JavaScript、Python 的 tree-sitter 语义切块与 Markdown 结构化章节切块已经完成
+6. Surreal 原生 HNSW 检索、`3.0.4` 开发基线验证、候选窗口参数配置化与 `EXPLAIN FULL` 真实验证已经完成
+7. 当前最大的缺口已转为 MCP tool 层与上下文服务，而不是底层解析和索引能力
 
 建议阅读顺序：
 

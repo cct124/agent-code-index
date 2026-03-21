@@ -17,6 +17,7 @@
 9. 第一版结构化日志、错误分类与脱敏能力落地
 10. metadata 驱动的 searchText 增强与 OpenAI-compatible / SiliconFlow 实网验证落地
 11. `query text -> query embedding -> search` 正式检索用例落地
+12. Surreal 原生向量检索迁移与 3.0.4 基线验证落地
 
 ## 2. 里程碑一：架构设计与工程骨架完成
 
@@ -95,8 +96,8 @@
 
 1. chunk 采用稳定 record id 写入
 2. chunk 按 `startLine / endLine` 稳定排序返回
-3. search 先按 `repositoryId + filters` 查询候选记录
-4. search 在应用侧计算余弦相似度并截断 `topK`
+3. search contract 与持久化映射已经稳定
+4. 该阶段的检索能力为后续 native 向量检索迁移提供了可回退基线
 
 该里程碑的意义是：
 
@@ -159,8 +160,6 @@
 1. 项目已经从“统一 fallback 切块”演进到“语言感知 + 文档结构感知 + fallback 兜底”的完整第一版能力
 2. 真实项目代码文件和 Markdown 文档的检索基础质量已显著提升
 
-## 10. 当前里程碑结论
-
 ## 10. 里程碑九：第一版结构化日志、错误分类与脱敏能力落地
 
 已完成：
@@ -193,8 +192,6 @@
 1. parser metadata 已不再只是“存下来”，而是开始真实进入向量化检索主链路
 2. 当前项目已经可以用低成本的 SiliconFlow 模型做真实 embedding 验证
 
-## 12. 当前里程碑结论
-
 ## 12. 里程碑十一：`query text -> query embedding -> search` 正式检索用例落地
 
 已完成：
@@ -210,7 +207,27 @@
 1. 检索链路已经从“调用方自己先算 embedding 再传给 repository”升级为可复用的正式业务用例
 2. 后续 MCP tool 与上下文服务可以直接依赖 core use case，而不是重复拼装 query embedding 流程
 
-## 13. 当前里程碑结论
+## 13. 里程碑十二：Surreal 原生向量检索迁移与 3.0.4 基线验证落地
+
+已完成：
+
+1. `SurrealChunkSchema` 已引入 HNSW 向量索引定义，并收敛 embedding 维度注入
+2. `SurrealSearchRepository` 已切换为 native HNSW 优先检索，保留应用层余弦 fallback
+3. 当前 native 路径已采用“DB 侧 `repositoryId + KNN`，应用层二次精确过滤”的保守策略
+4. 开发用 SurrealDB 已完成 `3.0.4` 空库重部署验证
+5. 已确认旧 `2.4.1` 数据目录不能直接被 `3.0.4` 复用，开发环境需走空库重建或官方升级路径
+6. `metadata` 字段 schema 已修正为兼容 `3.0.4` 的 `TYPE object FLEXIBLE` 语法顺序
+7. 多精确过滤条件 + HNSW KNN 的最小复现场景与真实仓储测试均已通过
+8. native 候选窗口参数已完成配置化，支持 `SEARCH_NATIVE_CANDIDATE_MULTIPLIER / SEARCH_NATIVE_EF_SEARCH_MIN`
+9. 已补齐 `EXPLAIN FULL` 真实环境测试，可验证 KnnScan 的 index、k、ef
+
+该里程碑的意义是：
+
+1. 仓库已经从“应用侧余弦排序”为主，演进到“数据库原生向量检索”为主的正式基线
+2. `3.0.4` 已成为当前开发环境下经过真实测试验证的 Surreal 向量检索版本基线
+3. 后续对过滤条件下推、候选窗口调优和 fallback 收敛的工作，已经建立在真实可观测的数据库执行计划之上
+
+## 14. 当前里程碑结论
 
 截至当前，可以将阶段成果概括为：
 
@@ -226,8 +243,9 @@
 10. 第一版结构化日志、错误分类与脱敏能力已落地
 11. metadata 驱动的 searchText 增强与 OpenAI-compatible / SiliconFlow 实网验证已落地
 12. `query text -> query embedding -> search` 正式检索用例已落地
+13. Surreal 原生向量检索迁移与 `3.0.4` 基线验证已落地
 
 下一阶段不再是补工程骨架，而是先将现有检索能力收敛为正式 use case：
 
 1. 将该检索用例通过 MCP tool 与上下文服务对外暴露
-2. 再增强排序、过滤与数据库侧向量能力
+2. 再增强排序、过滤下推、候选窗口调优与数据库侧向量能力
