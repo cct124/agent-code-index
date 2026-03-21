@@ -10,7 +10,7 @@
 2. 以 Node.js + TypeScript 为首个实现栈。
 3. 聚焦索引、检索、上下文组装三项核心能力。
 4. 先支持 MCP，后续可扩展到 HTTP、CLI 或其他 Agent 协议。
-5. 底层先集成 Surreal 作为存储，`voyage-code-3` 作为 embedding 模型。
+5. 底层先集成 Surreal 作为存储，embedding 层保持 provider 可替换。
 6. 同一项目在同一时间只启用一个 embedding 模型，不同项目可以通过 MCP 环境变量指定不同模型。
 7. 在代码索引之外，同时支持软件工程常见 Markdown 文档的结构化索引。
 
@@ -31,7 +31,7 @@
 1. 扫描仓库
 2. 切块
 3. 生成摘要或可检索文本
-4. 调用 `voyage-code-3` 生成 embedding
+4. 调用配置指定的 embedding provider 生成 embedding
 5. 写入 Surreal
 6. 执行语义检索
 7. 返回 MCP Tool 可直接使用的上下文
@@ -728,21 +728,37 @@ v1 可以先不实现完整 migration 系统，但至少应在设计上预留 sc
 
 ### 9.2 Embedding Provider 策略
 
-第一版默认 provider 为 Voyage，默认模型为 `voyage-code-3`，但整体设计需要允许后续扩展到其他 embedding provider。
+当前代码中的最小实现先落了 Voyage provider，但设计上的下一优先级应调整为：先补齐一个 OpenAI-compatible embedding provider，再在其上兼容更多服务商。
 
 建议职责拆分，代码位于 `packages/infra`：
 
 1. `embedding/provider-factory.ts`：根据配置选择具体 provider
-2. `embedding/voyage/voyage-client.ts`：封装 Voyage SDK 或 HTTP 调用细节
-3. `embedding/voyage/voyage-embedding-provider.ts`：实现 `EmbeddingProvider`
-4. 后续可新增 `embedding/<other-provider>/...`
+2. `embedding/openai-compatible/openai-compatible-client.ts`：封装 OpenAI-compatible HTTP 调用细节
+3. `embedding/openai-compatible/openai-compatible-embedding-provider.ts`：实现 `EmbeddingProvider`
+4. `embedding/voyage/voyage-client.ts`：封装 Voyage SDK 或 HTTP 调用细节
+5. `embedding/voyage/voyage-embedding-provider.ts`：实现 `EmbeddingProvider`
+6. 后续可新增 `embedding/<other-provider>/...`
+
+优先实现 OpenAI-compatible provider 的原因：
+
+1. 一层适配即可覆盖更多兼容 OpenAI embeddings 接口的服务商
+2. 可显著降低接入新 provider 的边际成本
+3. 更适合作为多 provider 演进前的过渡层，而不必立即引入完整网关
+4. 硅基流动这类服务可作为首批验证目标，因为其接口语义接近 OpenAI-compatible 生态
 
 第一版的实现策略：
 
 1. 同一项目只启用一个 provider
 2. 不同项目可启用不同 provider
-3. 默认使用 `voyage-code-3`
-4. provider 与 model 一旦为项目初始化，即默认锁定
+3. provider 与 model 一旦为项目初始化，即默认锁定
+4. 当前实现可以继续保留 Voyage 作为默认值，但设计上不应把默认值等同于唯一优先演进方向
+
+建议的近期演进顺序：
+
+1. 保留 Voyage provider，作为已存在的专用实现
+2. 下一步优先新增 `openai-compatible` provider
+3. 让硅基流动优先通过 `openai-compatible` provider 接入，而不是单独先做一套 `siliconflow` 专有抽象
+4. 当某个服务商出现显著的私有参数、鉴权流程或返回差异时，再单独拆分专有 provider
 
 应由实现层处理：
 
@@ -752,6 +768,7 @@ v1 可以先不实现完整 migration 系统，但至少应在设计上预留 sc
 4. 模型名配置
 5. API Key 注入
 6. 向量维度声明与校验
+7. `baseUrl` 与必要请求头扩展能力
 
 运行策略建议：
 
@@ -759,7 +776,23 @@ v1 可以先不实现完整 migration 系统，但至少应在设计上预留 sc
 2. v1 索引服务默认按批次串行调用 provider
 3. 当真实环境的限流、超时和失败模式更明确后，再通过固定并发池提升吞吐
 
-### 9.2.1 项目级 Embedding 配置
+### 9.2.1 OpenAI-compatible provider 优先级
+
+对于“尽可能支持更多 embedding 服务商”的目标，建议优先顺序为：
+
+1. 先做 `openai-compatible` provider
+2. 用它接入硅基流动等兼容 OpenAI embeddings API 的服务
+3. 再根据真实差异补充 Voyage、Jina、OpenRouter 或其他专有 provider
+4. 当 provider 数量、路由策略、审计、fallback、计费治理等需求明显增多时，再评估接入 Portkey 一类网关
+
+这样做的理由是：
+
+1. 当前项目仍处于索引主链路稳定阶段，不应过早引入完整网关复杂度
+2. OpenAI-compatible provider 可以先解决大多数“多服务商接入”问题
+3. 该方案与未来引入网关并不冲突，后续仍可把网关地址作为 `baseUrl` 接入
+4. 这比现在就为每个供应商单独实现 provider 更稳妥
+
+### 9.2.2 项目级 Embedding 配置
 
 配置模型应从 `VoyageConfig` 演进为通用的 `EmbeddingConfig`。
 
@@ -1058,9 +1091,10 @@ MCP Request
 
 其中 embedding 相关装配建议遵循：
 
-1. 默认 provider 为 Voyage
-2. 默认模型为 `voyage-code-3`
-3. 具体 provider 实现由配置驱动选择，而不是在 container 中写死
+1. 具体 provider 实现由配置驱动选择，而不是在 container 中写死
+2. 当前实现可以继续保留 Voyage 作为默认配置
+3. 下一步优先新增 `openai-compatible` provider，并允许通过 `baseUrl` 接入硅基流动等兼容服务
+4. container 只负责装配，不承担不同服务商协议差异判断
 
 ### 11.3 app.ts
 
