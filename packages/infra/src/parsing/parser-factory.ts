@@ -17,8 +17,8 @@ import { TypeScriptTreeSitterParser } from "./tree-sitter/languages/typescript-p
 /**
  * 解析器工厂。
  *
- * 当前第一版统一返回 fallback parser，后续接入 tree-sitter 后可在此处按扩展名
- * 或语言类型分派到更强的语言感知解析器。
+ * 当前按扩展名分派到 tree-sitter、Markdown 或 fallback parser，作为各语言
+ * 语义切块能力的统一入口。
  */
 export class ParserFactory {
   /** 当前默认使用的 fallback parser。 */

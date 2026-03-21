@@ -15,6 +15,7 @@
 7. 多 provider embedding 接入能力落地
 8. 代码 AST 解析与 Markdown 结构化 chunk 能力落地
 9. 第一版结构化日志、错误分类与脱敏能力落地
+10. metadata 驱动的 searchText 增强与 OpenAI-compatible / SiliconFlow 实网验证落地
 
 ## 2. 里程碑一：架构设计与工程骨架完成
 
@@ -143,13 +144,14 @@
 
 1. `chunk-utils.ts` 已统一 chunk 创建、searchText 标准化、hash 计算和窗口切块工具
 2. `TreeSitterParser` 公共基类已落地
-3. `TypeScriptTreeSitterParser` 已支持 class、function、method 和函数值变量提取
-4. `PythonTreeSitterParser` 已支持 class、top-level function 和 method 提取
-5. `MarkdownParser` 已支持标题章节切块
-6. `markdown-section-chunker.ts` 已支持 `heading / headingPath / sectionLevel / docType / frontmatter` metadata
-7. `ParserFactory` 已按扩展名分派到 TypeScript、Python、Markdown 和 fallback parser
-8. `RepositoryChunkPreparationService` 已通过真实模板文件完成集成验证
-9. parser 相关单元测试与集成测试已补齐并通过
+3. `TypeScriptTreeSitterParser` 已支持 class、function、method、constructor、getter、setter、field 和 default export 提取
+4. `JavaScriptTreeSitterParser` 已支持 class、function、method、constructor、getter、setter、field 和 default export 提取
+5. `PythonTreeSitterParser` 已支持 property getter/setter、classmethod、staticmethod、async method 和实例字段提取
+6. `MarkdownParser` 已支持标题章节切块
+7. `markdown-section-chunker.ts` 已支持 `heading / headingPath / sectionLevel / docType / frontmatter` metadata
+8. `ParserFactory` 已按扩展名分派到 TypeScript、TSX、JavaScript、JSX、Python、Markdown 和 fallback parser
+9. `RepositoryChunkPreparationService` 已通过真实模板文件完成集成验证
+10. parser 相关单元测试与集成测试已补齐并通过
 
 该里程碑的意义是：
 
@@ -175,7 +177,22 @@
 1. 当前仓库已经具备第一版可用的运行时观测能力
 2. 后续扩展 MCP tool 与上下文服务时，可以沿用统一日志字段和错误分类策略，而不是继续散落 `console` 输出
 
-## 11. 当前里程碑结论
+## 11. 里程碑十：metadata 驱动的 searchText 增强与 OpenAI-compatible / SiliconFlow 实网验证落地
+
+已完成：
+
+1. `chunk-utils.ts` 已支持将 language、symbolKind、symbolName、parentSymbol、部分高价值 tags、Markdown 文档信息拼入轻量语义头
+2. `searchText` 已成为当前 document embedding 的统一增强输入
+3. `SurrealSearchRepository` 已支持 `tags` 精确过滤
+4. `OpenAICompatibleEmbeddingProvider` 已补齐 opt-in 的真实集成测试
+5. 真实 SurrealDB + OpenAI-compatible provider 的 `prepare -> real embed -> upsert -> query embed -> search` 已完成整链路验证
+
+该里程碑的意义是：
+
+1. parser metadata 已不再只是“存下来”，而是开始真实进入向量化检索主链路
+2. 当前项目已经可以用低成本的 SiliconFlow 模型做真实 embedding 验证
+
+## 12. 当前里程碑结论
 
 截至当前，可以将阶段成果概括为：
 
@@ -189,5 +206,6 @@
 8. 多 provider embedding 接入能力已落地
 9. 代码 AST 解析与 Markdown 结构化 chunk 能力已落地
 10. 第一版结构化日志、错误分类与脱敏能力已落地
+11. metadata 驱动的 searchText 增强与 OpenAI-compatible / SiliconFlow 实网验证已落地
 
 下一阶段不再是补工程骨架，而是将现有能力通过 MCP tool 与上下文服务真正对外暴露。
