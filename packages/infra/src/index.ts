@@ -5,6 +5,14 @@ export {
   DefaultSurrealClient,
   createSurrealClient,
 } from "./storage/surreal/surreal-client.js";
+export { FallbackParser } from "./parsing/fallback-parser.js";
+export { ParserFactory } from "./parsing/parser-factory.js";
+export {
+  RepositoryChunkPreparationService,
+  type PrepareRepositoryChunksInput,
+  type PrepareRepositoryChunksResult,
+} from "./services/repository-chunk-preparation-service.js";
+export { LocalFileScanner } from "./scanning/local-file-scanner.js";
 export { SurrealChunkRepository } from "./storage/surreal/surreal-chunk-repository.js";
 export { SurrealChunkSchema } from "./storage/surreal/surreal-chunk-schema.js";
 export { SurrealProjectMetadataRepository } from "./storage/surreal/surreal-project-metadata-repository.js";

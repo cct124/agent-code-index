@@ -11,21 +11,43 @@ import type {
 
 import type { SurrealClient } from "./surreal-client.js";
 
+/**
+ * chunk 表中用于检索的存储记录结构。
+ *
+ * 该结构基本对应持久化后的 chunk 记录，并允许携带 embedding 供语义检索使用。
+ */
 interface StoredSearchChunk extends Record<string, unknown> {
+  /** SurrealDB 内部记录 id。 */
   id?: string;
+  /** 领域层 chunk id。 */
   chunkId: string;
+  /** 所属仓库标识。 */
   repositoryId: string;
+  /** 所属文件路径。 */
   filePath: string;
+  /** 代码语言。 */
   language: string;
+  /** 原始代码内容。 */
   content: string;
+  /** 用于检索的归一化文本。 */
   searchText: string;
+  /** 起始行号。 */
   startLine: number;
+  /** 结束行号。 */
   endLine: number;
+  /** 内容哈希。 */
   hash: string;
+  /** 附加元数据。 */
   metadata: ChunkMetadata;
+  /** 语义检索使用的 embedding 向量。 */
   embedding?: number[];
 }
 
+/**
+ * 允许从查询层透传到存储过滤条件的字段映射。
+ *
+ * key 为外部过滤参数名，value 为 Surreal 查询中对应的字段路径。
+ */
 const FILTER_FIELD_MAP = {
   filePath: "filePath",
   language: "language",
@@ -39,6 +61,10 @@ const FILTER_FIELD_MAP = {
 
 /**
  * SurrealDB 的 SearchRepository 默认实现。
+ *
+ * 当前第一版实现采用“两阶段检索”策略：
+ * 1. 先通过 repositoryId 和精确过滤条件查询候选 chunk
+ * 2. 再在应用层计算 embedding 余弦相似度并排序
  */
 export class SurrealSearchRepository implements SearchRepository {
   /** 当前使用的 Surreal 客户端。 */
@@ -53,6 +79,8 @@ export class SurrealSearchRepository implements SearchRepository {
 
   /**
    * 基于向量和过滤条件执行语义检索。
+   *
+   * 当 `topK` 非正数或查询向量为空时，直接返回空结果，避免无意义查询。
    */
   public async semanticSearch(
     input: SemanticSearchInput,
@@ -104,6 +132,11 @@ export class SurrealSearchRepository implements SearchRepository {
   }
 }
 
+/**
+ * 将外部过滤条件转换为 Surreal 查询片段与绑定参数。
+ *
+ * 当前仅支持字符串、数字和布尔值的精确匹配过滤。
+ */
 function buildFilterState(filters?: Record<string, unknown>): {
   clauses: string[];
   bindings: Record<string, string | number | boolean>;
@@ -146,6 +179,11 @@ function buildFilterState(filters?: Record<string, unknown>): {
   };
 }
 
+/**
+ * 计算候选向量与查询向量的余弦相似度。
+ *
+ * 若候选向量不存在、维度不一致或为空，则返回 `null` 表示该记录不可参与排序。
+ */
 function cosineSimilarity(
   candidate: number[] | undefined,
   query: number[],
@@ -178,6 +216,9 @@ function cosineSimilarity(
   return dotProduct / Math.sqrt(candidateMagnitude * queryMagnitude);
 }
 
+/**
+ * 将存储层记录映射为领域层 Chunk 对象。
+ */
 function toChunk(record: StoredSearchChunk): Chunk {
   return {
     id: record.chunkId,

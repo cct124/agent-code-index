@@ -12,8 +12,9 @@
 2. 配置模型与项目级 embedding 锁定已落地
 3. `project_metadata` 启动链路已落地并通过真实 SurrealDB 验证
 4. `SurrealChunkRepository` 和 `SurrealSearchRepository` 已完成第一版实现
-5. 轻量集成测试与真实 SurrealDB 集成测试已覆盖当前已落地链路
-6. parser、embedding provider、索引主流程和 MCP tool 仍未落地
+5. parser 与 chunking 第一版主流程已落地
+6. 轻量集成测试与真实 SurrealDB 集成测试已覆盖当前已落地链路
+7. embedding provider、完整索引写入编排和 MCP tool 仍未落地
 
 ## 2. 当前项目结构
 
@@ -55,7 +56,16 @@
 3. `SurrealChunkRepository` 批量写入、按仓库删除、按文件读取
 4. `SurrealSearchRepository` 基于已存储 embedding 的语义检索
 
-### 3.3 当前测试覆盖
+### 3.3 parser 与 chunking 能力
+
+当前已经可验证：
+
+1. `LocalFileScanner` 的仓库递归扫描与基础忽略规则
+2. `FallbackParser` 的固定窗口切块与重叠窗口切块
+3. `RepositoryChunkPreparationService` 的“扫描目录 -> 读取文件 -> 产出 Chunk[]”主流程
+4. 二进制文件跳过逻辑
+
+### 3.4 当前测试覆盖
 
 当前已经落地并通过的测试包括：
 
@@ -70,25 +80,27 @@
 9. `SurrealChunkRepository` 真实集成测试
 10. `SurrealSearchRepository` 轻量集成测试
 11. `SurrealSearchRepository` 真实集成测试
+12. `FallbackParser` 单元测试
+13. `LocalFileScanner` 单元测试
+14. `RepositoryChunkPreparationService` 单元测试
 
-截至最近一次回归，集成测试结果为：
+截至最近一次回归：
 
-1. 9 个测试文件通过
-2. 13 个测试通过
+1. unit 测试 5 个测试文件通过，12 个测试通过
+2. 默认 integration 测试 5 个测试文件通过，7 个测试通过，5 个真实测试跳过
+3. 启用真实 SurrealDB 后 integration 测试 10 个测试文件通过，14 个测试通过
 
 ## 4. 当前仍未完成内容
 
 以下能力仍未真正落地：
 
 1. 仓库扫描实现
-2. parser / tree-sitter 实现
+2. tree-sitter 驱动的语言感知 parser 实现
 3. embedding provider factory 与真实 embedding 调用链
-4. chunk 切分与索引写入主流程
-5. chunk/search 的正式 schema initialization 与索引定义
-6. chunk 存储层自动写入 embedding 字段的完整闭环
-7. 基于数据库向量索引的检索优化
-8. MCP tool server 与具体工具实现
-9. 真实 SurrealDB 环境下的端到端索引与检索测试
+4. embedding 批量生成并写入存储的完整索引编排
+5. 基于数据库向量索引的检索优化
+6. MCP tool server 与具体工具实现
+7. 真实 SurrealDB 环境下的端到端索引与检索测试
 
 ## 5. 当前风险与注意点
 
@@ -96,53 +108,73 @@
 
 1. `project_metadata` schema 已具备幂等初始化，但 chunk/search 的正式 schema 与索引尚未落地
 2. `SurrealSearchRepository` 当前采用应用侧余弦相似度排序，不是数据库侧向量索引检索
-3. 当前 search 依赖候选记录中已有 `embedding` 字段，但 chunk 领域模型和写入主流程尚未把 embedding 正式打通
-4. `createApp()` 已经是异步启动流程，后续接入真实 MCP server 时必须正确 await
-5. 当前 embedding provider 仅支持 `voyage`，但配置模型已为扩展留口
+3. parser 当前仍然是 fallback 策略，尚未具备 AST 级语言感知切块能力
+4. 当前尚未接入真实 embedding provider，索引主流程仍缺“文本 -> 向量”生成步骤
+5. `createApp()` 已经是异步启动流程，后续接入真实 MCP server 时必须正确 await
+6. 当前 embedding provider 仅支持 `voyage`，但配置模型已为扩展留口
 
 ### 5.2 开发注意事项
 
 1. 后续新增存储表和索引时，应复用当前幂等 schema initialization 模式
 2. 后续新增 provider 时，应沿用 `EMBEDDING_*` 的统一配置接口
 3. 不应在 `core` 层引入任何 Surreal 或 MCP 细节
-4. 在实现索引主流程前，应先补齐 chunk/search 的 schema 与 embedding 存储模型
+4. 当前 parser/chunking 已可用，但后续需要将 tree-sitter 能力限制在 `packages/infra`
+5. 在实现完整索引主流程前，应先定义 EmbeddingProvider 与批量生成向量的编排边界
+
+### 5.3 embedding 领域决策
+
+当前关于 `Chunk.embedding` 的领域决策如下：
+
+1. 对最终系统语义来说，embedding 应该是必选
+2. 对当前过渡代码来说，暂时保留为可选是可以接受的
+3. 这种“过渡性可选”状态不应长期保留
+
+原因是：
+
+1. 项目的核心目标是为 Agent 提供基于 RAG 的代码检索能力
+2. 真正进入索引与检索主链路的 chunk 最终都应具备 embedding
+3. 当前之所以暂时保留为可选，只是为了在 parser、embedding provider 和索引服务尚未完成前允许分阶段落地
+
+后续收敛方向应为：
+
+1. 在索引主流程打通后，将 embedding 从“过渡性可选”收紧为“面向索引产物的必选字段”
+2. 必要时区分“原始 chunk”和“已索引 chunk”模型，避免长期保持领域语义模糊
 
 ## 6. 下一步开发建议
 
 建议按以下顺序继续推进。
 
-### 6.1 第一优先级：补齐 chunk/search 的 schema 与 embedding 存储模型
+### 6.1 第一优先级：实现 embedding provider factory 与真实 embedding 调用
 
 建议先完成：
-
-1. chunk 相关表结构定义
-2. embedding 字段定义
-3. 必要索引定义
-4. 启动期 schema initialization 接入
-
-原因：
-
-1. 当前 chunk/search 虽已实现第一版行为，但底层 schema 仍未正式固化
-2. 如果不先补 schema 和 embedding 存储模型，索引主流程无法稳定闭环
-
-### 6.2 第二优先级：实现 parser 与 chunking 主流程
-
-建议内容：
-
-1. 在 `infra/parsing` 下接入 tree-sitter
-2. 先支持 TypeScript 与 Python
-3. 建立 parser factory
-4. 实现 fallback parser
-5. 定义 chunking 规则与 searchText 生成规则
-
-### 6.3 第三优先级：实现 embedding provider factory 与真实 provider 调用
-
-建议内容：
 
 1. 定义 `EmbeddingProvider` contract
 2. 新增 provider factory
 3. 接入 Voyage client
 4. 将 `EMBEDDING_*` 配置与 provider 初始化打通
+
+原因：
+
+1. 当前 parser/chunking 与 chunk/search 存储链路都已具备基础能力
+2. 索引主流程当前最关键的缺口已变成“文本 -> 向量”的真实生成能力
+
+### 6.2 第二优先级：实现索引写入主流程
+
+建议内容：
+
+1. 扫描仓库并准备 chunk
+2. 批量生成 chunk embedding
+3. 将结果写入 `SurrealChunkRepository`
+4. 输出索引统计结果
+
+### 6.3 第三优先级：增强 parser 为 tree-sitter 驱动实现
+
+建议内容：
+
+1. 在 `infra/parsing` 下接入 tree-sitter
+2. 先支持 TypeScript 与 Python
+3. 建立语言感知 parser
+4. 保留 fallback parser 作为退化路径
 
 ### 6.4 第四优先级：实现索引与检索服务
 

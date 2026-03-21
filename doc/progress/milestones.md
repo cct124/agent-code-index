@@ -11,6 +11,7 @@
 3. `project_metadata` schema 初始化与启动链路落地
 4. 真实 SurrealDB 连接与启动验证落地
 5. chunk/search 第一版真实存储与检索能力落地
+6. parser 与 chunking 第一版主流程落地
 
 ## 2. 里程碑一：架构设计与工程骨架完成
 
@@ -99,6 +100,31 @@
 
 ## 7. 当前里程碑结论
 
+## 7. 里程碑六：parser 与 chunking 第一版主流程落地
+
+已完成：
+
+1. `FileScanner` 与 `Parser` contract 已定义
+2. `LocalFileScanner` 已实现仓库递归扫描与基础忽略规则
+3. `FallbackParser` 已实现按固定行窗口和重叠窗口切块
+4. `ParserFactory` 已落地并以 fallback parser 作为当前默认实现
+5. `RepositoryChunkPreparationService` 已实现“扫描目录 -> 读取文件 -> 产出 Chunk[]”的主流程
+6. fallback parser、本地扫描器与主流程服务的单元测试已落地
+
+当前这一版的实现特点是：
+
+1. 先确保 parser/chunking 链路可用，不被 tree-sitter 阻塞
+2. chunk 产出保留 `filePath / startLine / endLine / hash / searchText`
+3. 对二进制文件采用跳过策略
+4. 通过 parser factory 为后续接入 tree-sitter 保留扩展点
+
+该里程碑的意义是：
+
+1. 索引主流程已经不再缺少“扫描与切块”这一步
+2. 后续只需继续补 embedding provider 与索引写入编排即可向完整索引闭环推进
+
+## 8. 当前里程碑结论
+
 截至当前，可以将阶段成果概括为：
 
 1. 架构已定型
@@ -107,5 +133,6 @@
 4. 启动期 schema 初始化与元数据校验已落地
 5. 真实数据库验证能力已建立
 6. chunk/search 第一版存储与检索能力已落地
+7. parser 与 chunking 第一版主流程已落地
 
 下一阶段不再是补工程骨架，而是把索引主链路真正闭环。
