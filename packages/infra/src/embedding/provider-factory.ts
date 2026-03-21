@@ -1,6 +1,10 @@
 import type { EmbeddingProvider } from "@agent-code-index/core";
 
 import {
+  OpenAICompatibleEmbeddingProvider,
+  type OpenAICompatibleEmbeddingProviderConfig,
+} from "./openai-compatible/openai-compatible-embedding-provider.js";
+import {
   VoyageEmbeddingProvider,
   type VoyageEmbeddingProviderConfig,
 } from "./voyage-embedding-provider.js";
@@ -8,23 +12,14 @@ import {
 /**
  * 当前支持的 embedding provider 名称。
  */
-export type EmbeddingProviderName = "voyage";
+export type EmbeddingProviderName = "voyage" | "openai-compatible";
 
 /**
  * 创建 embedding provider 所需的配置。
  */
-export interface EmbeddingProviderConfig {
-  /** 第三方 provider 名称。 */
-  provider: EmbeddingProviderName;
-  /** 绑定的 embedding 模型名称。 */
-  model: string;
-  /** 返回向量维度。 */
-  vectorDimension: number;
-  /** 第三方服务访问密钥。 */
-  apiKey?: string;
-  /** 第三方服务基础地址。 */
-  baseUrl?: string;
-}
+export type EmbeddingProviderConfig =
+  | OpenAICompatibleEmbeddingProviderConfig
+  | VoyageEmbeddingProviderConfig;
 
 /**
  * 根据配置创建 embedding provider。
@@ -33,12 +28,17 @@ export function createEmbeddingProvider(
   config: EmbeddingProviderConfig,
 ): EmbeddingProvider {
   switch (config.provider) {
+    case "openai-compatible":
+      return new OpenAICompatibleEmbeddingProvider(config);
     case "voyage":
       return new VoyageEmbeddingProvider(config);
   }
 }
 
 /**
- * 将通用配置约束为 Voyage provider 所需结构。
+ * 导出具体 provider 配置类型。
  */
-export type { VoyageEmbeddingProviderConfig };
+export type {
+  OpenAICompatibleEmbeddingProviderConfig,
+  VoyageEmbeddingProviderConfig,
+};

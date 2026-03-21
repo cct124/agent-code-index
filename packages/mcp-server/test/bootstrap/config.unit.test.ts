@@ -24,6 +24,21 @@ function createBaseEnv(): Record<string, string> {
 }
 
 describe("loadConfig", () => {
+  it("loads valid openai-compatible embedding config", () => {
+    const config = loadConfig({
+      ...createBaseEnv(),
+      EMBEDDING_PROVIDER: "openai-compatible",
+      EMBEDDING_MODEL: "Qwen/Qwen3-Embedding-8B",
+      EMBEDDING_BASE_URL: "https://api.siliconflow.cn/v1",
+      EMBEDDING_VECTOR_DIMENSION: "4096",
+    });
+
+    expect(config.embedding.provider).toBe("openai-compatible");
+    expect(config.embedding.model).toBe("Qwen/Qwen3-Embedding-8B");
+    expect(config.embedding.baseUrl).toBe("https://api.siliconflow.cn/v1");
+    expect(config.embedding.vectorDimension).toBe(4096);
+  });
+
   it("loads valid config and derives namespace from project space", () => {
     const config = loadConfig({
       ...createBaseEnv(),
@@ -56,6 +71,16 @@ describe("loadConfig", () => {
         EMBEDDING_API_KEY: "",
       }),
     ).toThrow("Voyage embedding requires EMBEDDING_API_KEY");
+  });
+
+  it("fails when openai-compatible embedding api key is missing", () => {
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        EMBEDDING_PROVIDER: "openai-compatible",
+        EMBEDDING_API_KEY: "",
+      }),
+    ).toThrow("OpenAI-compatible embedding requires EMBEDDING_API_KEY");
   });
 
   it("fails when vector dimension is not a positive integer", () => {

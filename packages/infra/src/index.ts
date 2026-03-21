@@ -7,6 +7,10 @@ export {
   type EmbeddingProviderName,
 } from "./embedding/provider-factory.js";
 export {
+  OpenAICompatibleEmbeddingProvider,
+  type OpenAICompatibleEmbeddingProviderConfig,
+} from "./embedding/openai-compatible/openai-compatible-embedding-provider.js";
+export {
   VoyageEmbeddingProvider,
   type VoyageEmbeddingProviderConfig,
 } from "./embedding/voyage-embedding-provider.js";

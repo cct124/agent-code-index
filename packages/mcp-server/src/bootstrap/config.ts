@@ -31,7 +31,7 @@ export interface SurrealConfig {
 /**
  * Embedding 服务提供方。
  */
-export type EmbeddingProvider = "voyage";
+export type EmbeddingProvider = "voyage" | "openai-compatible";
 
 /**
  * Embedding 服务配置。
@@ -98,9 +98,17 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
 
   validateSurrealAuth(surreal);
 
+  const embeddingProvider = embeddingProviderEnv(
+    env,
+    "EMBEDDING_PROVIDER",
+    "voyage",
+  );
+
   const embedding: EmbeddingConfig = {
-    provider: embeddingProviderEnv(env, "EMBEDDING_PROVIDER", "voyage"),
-    model: optionalEnv(env, "EMBEDDING_MODEL") ?? "voyage-code-3",
+    provider: embeddingProvider,
+    model:
+      optionalEnv(env, "EMBEDDING_MODEL") ??
+      defaultEmbeddingModelForProvider(embeddingProvider),
     vectorDimension: integerEnv(env, "EMBEDDING_VECTOR_DIMENSION"),
     apiKey: optionalEnv(env, "EMBEDDING_API_KEY"),
     baseUrl: optionalEnv(env, "EMBEDDING_BASE_URL"),
@@ -260,7 +268,25 @@ function embeddingProviderEnv(
     return value;
   }
 
-  throw new Error(`Environment variable ${key} must be 'voyage'`);
+  if (value === "openai-compatible") {
+    return value;
+  }
+
+  throw new Error(
+    `Environment variable ${key} must be 'voyage' or 'openai-compatible'`,
+  );
+}
+
+/**
+ * 根据 provider 返回默认模型名。
+ */
+function defaultEmbeddingModelForProvider(provider: EmbeddingProvider): string {
+  switch (provider) {
+    case "openai-compatible":
+      return "text-embedding-3-large";
+    case "voyage":
+      return "voyage-code-3";
+  }
 }
 
 /**
@@ -288,7 +314,14 @@ function validateSurrealAuth(config: SurrealConfig): void {
  * 校验 embedding 配置是否满足当前 provider 的要求。
  */
 function validateEmbeddingConfig(config: EmbeddingConfig): void {
-  if (config.provider === "voyage" && !config.apiKey) {
-    throw new Error("Voyage embedding requires EMBEDDING_API_KEY");
+  if (!config.apiKey) {
+    switch (config.provider) {
+      case "openai-compatible":
+        throw new Error(
+          "OpenAI-compatible embedding requires EMBEDDING_API_KEY",
+        );
+      case "voyage":
+        throw new Error("Voyage embedding requires EMBEDDING_API_KEY");
+    }
   }
 }
