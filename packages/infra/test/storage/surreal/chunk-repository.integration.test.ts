@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import type { Logger } from "../../../../core/src/index.js";
 import type { Chunk } from "../../../../core/src/domain/chunk.js";
 
 import { SurrealChunkRepository } from "../../../src/storage/surreal/surreal-chunk-repository.js";
@@ -31,6 +32,18 @@ function createChunk(overrides: Partial<Chunk> = {}): Chunk {
 }
 
 describe("SurrealChunkRepository", () => {
+  function createLogger(): Logger {
+    return {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      child: vi.fn(function (this: Logger) {
+        return this;
+      }),
+    };
+  }
+
   it("upserts chunks and reads them back by file path ordered by line range", async () => {
     const store = new Map<string, StoredChunkRecord>();
     const connect = vi.fn(async () => undefined);
@@ -225,5 +238,35 @@ describe("SurrealChunkRepository", () => {
     expect(repoAChunks).toEqual([]);
     expect(repoBChunks).toHaveLength(1);
     expect(repoBChunks[0]?.repositoryId).toBe("repo-b");
+  });
+
+  it("logs classified error fields when repository deletion fails", async () => {
+    const logger = createLogger();
+    const repository = new SurrealChunkRepository(
+      {
+        config: {} as never,
+        connect: vi.fn(async () => undefined),
+        disconnect: vi.fn(async () => undefined),
+        driver: {
+          query: vi.fn(async () => {
+            throw new Error("ECONNREFUSED while deleting chunk records");
+          }),
+        } as never,
+        healthCheck: vi.fn(async () => ({}) as never),
+      },
+      logger,
+    );
+
+    await expect(repository.deleteByRepository("repo-a")).rejects.toThrow(
+      /ECONNREFUSED/,
+    );
+    expect(logger.error).toHaveBeenCalledWith(
+      "Repository chunk deletion failed",
+      expect.objectContaining({
+        repositoryId: "repo-a",
+        errCode: "surreal_connection_error",
+        retryable: true,
+      }),
+    );
   });
 });

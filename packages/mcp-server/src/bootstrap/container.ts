@@ -67,7 +67,10 @@ export function createContainer(config: AppConfig): AppContainer {
     component: "AppContainer",
     projectSpace: config.projectSpace,
   });
-  const surrealClient = createSurrealClient(toSurrealConnectionConfig(config));
+  const surrealClient = createSurrealClient(
+    toSurrealConnectionConfig(config),
+    logger.child({ module: "surreal-client" }),
+  );
   const embeddingProvider = createEmbeddingProvider(
     {
       provider: config.embedding.provider,
@@ -78,8 +81,14 @@ export function createContainer(config: AppConfig): AppContainer {
     },
     logger.child({ module: "embedding" }),
   );
-  const chunkRepository = new SurrealChunkRepository(surrealClient);
-  const searchRepository = new SurrealSearchRepository(surrealClient);
+  const chunkRepository = new SurrealChunkRepository(
+    surrealClient,
+    logger.child({ module: "chunk-repository" }),
+  );
+  const searchRepository = new SurrealSearchRepository(
+    surrealClient,
+    logger.child({ module: "search-repository" }),
+  );
   const chunkPreparationService = new DefaultRepositoryChunkPreparationService(
     new LocalFileScanner(config.indexing.ignorePatterns),
     new ParserFactory({}, logger.child({ module: "parsing" })),

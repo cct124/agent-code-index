@@ -14,6 +14,7 @@
 6. 索引写入主流程落地
 7. 多 provider embedding 接入能力落地
 8. 代码 AST 解析与 Markdown 结构化 chunk 能力落地
+9. 第一版结构化日志、错误分类与脱敏能力落地
 
 ## 2. 里程碑一：架构设计与工程骨架完成
 
@@ -157,6 +158,25 @@
 
 ## 10. 当前里程碑结论
 
+## 10. 里程碑九：第一版结构化日志、错误分类与脱敏能力落地
+
+已完成：
+
+1. `core` 已定义统一 `Logger` 抽象与标准字段约定
+2. `mcp-server` 已引入 `pino` 作为统一日志实现
+3. 启动、索引、embedding、parser 主链路已接入结构化日志
+4. `DefaultSurrealClient`、`SurrealChunkRepository`、`SurrealSearchRepository` 已接入统一 child logger
+5. Surreal 存储主链路已具备 `errCode / retryable / httpStatus` 错误分类
+6. token、password、apiKey 等敏感字段已纳入统一脱敏策略
+7. 日志、错误分类与脱敏相关单元测试已补齐
+
+该里程碑的意义是：
+
+1. 当前仓库已经具备第一版可用的运行时观测能力
+2. 后续扩展 MCP tool 与上下文服务时，可以沿用统一日志字段和错误分类策略，而不是继续散落 `console` 输出
+
+## 11. 当前里程碑结论
+
 截至当前，可以将阶段成果概括为：
 
 1. 架构已定型
@@ -168,5 +188,6 @@
 7. 索引写入主流程已落地
 8. 多 provider embedding 接入能力已落地
 9. 代码 AST 解析与 Markdown 结构化 chunk 能力已落地
+10. 第一版结构化日志、错误分类与脱敏能力已落地
 
 下一阶段不再是补工程骨架，而是将现有能力通过 MCP tool 与上下文服务真正对外暴露。

@@ -54,6 +54,10 @@ function createConfig(): AppConfig {
       defaultTopK: 10,
       ignorePatterns: ["node_modules", ".git"],
     },
+    logging: {
+      level: "info",
+      pretty: true,
+    },
   };
 }
 

@@ -1,6 +1,7 @@
 /**
  * 基于 SurrealDB 的 ChunkRepository 骨架实现。
  */
+import { NOOP_LOGGER, type Logger } from "@agent-code-index/core";
 import { RecordId } from "surrealdb";
 
 import type {
@@ -11,6 +12,7 @@ import type {
 } from "@agent-code-index/core";
 
 import type { SurrealClient } from "./surreal-client.js";
+import { createSurrealErrorLogFields } from "./surreal-log-utils.js";
 
 /**
  * chunk 表的逻辑表名。
@@ -57,12 +59,19 @@ interface StoredChunk extends Record<string, unknown> {
 export class SurrealChunkRepository implements ChunkRepository {
   /** 当前使用的 Surreal 客户端。 */
   private readonly client: SurrealClient;
+  /** 结构化日志接口。 */
+  private readonly logger: Logger;
 
   /**
    * 初始化 SurrealChunkRepository。
    */
-  public constructor(client: SurrealClient) {
+  public constructor(client: SurrealClient, logger: Logger = NOOP_LOGGER) {
     this.client = client;
+    this.logger = logger.child({
+      package: "infra",
+      module: "surreal-chunk-repository",
+      component: "SurrealChunkRepository",
+    });
   }
 
   /**
@@ -73,15 +82,37 @@ export class SurrealChunkRepository implements ChunkRepository {
    */
   public async upsertMany(chunks: Chunk[]): Promise<void> {
     if (chunks.length === 0) {
+      this.logger.debug("Chunk upsert skipped because batch is empty");
       return;
     }
 
-    await this.client.connect();
+    const logger = this.logger.child({
+      operation: "chunk-upsert-many",
+      repositoryId: chunks[0]?.repositoryId,
+      chunkCount: chunks.length,
+    });
 
-    for (const chunk of chunks) {
-      await this.client.driver
-        .upsert<StoredChunk>(this.recordId(chunk))
-        .content(this.toStoredChunk(chunk));
+    logger.info("Chunk upsert started");
+
+    try {
+      await this.client.connect();
+
+      for (const chunk of chunks) {
+        await this.client.driver
+          .upsert<StoredChunk>(this.recordId(chunk))
+          .content(this.toStoredChunk(chunk));
+      }
+
+      logger.info("Chunk upsert completed");
+    } catch (error) {
+      logger.error(
+        "Chunk upsert failed",
+        createSurrealErrorLogFields(error, {
+          repositoryId: chunks[0]?.repositoryId,
+          chunkCount: chunks.length,
+        }),
+      );
+      throw error;
     }
   }
 
@@ -89,14 +120,31 @@ export class SurrealChunkRepository implements ChunkRepository {
    * 删除指定仓库的全部 chunk。
    */
   public async deleteByRepository(repositoryId: string): Promise<void> {
-    await this.client.connect();
+    const logger = this.logger.child({
+      operation: "chunk-delete-by-repository",
+      repositoryId,
+    });
 
-    await this.client.driver.query(
-      "DELETE chunk WHERE repositoryId = $repositoryId;",
-      {
-        repositoryId,
-      },
-    );
+    logger.info("Deleting repository chunks");
+
+    try {
+      await this.client.connect();
+
+      await this.client.driver.query(
+        "DELETE chunk WHERE repositoryId = $repositoryId;",
+        {
+          repositoryId,
+        },
+      );
+
+      logger.info("Repository chunk deletion completed");
+    } catch (error) {
+      logger.error(
+        "Repository chunk deletion failed",
+        createSurrealErrorLogFields(error, { repositoryId }),
+      );
+      throw error;
+    }
   }
 
   /**
@@ -107,21 +155,42 @@ export class SurrealChunkRepository implements ChunkRepository {
   public async findByFilePath(
     input: FindChunksByFilePathInput,
   ): Promise<Chunk[]> {
-    await this.client.connect();
+    const logger = this.logger.child({
+      operation: "chunk-find-by-file-path",
+      repositoryId: input.repositoryId,
+      filePath: input.filePath,
+    });
 
-    const [records] = await this.client.driver.query<[StoredChunk[]]>(
-      [
-        "SELECT * FROM chunk",
-        "WHERE repositoryId = $repositoryId AND filePath = $filePath",
-        "ORDER BY startLine ASC, endLine ASC;",
-      ].join(" "),
-      {
-        repositoryId: input.repositoryId,
-        filePath: input.filePath,
-      },
-    );
+    try {
+      await this.client.connect();
 
-    return (records ?? []).map((record) => this.toChunk(record));
+      const [records] = await this.client.driver.query<[StoredChunk[]]>(
+        [
+          "SELECT * FROM chunk",
+          "WHERE repositoryId = $repositoryId AND filePath = $filePath",
+          "ORDER BY startLine ASC, endLine ASC;",
+        ].join(" "),
+        {
+          repositoryId: input.repositoryId,
+          filePath: input.filePath,
+        },
+      );
+
+      logger.info("Chunk lookup completed", {
+        chunkCount: records?.length ?? 0,
+      });
+
+      return (records ?? []).map((record) => this.toChunk(record));
+    } catch (error) {
+      logger.error(
+        "Chunk lookup failed",
+        createSurrealErrorLogFields(error, {
+          repositoryId: input.repositoryId,
+          filePath: input.filePath,
+        }),
+      );
+      throw error;
+    }
   }
 
   /**

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import type { Logger } from "../../../../core/src/index.js";
 import { SurrealSearchRepository } from "../../../src/storage/surreal/surreal-search-repository.js";
 
 interface Chunk {
@@ -60,6 +61,18 @@ function createStoredChunk(
 }
 
 describe("SurrealSearchRepository", () => {
+  function createLogger(): Logger {
+    return {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      child: vi.fn(function (this: Logger) {
+        return this;
+      }),
+    };
+  }
+
   it("sorts results by cosine similarity and applies exact-match filters", async () => {
     const connect = vi.fn(async () => undefined);
     const query = vi.fn(async () => [
@@ -178,5 +191,44 @@ describe("SurrealSearchRepository", () => {
       }),
     ).rejects.toThrow(/Unsupported search filter/);
     expect(query).not.toHaveBeenCalled();
+  });
+
+  it("logs classified error fields when the database query fails", async () => {
+    const logger = createLogger();
+    const repository = new SurrealSearchRepository(
+      {
+        config: {} as never,
+        connect: vi.fn(async () => undefined),
+        disconnect: vi.fn(async () => undefined),
+        driver: {
+          query: vi.fn(async () => {
+            throw new Error("query failed with status 503");
+          }),
+        } as never,
+        healthCheck: vi.fn(async () => ({}) as never),
+      },
+      logger,
+    );
+
+    await expect(
+      repository.semanticSearch({
+        repositoryId: "repo-a",
+        embedding: [1, 0, 0],
+        topK: 3,
+        filters: {
+          filePath: "src/index.ts",
+        },
+      }),
+    ).rejects.toThrow(/503/);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      "Semantic search failed",
+      expect.objectContaining({
+        repositoryId: "repo-a",
+        errCode: "surreal_server_error",
+        retryable: true,
+        httpStatus: 503,
+      }),
+    );
   });
 });

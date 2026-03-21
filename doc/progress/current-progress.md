@@ -15,8 +15,9 @@
 5. `DefaultIndexRepositoryService` 已完成并接入应用容器
 6. `EmbeddingProvider` contract、provider factory、`VoyageEmbeddingProvider` 与 `OpenAI-compatible provider` 已落地
 7. parser 与 chunking 已从 fallback 主流程演进到“tree-sitter 代码语义解析 + Markdown 章节切块 + fallback 兜底”的完整第一版实现
-8. 轻量集成测试、真实 SurrealDB 集成测试和基于真实模板文件的 parser 集成测试已覆盖当前主链路
-9. MCP tool server 与具体工具实现仍未落地
+8. 启动、索引、embedding、parser 与 Surreal 存储主链路的第一版结构化日志已落地，并引入统一错误分类与日志脱敏策略
+9. 轻量集成测试、真实 SurrealDB 集成测试和基于真实模板文件的 parser 集成测试已覆盖当前主链路
+10. MCP tool server 与具体工具实现仍未落地
 
 ## 2. 当前项目结构
 
@@ -58,6 +59,8 @@
 2. `SurrealProjectMetadataRepository` 真实读写
 3. `SurrealChunkRepository` 批量写入、按仓库删除、按文件读取
 4. `SurrealSearchRepository` 基于已存储 embedding 的语义检索
+5. Surreal client、chunk repository、search repository 已接入统一结构化日志
+6. Surreal 存储主链路已具备 `errCode / retryable / httpStatus` 错误分类与日志脱敏策略
 
 ### 3.3 parser 与 chunking 能力
 
@@ -83,7 +86,17 @@
 4. `OpenAICompatibleEmbeddingProvider` 已具备最小 HTTP 调用能力
 5. provider factory 已支持 `voyage | openai-compatible`
 
-### 3.5 索引主链路能力
+### 3.5 可观测性能力
+
+当前已经可验证：
+
+1. `core` 已定义跨包统一 `Logger` 抽象和标准日志字段约定
+2. `mcp-server` 已使用 `pino` 作为统一日志实现
+3. 开发态已支持 pretty 输出，生产态可直接输出结构化 JSON
+4. 启动、索引、embedding、parser、Surreal client、chunk repository、search repository 已使用统一 child logger 模式
+5. 日志默认避免输出 token、password、apiKey 等敏感字段
+
+### 3.6 索引主链路能力
 
 当前已经可验证：
 
@@ -92,7 +105,7 @@
 3. `mcp-server` 的 container 已装配 `chunkPreparationService / embeddingProvider / chunkRepository / searchRepository / indexRepositoryService`
 4. 已具备真实 SurrealDB 环境下的 `prepare -> embed -> upsert -> search` 链路集成测试
 
-### 3.6 当前测试覆盖
+### 3.7 当前测试覆盖
 
 当前已经落地并通过的测试包括：
 
@@ -117,6 +130,8 @@
 19. `RepositoryChunkPreparationService` 基于真实模板文件的集成测试
 20. `DefaultIndexRepositoryService` 单元测试
 21. 真实 SurrealDB 环境下的 `prepare -> embed -> upsert -> search` 集成测试
+22. `surreal-log-utils` 单元测试
+23. `DefaultSurrealClient` 日志与错误分类单元测试
 
 截至最近一次回归，以下验证已通过：
 
@@ -125,6 +140,7 @@
 3. parser 相关测试、全量 `typecheck` 与全量 `build` 已串行通过
 4. OpenAI-compatible provider 相关 unit 测试已通过
 5. 真实 SurrealDB 环境下的启动链路、chunk/search 仓储和索引整链路测试已通过
+6. Surreal 存储层日志、错误分类和脱敏策略相关单元测试已通过
 
 ## 4. 当前仍未完成内容
 
@@ -136,6 +152,7 @@
 4. 检索结果到 `ContextPacket` 的完整上下文组装服务
 5. 面向真实外部 embedding 服务的端到端索引测试
 6. parser metadata 的进一步增强，例如 decorator、visibility、import/export 等结构信息
+7. requestId / indexingRunId 等跨请求链路追踪字段尚未贯穿到全部模块
 
 ## 5. 当前风险与注意点
 
@@ -147,6 +164,7 @@
 4. 当前已接入 Voyage 与 OpenAI-compatible provider，但真实第三方 provider 的端到端索引链路仍缺实网验证
 5. `createApp()` 已经是异步启动流程，后续接入真实 MCP server 时必须正确 await
 6. 当前 embedding provider 已支持 `voyage` 与 `openai-compatible`，但 provider 级重试、限流和并发控制仍较薄
+7. 当前错误分类已覆盖第一版日志诊断需求，但尚未形成跨 provider / MCP / storage 的统一错误码文档
 
 ### 5.2 开发注意事项
 
@@ -156,6 +174,7 @@
 4. 当前 tree-sitter 和 Markdown 解析能力都应继续限制在 `packages/infra`
 5. 后续新增语言 parser 时，应复用当前 `ParserFactory + TreeSitterParser + fallback` 的分层模式
 6. 后续若要提升吞吐，应优先增强 provider 的重试、退避和批次并发控制，而不是绕过当前索引服务抽象
+7. 日志中不应输出 token、password、apiKey、Authorization 等敏感字段，新增日志点应复用当前脱敏工具
 
 ### 5.3 embedding 领域决策
 

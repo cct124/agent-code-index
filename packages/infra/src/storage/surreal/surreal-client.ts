@@ -1,7 +1,13 @@
 /**
  * SurrealDB 客户端封装，统一处理连接、鉴权和健康检查。
  */
+import { NOOP_LOGGER, type Logger } from "@agent-code-index/core";
 import { Surreal } from "surrealdb";
+
+import {
+  createSurrealErrorLogFields,
+  sanitizeSurrealConnectionConfig,
+} from "./surreal-log-utils.js";
 
 /**
  * SurrealDB 的部署模式。
@@ -73,14 +79,26 @@ export class DefaultSurrealClient implements SurrealClient {
   /** 底层官方客户端实例。 */
   public readonly driver: Surreal;
 
+  /** 结构化日志接口。 */
+  private readonly logger: Logger;
+
   private isConnected = false;
 
   /**
    * 初始化一个默认的 SurrealDB 客户端实例。
    */
-  public constructor(config: SurrealConnectionConfig, driver = new Surreal()) {
+  public constructor(
+    config: SurrealConnectionConfig,
+    driver = new Surreal(),
+    logger: Logger = NOOP_LOGGER,
+  ) {
     this.config = config;
     this.driver = driver;
+    this.logger = logger.child({
+      package: "infra",
+      module: "surreal-client",
+      component: "DefaultSurrealClient",
+    });
   }
 
   /**
@@ -88,17 +106,38 @@ export class DefaultSurrealClient implements SurrealClient {
    */
   public async connect(): Promise<void> {
     if (this.isConnected) {
+      this.logger.debug("Surreal client already connected");
       return;
     }
 
-    await this.driver.connect(this.config.url);
-    await this.authenticate();
-    await this.driver.use({
-      namespace: this.config.namespace,
-      database: this.config.database,
-    });
+    this.logger.info(
+      "Connecting to SurrealDB",
+      sanitizeSurrealConnectionConfig(this.config),
+    );
 
-    this.isConnected = true;
+    try {
+      await this.driver.connect(this.config.url);
+      await this.authenticate();
+      await this.driver.use({
+        namespace: this.config.namespace,
+        database: this.config.database,
+      });
+
+      this.isConnected = true;
+      this.logger.info(
+        "SurrealDB connection established",
+        sanitizeSurrealConnectionConfig(this.config),
+      );
+    } catch (error) {
+      this.logger.error(
+        "SurrealDB connection failed",
+        createSurrealErrorLogFields(
+          error,
+          sanitizeSurrealConnectionConfig(this.config),
+        ),
+      );
+      throw error;
+    }
   }
 
   /**
@@ -106,27 +145,56 @@ export class DefaultSurrealClient implements SurrealClient {
    */
   public async disconnect(): Promise<void> {
     if (!this.isConnected) {
+      this.logger.debug(
+        "Surreal client disconnect skipped because connection is not active",
+      );
       return;
     }
 
-    await this.driver.close();
-    this.isConnected = false;
+    try {
+      await this.driver.close();
+      this.isConnected = false;
+      this.logger.info("SurrealDB connection closed");
+    } catch (error) {
+      this.logger.error(
+        "SurrealDB disconnect failed",
+        createSurrealErrorLogFields(error),
+      );
+      throw error;
+    }
   }
 
   /**
    * 检查当前连接是否可用。
    */
   public async healthCheck(): Promise<SurrealClientHealthStatus> {
-    await this.connect();
-    await this.driver.query("RETURN true;");
+    this.logger.debug("Running SurrealDB health check");
 
-    return {
-      ok: true,
-      url: this.config.url,
-      namespace: this.config.namespace,
-      database: this.config.database,
-      deploymentMode: this.config.deploymentMode,
-    };
+    try {
+      await this.connect();
+      await this.driver.query("RETURN true;");
+
+      const status = {
+        ok: true,
+        url: this.config.url,
+        namespace: this.config.namespace,
+        database: this.config.database,
+        deploymentMode: this.config.deploymentMode,
+      };
+
+      this.logger.info("SurrealDB health check succeeded", status);
+
+      return status;
+    } catch (error) {
+      this.logger.error(
+        "SurrealDB health check failed",
+        createSurrealErrorLogFields(
+          error,
+          sanitizeSurrealConnectionConfig(this.config),
+        ),
+      );
+      throw error;
+    }
   }
 
   /**
@@ -134,11 +202,15 @@ export class DefaultSurrealClient implements SurrealClient {
    */
   private async authenticate(): Promise<void> {
     if (this.config.token) {
+      this.logger.debug("Authenticating SurrealDB connection with token");
       await this.driver.authenticate(this.config.token);
       return;
     }
 
     if (this.config.username && this.config.password) {
+      this.logger.debug(
+        "Authenticating SurrealDB connection with username/password",
+      );
       await this.driver.signin({
         username: this.config.username,
         password: this.config.password,
@@ -157,6 +229,7 @@ export class DefaultSurrealClient implements SurrealClient {
  */
 export function createSurrealClient(
   config: SurrealConnectionConfig,
+  logger: Logger = NOOP_LOGGER,
 ): SurrealClient {
-  return new DefaultSurrealClient(config);
+  return new DefaultSurrealClient(config, new Surreal(), logger);
 }

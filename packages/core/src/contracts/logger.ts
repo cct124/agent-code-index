@@ -41,6 +41,9 @@ export const STANDARD_LOG_FIELDS = {
   skippedFileCount: "skippedFileCount",
   failedFileCount: "failedFileCount",
   durationMs: "durationMs",
+  errCode: "errCode",
+  retryable: "retryable",
+  httpStatus: "httpStatus",
 } as const;
 
 /**

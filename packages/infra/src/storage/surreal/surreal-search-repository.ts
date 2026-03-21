@@ -1,6 +1,7 @@
 /**
  * 基于 SurrealDB 的 SearchRepository 骨架实现。
  */
+import { NOOP_LOGGER, type Logger } from "@agent-code-index/core";
 import type {
   Chunk,
   ChunkMetadata,
@@ -10,6 +11,10 @@ import type {
 } from "@agent-code-index/core";
 
 import type { SurrealClient } from "./surreal-client.js";
+import {
+  createSurrealErrorLogFields,
+  normalizeUnknownLogFields,
+} from "./surreal-log-utils.js";
 
 /**
  * chunk 表中用于检索的存储记录结构。
@@ -72,12 +77,19 @@ const FILTER_FIELD_MAP = {
 export class SurrealSearchRepository implements SearchRepository {
   /** 当前使用的 Surreal 客户端。 */
   private readonly client: SurrealClient;
+  /** 结构化日志接口。 */
+  private readonly logger: Logger;
 
   /**
    * 初始化 SurrealSearchRepository。
    */
-  public constructor(client: SurrealClient) {
+  public constructor(client: SurrealClient, logger: Logger = NOOP_LOGGER) {
     this.client = client;
+    this.logger = logger.child({
+      package: "infra",
+      module: "surreal-search-repository",
+      component: "SurrealSearchRepository",
+    });
   }
 
   /**
@@ -89,49 +101,86 @@ export class SurrealSearchRepository implements SearchRepository {
     input: SemanticSearchInput,
   ): Promise<SearchResult[]> {
     if (input.topK <= 0 || input.embedding.length === 0) {
+      this.logger.debug(
+        "Semantic search skipped because topK or embedding is empty",
+        {
+          repositoryId: input.repositoryId,
+          topK: input.topK,
+        },
+      );
       return [];
     }
 
-    await this.client.connect();
+    const logger = this.logger.child({
+      operation: "semantic-search",
+      repositoryId: input.repositoryId,
+      topK: input.topK,
+    });
 
-    const filterState = buildFilterState(input.filters);
-    const [records] = await this.client.driver.query<[StoredSearchChunk[]]>(
-      [
-        "SELECT * FROM chunk",
-        "WHERE repositoryId = $repositoryId",
-        ...filterState.clauses,
-        ";",
-      ].join(" "),
-      {
-        repositoryId: input.repositoryId,
-        ...filterState.bindings,
-      },
-    );
+    logger.info("Semantic search started", {
+      filterCount: Object.keys(input.filters ?? {}).length,
+      filters: normalizeUnknownLogFields(input.filters),
+    });
 
-    return (records ?? [])
-      .flatMap((record) => {
-        const score = cosineSimilarity(record.embedding, input.embedding);
+    try {
+      await this.client.connect();
 
-        if (score === null) {
-          return [];
-        }
+      const filterState = buildFilterState(input.filters);
+      const [records] = await this.client.driver.query<[StoredSearchChunk[]]>(
+        [
+          "SELECT * FROM chunk",
+          "WHERE repositoryId = $repositoryId",
+          ...filterState.clauses,
+          ";",
+        ].join(" "),
+        {
+          repositoryId: input.repositoryId,
+          ...filterState.bindings,
+        },
+      );
 
-        return [
-          {
-            chunk: toChunk(record),
-            score,
-            reason: "cosine similarity",
-          },
-        ];
-      })
-      .sort(
-        (left, right) =>
-          right.score - left.score ||
-          left.chunk.filePath.localeCompare(right.chunk.filePath) ||
-          left.chunk.startLine - right.chunk.startLine ||
-          left.chunk.endLine - right.chunk.endLine,
-      )
-      .slice(0, input.topK);
+      const results = (records ?? [])
+        .flatMap((record) => {
+          const score = cosineSimilarity(record.embedding, input.embedding);
+
+          if (score === null) {
+            return [];
+          }
+
+          return [
+            {
+              chunk: toChunk(record),
+              score,
+              reason: "cosine similarity",
+            },
+          ];
+        })
+        .sort(
+          (left, right) =>
+            right.score - left.score ||
+            left.chunk.filePath.localeCompare(right.chunk.filePath) ||
+            left.chunk.startLine - right.chunk.startLine ||
+            left.chunk.endLine - right.chunk.endLine,
+        )
+        .slice(0, input.topK);
+
+      logger.info("Semantic search completed", {
+        candidateCount: records?.length ?? 0,
+        resultCount: results.length,
+      });
+
+      return results;
+    } catch (error) {
+      logger.error(
+        "Semantic search failed",
+        createSurrealErrorLogFields(error, {
+          repositoryId: input.repositoryId,
+          topK: input.topK,
+          filters: normalizeUnknownLogFields(input.filters),
+        }),
+      );
+      throw error;
+    }
   }
 }
 

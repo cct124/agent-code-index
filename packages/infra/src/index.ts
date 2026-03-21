@@ -30,6 +30,13 @@ export { SurrealChunkSchema } from "./storage/surreal/surreal-chunk-schema.js";
 export { SurrealProjectMetadataRepository } from "./storage/surreal/surreal-project-metadata-repository.js";
 export { SurrealProjectMetadataSchema } from "./storage/surreal/surreal-project-metadata-schema.js";
 export { SurrealSearchRepository } from "./storage/surreal/surreal-search-repository.js";
+export {
+  classifySurrealError,
+  createSurrealErrorLogFields,
+  redactLogFields,
+  sanitizeSurrealConnectionConfig,
+  type ClassifiedSurrealError,
+} from "./storage/surreal/surreal-log-utils.js";
 export type { MarkdownParserOptions } from "./parsing/markdown/markdown-parser.js";
 export type {
   PrepareRepositoryChunksInput,
