@@ -5,6 +5,14 @@ export type { Chunk, ChunkMetadata } from "./domain/chunk.js";
 export type { ProjectMetadata } from "./domain/project-metadata.js";
 export type { SearchResult } from "./domain/search-result.js";
 export type {
+  IndexRepositoryFailure,
+  IndexedChunk,
+  IndexRepositoryInput,
+  IndexRepositoryMode,
+  IndexRepositoryResult,
+  IndexRepositoryService,
+} from "./services/index-repository-service.js";
+export type {
   ChunkRepository,
   FindChunksByFilePathInput,
 } from "./contracts/chunk-repository.js";

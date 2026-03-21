@@ -4,7 +4,7 @@
 
 ## 1. 里程碑概览
 
-截至 2026-03-20，当前已完成的主要里程碑包括：
+截至 2026-03-21，当前已完成的主要里程碑包括：
 
 1. v1 架构设计与工程骨架完成
 2. 配置模型与项目级元数据锁定落地
@@ -12,6 +12,7 @@
 4. 真实 SurrealDB 连接与启动验证落地
 5. chunk/search 第一版真实存储与检索能力落地
 6. parser 与 chunking 第一版主流程落地
+7. embedding provider 最小接入能力落地
 
 ## 2. 里程碑一：架构设计与工程骨架完成
 
@@ -98,8 +99,6 @@
 1. 核心存储与检索主链路已经从占位状态进入可运行状态
 2. 后续可以开始推进 schema/index、embedding 写入与索引服务闭环
 
-## 7. 当前里程碑结论
-
 ## 7. 里程碑六：parser 与 chunking 第一版主流程落地
 
 已完成：
@@ -123,7 +122,22 @@
 1. 索引主流程已经不再缺少“扫描与切块”这一步
 2. 后续只需继续补 embedding provider 与索引写入编排即可向完整索引闭环推进
 
-## 8. 当前里程碑结论
+## 8. 里程碑七：embedding provider 最小接入能力落地
+
+已完成：
+
+1. `EmbeddingProvider` contract 已在 `core` 中定义
+2. `createEmbeddingProvider` 已在 `infra` 中落地
+3. `VoyageEmbeddingProvider` 最小 HTTP 实现已落地
+4. provider factory 单元测试已落地
+5. Voyage provider 单元测试已落地
+
+该里程碑的意义是：
+
+1. “文本 -> 向量”这一步不再完全缺失
+2. 后续索引编排可以直接复用已验证的 provider 抽象与实现
+
+## 9. 当前里程碑结论
 
 截至当前，可以将阶段成果概括为：
 
@@ -134,5 +148,6 @@
 5. 真实数据库验证能力已建立
 6. chunk/search 第一版存储与检索能力已落地
 7. parser 与 chunking 第一版主流程已落地
+8. embedding provider 最小接入能力已落地
 
 下一阶段不再是补工程骨架，而是把索引主链路真正闭环。

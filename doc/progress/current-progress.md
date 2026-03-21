@@ -4,7 +4,7 @@
 
 ## 1. 当前结论
 
-截至 2026-03-20，当前项目已经从“可验证启动骨架”推进到“具备第一版真实存储与检索能力”的阶段。
+截至 2026-03-21，当前项目已经从“可验证启动骨架”推进到“具备第一版真实存储、检索与最小 embedding 接入能力”的阶段。
 
 当前状态可以概括为：
 
@@ -13,8 +13,9 @@
 3. `project_metadata` 启动链路已落地并通过真实 SurrealDB 验证
 4. `SurrealChunkRepository` 和 `SurrealSearchRepository` 已完成第一版实现
 5. parser 与 chunking 第一版主流程已落地
-6. 轻量集成测试与真实 SurrealDB 集成测试已覆盖当前已落地链路
-7. embedding provider、完整索引写入编排和 MCP tool 仍未落地
+6. `EmbeddingProvider` contract、provider factory 与 `VoyageEmbeddingProvider` 最小实现已落地
+7. 轻量集成测试与真实 SurrealDB 集成测试已覆盖当前已落地链路
+8. 完整索引写入编排和 MCP tool 仍未落地
 
 ## 2. 当前项目结构
 
@@ -65,7 +66,16 @@
 3. `RepositoryChunkPreparationService` 的“扫描目录 -> 读取文件 -> 产出 Chunk[]”主流程
 4. 二进制文件跳过逻辑
 
-### 3.4 当前测试覆盖
+### 3.4 embedding 能力
+
+当前已经可验证：
+
+1. `EmbeddingProvider` contract 已在 `core` 中定义
+2. `createEmbeddingProvider` 已可按配置创建 provider
+3. `VoyageEmbeddingProvider` 已具备最小 HTTP 调用能力
+4. provider factory 与 Voyage provider 单元测试已落地
+
+### 3.5 当前测试覆盖
 
 当前已经落地并通过的测试包括：
 
@@ -94,13 +104,12 @@
 
 以下能力仍未真正落地：
 
-1. 仓库扫描实现
-2. tree-sitter 驱动的语言感知 parser 实现
-3. embedding provider factory 与真实 embedding 调用链
-4. embedding 批量生成并写入存储的完整索引编排
-5. 基于数据库向量索引的检索优化
-6. MCP tool server 与具体工具实现
-7. 真实 SurrealDB 环境下的端到端索引与检索测试
+1. tree-sitter 驱动的语言感知 parser 实现
+2. embedding 批量生成并写入存储的完整索引编排
+3. 基于数据库向量索引的检索优化
+4. MCP tool server 与具体工具实现
+5. 真实 SurrealDB 环境下的端到端索引与检索测试
+6. Markdown-aware parser 的结构化实现
 
 ## 5. 当前风险与注意点
 
@@ -109,7 +118,7 @@
 1. `project_metadata` schema 已具备幂等初始化，但 chunk/search 的正式 schema 与索引尚未落地
 2. `SurrealSearchRepository` 当前采用应用侧余弦相似度排序，不是数据库侧向量索引检索
 3. parser 当前仍然是 fallback 策略，尚未具备 AST 级语言感知切块能力
-4. 当前尚未接入真实 embedding provider，索引主流程仍缺“文本 -> 向量”生成步骤
+4. 当前虽已接入最小 embedding provider，但索引主流程仍缺“扫描 -> 切块 -> 向量生成 -> 存储写入”的统一编排
 5. `createApp()` 已经是异步启动流程，后续接入真实 MCP server 时必须正确 await
 6. 当前 embedding provider 仅支持 `voyage`，但配置模型已为扩展留口
 
@@ -119,7 +128,7 @@
 2. 后续新增 provider 时，应沿用 `EMBEDDING_*` 的统一配置接口
 3. 不应在 `core` 层引入任何 Surreal 或 MCP 细节
 4. 当前 parser/chunking 已可用，但后续需要将 tree-sitter 能力限制在 `packages/infra`
-5. 在实现完整索引主流程前，应先定义 EmbeddingProvider 与批量生成向量的编排边界
+5. 在实现完整索引主流程时，应先在 `core` 中收敛索引服务输入输出模型，再补执行编排
 
 ### 5.3 embedding 领域决策
 
@@ -144,47 +153,39 @@
 
 建议按以下顺序继续推进。
 
-### 6.1 第一优先级：实现 embedding provider factory 与真实 embedding 调用
+### 6.1 第一优先级：实现索引写入主流程
 
 建议先完成：
 
-1. 定义 `EmbeddingProvider` contract
-2. 新增 provider factory
-3. 接入 Voyage client
-4. 将 `EMBEDDING_*` 配置与 provider 初始化打通
+1. 在 `core` 中定义 `index-repository-service` 的输入输出模型
+2. 串联扫描、切块、批量 embedding 与存储写入
+3. 输出稳定的索引统计结果与失败明细
+4. 明确 v1 的全量重建或覆盖写入策略
 
 原因：
 
-1. 当前 parser/chunking 与 chunk/search 存储链路都已具备基础能力
-2. 索引主流程当前最关键的缺口已变成“文本 -> 向量”的真实生成能力
+1. 当前 parser/chunking、chunk/search 存储和 embedding provider 已具备最小能力
+2. 项目当前最大的缺口已经变成“主链路编排缺失”，而不是单点组件缺失
 
-### 6.2 第二优先级：实现索引写入主流程
+### 6.2 第二优先级：实现索引与检索服务
 
 建议内容：
 
-1. 扫描仓库并准备 chunk
-2. 批量生成 chunk embedding
-3. 将结果写入 `SurrealChunkRepository`
-4. 输出索引统计结果
+1. `index-repository-service`
+2. `search-code-context-service`
+3. `get-file-context-service`
 
-### 6.3 第三优先级：增强 parser 为 tree-sitter 驱动实现
+### 6.3 第三优先级：增强 parser 为 tree-sitter 与 Markdown-aware 实现
 
 建议内容：
 
 1. 在 `infra/parsing` 下接入 tree-sitter
 2. 先支持 TypeScript 与 Python
 3. 建立语言感知 parser
-4. 保留 fallback parser 作为退化路径
+4. 为 Markdown 文档接入 `unified + remark-parse`
+5. 保留 fallback parser 作为退化路径
 
-### 6.4 第四优先级：实现索引与检索服务
-
-当 parser、embedding 和 repository 都具备后，建议实现：
-
-1. `index-repository-service`
-2. `search-code-context-service`
-3. `get-file-context-service`
-
-### 6.5 第五优先级：实现 MCP tool 层
+### 6.4 第四优先级：实现 MCP tool 层
 
 建议最后接入：
 
@@ -199,6 +200,6 @@
 
 当前最合理的开发重点是：
 
-1. 先补齐 chunk/search schema 与 embedding 存储闭环
-2. 再推进 parser、embedding provider 和索引服务
+1. 先把索引主链路真正闭环
+2. 再增强 parser 的语言与文档结构感知能力
 3. 最后接入 MCP tool 层
