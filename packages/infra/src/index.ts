@@ -21,6 +21,7 @@ export {
 export { FallbackParser } from "./parsing/fallback-parser.js";
 export { MarkdownParser } from "./parsing/markdown/markdown-parser.js";
 export { ParserFactory } from "./parsing/parser-factory.js";
+export { JavaScriptTreeSitterParser } from "./parsing/tree-sitter/languages/javascript-parser.js";
 export { PythonTreeSitterParser } from "./parsing/tree-sitter/languages/python-parser.js";
 export { RepositoryChunkPreparationService } from "./services/repository-chunk-preparation-service.js";
 export { TypeScriptTreeSitterParser } from "./parsing/tree-sitter/languages/typescript-parser.js";

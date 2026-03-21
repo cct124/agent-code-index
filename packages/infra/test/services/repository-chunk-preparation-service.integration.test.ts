@@ -36,6 +36,24 @@ describe("RepositoryChunkPreparationService integration", () => {
       path.join(rootPath, "src", "main.py"),
     );
     await writeFile(
+      path.join(rootPath, "src", "helper.js"),
+      [
+        "export function normalize(value) {",
+        "  return value.trim().toLowerCase();",
+        "}",
+      ].join("\n"),
+      "utf8",
+    );
+    await writeFile(
+      path.join(rootPath, "src", "App.jsx"),
+      [
+        "export const App = () => {",
+        "  return <main><h1>Hello</h1></main>;",
+        "};",
+      ].join("\n"),
+      "utf8",
+    );
+    await writeFile(
       path.join(rootPath, "docs", "guide.md"),
       [
         "---",
@@ -59,8 +77,8 @@ describe("RepositoryChunkPreparationService integration", () => {
       rootPath,
     });
 
-    expect(result.scannedFileCount).toBe(3);
-    expect(result.parsedFileCount).toBe(3);
+    expect(result.scannedFileCount).toBe(5);
+    expect(result.parsedFileCount).toBe(5);
     expect(result.skippedFileCount).toBe(0);
     expect(result.failedFiles).toEqual([]);
     expect(result.chunks).toEqual(
@@ -93,6 +111,20 @@ describe("RepositoryChunkPreparationService integration", () => {
             symbolName: "add",
             symbolKind: "method",
             parentSymbol: "MemoryClient",
+          }),
+        }),
+        expect.objectContaining({
+          filePath: "src/helper.js",
+          metadata: expect.objectContaining({
+            symbolName: "normalize",
+            symbolKind: "function",
+          }),
+        }),
+        expect.objectContaining({
+          filePath: "src/App.jsx",
+          metadata: expect.objectContaining({
+            symbolName: "App",
+            symbolKind: "function",
           }),
         }),
         expect.objectContaining({

@@ -1,6 +1,6 @@
 import type { Chunk, Logger, ParseInput } from "@agent-code-index/core";
 import { type SyntaxNode } from "tree-sitter";
-import TypeScriptLanguage from "tree-sitter-typescript";
+import JavaScriptLanguage from "tree-sitter-javascript";
 
 import {
   TreeSitterParser,
@@ -8,28 +8,22 @@ import {
 } from "../tree-sitter-parser.js";
 
 /**
- * TypeScript/TSX 语义解析器。
+ * JavaScript/JSX 语义解析器。
  */
-export class TypeScriptTreeSitterParser extends TreeSitterParser {
+export class JavaScriptTreeSitterParser extends TreeSitterParser {
   /**
-   * 初始化 TypeScript parser。
+   * 初始化 JavaScript parser。
    */
   public constructor(
-    fileExtension: ".ts" | ".tsx" = ".ts",
+    fileExtension: ".js" | ".jsx" = ".js",
     options: TreeSitterParserOptions = {},
     logger?: Logger,
   ) {
-    super(
-      fileExtension === ".tsx"
-        ? TypeScriptLanguage.tsx
-        : TypeScriptLanguage.typescript,
-      options,
-      logger,
-    );
+    super(JavaScriptLanguage, options, logger);
   }
 
   /**
-   * 提取 TypeScript 中的类、函数和方法语义块。
+   * 提取 JavaScript 中的类、函数和方法语义块。
    */
   protected collectChunks(input: ParseInput, rootNode: SyntaxNode): Chunk[] {
     const chunks: Chunk[] = [];
@@ -70,7 +64,7 @@ export class TypeScriptTreeSitterParser extends TreeSitterParser {
         return;
       }
       case "lexical_declaration":
-      case "variable_statement": {
+      case "variable_declaration": {
         chunks.push(...this.collectVariableFunctionChunks(input, targetNode));
         return;
       }
@@ -185,9 +179,7 @@ export class TypeScriptTreeSitterParser extends TreeSitterParser {
  */
 function unwrapExport(node: SyntaxNode): SyntaxNode {
   if (node.type === "export_statement") {
-    return (
-      node.namedChildren.find((child) => child.type !== "decorator") ?? node
-    );
+    return node.namedChildren[0] ?? node;
   }
 
   return node;

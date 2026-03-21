@@ -10,6 +10,7 @@ import {
   MarkdownParser,
   type MarkdownParserOptions,
 } from "./markdown/markdown-parser.js";
+import { JavaScriptTreeSitterParser } from "./tree-sitter/languages/javascript-parser.js";
 import { PythonTreeSitterParser } from "./tree-sitter/languages/python-parser.js";
 import { TypeScriptTreeSitterParser } from "./tree-sitter/languages/typescript-parser.js";
 
@@ -28,6 +29,10 @@ export class ParserFactory {
   private readonly typeScriptParser: Parser;
   /** TSX 解析器。 */
   private readonly tsxParser: Parser;
+  /** JavaScript 解析器。 */
+  private readonly javaScriptParser: Parser;
+  /** JSX 解析器。 */
+  private readonly jsxParser: Parser;
   /** Python 解析器。 */
   private readonly pythonParser: Parser;
   /** 结构化日志接口。 */
@@ -69,6 +74,22 @@ export class ParserFactory {
         parserType: "tsx",
       }),
     );
+    this.javaScriptParser = new JavaScriptTreeSitterParser(
+      ".js",
+      options,
+      this.logger.child({
+        component: "JavaScriptTreeSitterParser",
+        parserType: "javascript",
+      }),
+    );
+    this.jsxParser = new JavaScriptTreeSitterParser(
+      ".jsx",
+      options,
+      this.logger.child({
+        component: "JavaScriptTreeSitterParser",
+        parserType: "jsx",
+      }),
+    );
     this.pythonParser = new PythonTreeSitterParser(
       options,
       this.logger.child({
@@ -91,6 +112,10 @@ export class ParserFactory {
           return this.typeScriptParser;
         case ".tsx":
           return this.tsxParser;
+        case ".js":
+          return this.javaScriptParser;
+        case ".jsx":
+          return this.jsxParser;
         case ".py":
           return this.pythonParser;
         default:
@@ -116,6 +141,10 @@ function parserNameForExtension(extension: string): string {
       return "typescript";
     case ".tsx":
       return "tsx";
+    case ".js":
+      return "javascript";
+    case ".jsx":
+      return "jsx";
     case ".py":
       return "python";
     default:
