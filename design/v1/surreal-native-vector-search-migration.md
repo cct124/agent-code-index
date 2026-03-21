@@ -68,21 +68,29 @@
 3. `tags` 过滤
 4. `SearchRepository` 与 `SearchCodeContextService` 的现有对外契约
 
-## 4. 官方能力假设与版本边界
+## 4. 官方能力确认与版本边界
 
-根据 Surreal 当前官方文档结构，已确认当前版本公开支持：
+根据 Surreal 官方文档和官方文档仓库中的公开示例，当前可以确认以下细节：
 
-1. Vector search indexes
-2. HNSW index
-3. Filtering through vector search
-4. `vector::` 向量函数包
+1. Surreal 已公开支持向量索引、HNSW、KNN 运算符和 `vector::distance::knn()`
+2. HNSW 索引定义语法为 `DEFINE INDEX ... HNSW DIMENSION <n>`，并可选指定 `TYPE`、`DIST`、`EFC`、`M`
+3. HNSW 查询写法是 `<|K|>` 或 `<|K,EF|>`，其中第二个参数是搜索 effort，不是距离度量
+4. 若在 KNN 运算符中显式写入 `COSINE`、`EUCLIDEAN`、`MANHATTAN`、`MINKOWSKI` 等距离参数，则走的是 brute-force 路径，而不是 HNSW 索引路径
+5. `vector::distance::knn()` 返回的是本次查询中已计算出的距离值，不是 cosine similarity
+6. `WHERE` 过滤条件可以与向量检索组合使用，官方已有 `flag = true AND embedding <|2,40|> $vector` 之类示例
 
-迁移实现时应以当前部署实例的实际版本再次核验，重点确认以下 SurrealQL 细节：
+另外，官方文档还明确了以下边界：
 
-1. HNSW 索引定义语法
-2. KNN 查询运算符语法
-3. 距离函数名称和返回值语义
-4. `WHERE` 过滤与向量检索组合方式
+1. HNSW 可选参数默认值为：`TYPE=F64`、`DIST=EUCLIDEAN`、`EFC=150`、`M=12`
+2. `M0` 和 `LM` 由 Surreal 自动推导，不建议在业务实现中手工依赖或配置
+3. 自 v3.0 起，HNSW 有有界内存缓存，默认缓存大小可由环境变量控制
+
+迁移实现时仍应以当前部署实例的实际版本再次核验，重点确认以下 SurrealQL 细节：
+
+1. 当前实例是否支持所需的 HNSW 语法分支
+2. KNN 运算符是否与项目当前驱动/SDK 版本完全兼容
+3. `INFO FOR TABLE` / `EXPLAIN FULL` 的输出字段是否与测试断言一致
+4. 当前实例对 HNSW + filter 组合查询的执行计划是否稳定
 
 建议在实施前先执行：
 
@@ -154,15 +162,16 @@ ON TABLE chunk
 FIELDS embedding
 HNSW
 DIMENSION 4096
-DIST COSINE
-TYPE F32;
+TYPE F32
+DIST COSINE;
 ```
 
 说明：
 
 1. `DIMENSION` 必须与项目级 `EMBEDDING_VECTOR_DIMENSION` 一致
 2. 距离度量建议与当前应用侧 `cosineSimilarity` 保持一致，即优先使用 `COSINE`
-3. `TYPE F32` 或等价参数需以当前 Surreal 版本实际语法为准
+3. `TYPE` 是可选项；官方默认类型为 `F64`，若希望节省内存可明确指定 `F32`
+4. `EFC`、`M` 也可显式指定，但 v1 可以先使用官方默认值，避免过早调参
 
 ### 6.4 维度配置收敛建议
 
@@ -214,7 +223,9 @@ TYPE F32;
 
 ### 7.4 推荐查询结构
 
-推荐目标查询形态如下，具体语法需按 Surreal 实际版本微调：
+推荐把“原生 HNSW 查询”和“brute-force 距离查询”明确分开，不要混写。
+
+原生 HNSW 查询的推荐形态如下，具体语法需按 Surreal 实际版本微调：
 
 ```sql
 SELECT
@@ -223,24 +234,54 @@ SELECT
 FROM chunk
 WHERE repositoryId = $repositoryId
   AND ...filters...
-  AND embedding <|$topK,COSINE|> $embedding;
+  AND embedding <|$topK,$efSearch|> $embedding
+ORDER BY distance;
 ```
 
-或等价的版本相关写法。
+或在使用索引默认距离度量时写成：
+
+```sql
+SELECT
+  *,
+  vector::distance::knn() AS distance
+FROM chunk
+WHERE repositoryId = $repositoryId
+  AND ...filters...
+  AND embedding <|$topK|> $embedding
+ORDER BY distance;
+```
+
+如果需要保留 brute-force 对照或回退路径，则查询应写成另一种明确形态：
+
+```sql
+SELECT
+  *,
+  vector::distance::knn() AS distance
+FROM chunk
+WHERE repositoryId = $repositoryId
+  AND ...filters...
+  AND embedding <|$topK,COSINE|> $embedding
+ORDER BY distance;
+```
+
+这里的关键点是：
+
+1. `<|K|>` 和 `<|K,EF|>` 才是 HNSW 索引路径
+2. `<|K,COSINE|>` 是 brute-force 路径，不应写成“原生 HNSW 查询示例”
+3. 迁移后的默认实现应优先走 HNSW，而不是继续把 `COSINE` 写死在运算符里
 
 结果映射建议：
 
 1. 保持返回 `SearchResult[]`
-2. 将数据库距离值转换为统一的 `score`
-3. 若数据库返回的是距离而不是相似度，则建议做单调映射，例如：
-   - `score = 1 - distance`，仅在距离范围明确时使用
-   - 或直接把 `reason` 改为 `surreal vector knn`，并允许 `score` 表示排序分值而不是标准 cosine 值
+2. 明确把数据库返回值视为“距离”，不要在文档中把它表述成“数据库近邻分值”
+3. 若 `SearchResult.score` 语义要求“数值越大越相似”，则需要在仓储层做单调映射
+4. `score = 1 - distance` 只适用于距离范围可控且已验证的场景，不能默认当作通用公式
 
 更稳妥的 v1 方案：
 
-1. `score` 可直接使用数据库返回的近邻分值或距离映射值
+1. 优先保证排序语义正确，而不是追求与旧 cosine 分值绝对一致
 2. `reason` 从 `cosine similarity` 改为 `surreal vector search`
-3. 不要求与旧实现的分值绝对一致，只要求排序语义一致
+3. 在实现层明确区分 “distance” 与 “score” 的含义，避免后续混淆
 
 ### 7.5 Filters 保持兼容
 
@@ -271,6 +312,12 @@ WHERE repositoryId = $repositoryId
 
 如果 Surreal 版本支持 `EXPLAIN` 并能观察索引命中，可在 debug 日志中记录。
 
+另外，建议在原生路径落地后补充一条运行手册说明：
+
+1. 索引创建后可用 `INFO FOR TABLE chunk;` 检查索引定义
+2. 查询验证可用 `EXPLAIN FULL` 检查是否命中预期索引路径
+3. 若 HNSW 表现劣化或升级后状态异常，可评估 `REBUILD INDEX` 作为运维手段
+
 ## 8. 测试改造方案
 
 ### 8.1 Schema 集成测试
@@ -297,11 +344,12 @@ WHERE repositoryId = $repositoryId
 
 迁移后应改为断言：
 
-1. 查询语句中包含原生 KNN 片段
+1. 原生路径查询语句中包含 `<|k|>` 或 `<|k,ef|>` 这类 HNSW KNN 片段
 2. `repositoryId` 和 filters 仍被正确绑定
 3. `tags` 过滤仍然可用
 4. 返回结果映射正确
 5. `reason` 变为更中性的数据库检索描述
+6. fallback 路径若触发，则查询语句切换为显式距离度量的 brute-force 写法
 
 ### 8.3 Real Integration
 
