@@ -2,6 +2,15 @@
  * infra 包的公共导出入口。
  */
 export {
+  createEmbeddingProvider,
+  type EmbeddingProviderConfig,
+  type EmbeddingProviderName,
+} from "./embedding/provider-factory.js";
+export {
+  VoyageEmbeddingProvider,
+  type VoyageEmbeddingProviderConfig,
+} from "./embedding/voyage-embedding-provider.js";
+export {
   DefaultSurrealClient,
   createSurrealClient,
 } from "./storage/surreal/surreal-client.js";

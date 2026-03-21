@@ -8,6 +8,11 @@ export type {
   ChunkRepository,
   FindChunksByFilePathInput,
 } from "./contracts/chunk-repository.js";
+export type {
+  EmbeddingProvider,
+  EmbeddingPurpose,
+  GenerateEmbeddingsInput,
+} from "./contracts/embedding-provider.js";
 export type { FileScanner } from "./contracts/file-scanner.js";
 export type { ParseInput, Parser } from "./contracts/parser.js";
 export type {
