@@ -11,8 +11,9 @@
 3. `project_metadata` schema 初始化与启动链路落地
 4. 真实 SurrealDB 连接与启动验证落地
 5. chunk/search 第一版真实存储与检索能力落地
-6. parser 与 chunking 第一版主流程落地
-7. embedding provider 最小接入能力落地
+6. 索引写入主流程落地
+7. 多 provider embedding 接入能力落地
+8. 代码 AST 解析与 Markdown 结构化 chunk 能力落地
 
 ## 2. 里程碑一：架构设计与工程骨架完成
 
@@ -97,47 +98,64 @@
 该里程碑的意义是：
 
 1. 核心存储与检索主链路已经从占位状态进入可运行状态
-2. 后续可以开始推进 schema/index、embedding 写入与索引服务闭环
+2. 后续可以继续围绕索引服务、parser metadata 和数据库侧向量能力做增强
 
-## 7. 里程碑六：parser 与 chunking 第一版主流程落地
+## 7. 里程碑六：索引写入主流程落地
 
 已完成：
 
-1. `FileScanner` 与 `Parser` contract 已定义
-2. `LocalFileScanner` 已实现仓库递归扫描与基础忽略规则
-3. `FallbackParser` 已实现按固定行窗口和重叠窗口切块
-4. `ParserFactory` 已落地并以 fallback parser 作为当前默认实现
-5. `RepositoryChunkPreparationService` 已实现“扫描目录 -> 读取文件 -> 产出 Chunk[]”的主流程
-6. fallback parser、本地扫描器与主流程服务的单元测试已落地
-
-当前这一版的实现特点是：
-
-1. 先确保 parser/chunking 链路可用，不被 tree-sitter 阻塞
-2. chunk 产出保留 `filePath / startLine / endLine / hash / searchText`
-3. 对二进制文件采用跳过策略
-4. 通过 parser factory 为后续接入 tree-sitter 保留扩展点
+1. `PrepareRepositoryChunksInput / Result` 已在 `core` 中收敛
+2. `IndexRepositoryInput / Result` 已在 `core` 中收敛
+3. `DefaultIndexRepositoryService` 已完成并通过单元测试
+4. 已支持 `embeddingBatchSize` 批处理
+5. 已支持全量覆盖模式下的 `delete -> upsert`
+6. `mcp-server` container 已完成 `indexRepositoryService` 装配
+7. 已补齐真实 SurrealDB 环境下的 `prepare -> embed -> upsert -> search` 集成测试
 
 该里程碑的意义是：
 
-1. 索引主流程已经不再缺少“扫描与切块”这一步
-2. 后续只需继续补 embedding provider 与索引写入编排即可向完整索引闭环推进
+1. 项目已经具备真正可运行的索引写入闭环
+2. 后续接入 MCP tool 时无需再回头补索引核心编排
 
-## 8. 里程碑七：embedding provider 最小接入能力落地
+## 8. 里程碑七：多 provider embedding 接入能力落地
 
 已完成：
 
 1. `EmbeddingProvider` contract 已在 `core` 中定义
 2. `createEmbeddingProvider` 已在 `infra` 中落地
 3. `VoyageEmbeddingProvider` 最小 HTTP 实现已落地
-4. provider factory 单元测试已落地
-5. Voyage provider 单元测试已落地
+4. `OpenAICompatibleEmbeddingProvider` 最小 HTTP 实现已落地
+5. provider factory 已支持 `voyage | openai-compatible`
+6. `mcp-server` 配置层已支持 `EMBEDDING_PROVIDER=openai-compatible`
+7. `.env.development` 已改为正式的 OpenAI-compatible provider 配置路径
+8. provider factory、Voyage provider 与 OpenAI-compatible provider 单元测试已落地
 
 该里程碑的意义是：
 
 1. “文本 -> 向量”这一步不再完全缺失
-2. 后续索引编排可以直接复用已验证的 provider 抽象与实现
+2. 项目已不再被单一 provider 命名和接入路径绑定
+3. 硅基流动这类 OpenAI-compatible embeddings 服务可以正式接入
 
-## 9. 当前里程碑结论
+## 9. 里程碑八：代码 AST 解析与 Markdown 结构化 chunk 能力落地
+
+已完成：
+
+1. `chunk-utils.ts` 已统一 chunk 创建、searchText 标准化、hash 计算和窗口切块工具
+2. `TreeSitterParser` 公共基类已落地
+3. `TypeScriptTreeSitterParser` 已支持 class、function、method 和函数值变量提取
+4. `PythonTreeSitterParser` 已支持 class、top-level function 和 method 提取
+5. `MarkdownParser` 已支持标题章节切块
+6. `markdown-section-chunker.ts` 已支持 `heading / headingPath / sectionLevel / docType / frontmatter` metadata
+7. `ParserFactory` 已按扩展名分派到 TypeScript、Python、Markdown 和 fallback parser
+8. `RepositoryChunkPreparationService` 已通过真实模板文件完成集成验证
+9. parser 相关单元测试与集成测试已补齐并通过
+
+该里程碑的意义是：
+
+1. 项目已经从“统一 fallback 切块”演进到“语言感知 + 文档结构感知 + fallback 兜底”的完整第一版能力
+2. 真实项目代码文件和 Markdown 文档的检索基础质量已显著提升
+
+## 10. 当前里程碑结论
 
 截至当前，可以将阶段成果概括为：
 
@@ -147,7 +165,8 @@
 4. 启动期 schema 初始化与元数据校验已落地
 5. 真实数据库验证能力已建立
 6. chunk/search 第一版存储与检索能力已落地
-7. parser 与 chunking 第一版主流程已落地
-8. embedding provider 最小接入能力已落地
+7. 索引写入主流程已落地
+8. 多 provider embedding 接入能力已落地
+9. 代码 AST 解析与 Markdown 结构化 chunk 能力已落地
 
-下一阶段不再是补工程骨架，而是把索引主链路真正闭环。
+下一阶段不再是补工程骨架，而是将现有能力通过 MCP tool 与上下文服务真正对外暴露。
