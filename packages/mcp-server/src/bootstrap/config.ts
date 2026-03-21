@@ -60,6 +60,16 @@ export interface IndexingConfig {
 }
 
 /**
+ * 日志输出配置。
+ */
+export interface LoggingConfig {
+  /** 当前最小日志级别。 */
+  level: "debug" | "info" | "warn" | "error";
+  /** 是否启用开发态 pretty 输出。 */
+  pretty: boolean;
+}
+
+/**
  * 应用完整运行时配置对象。
  */
 export interface AppConfig {
@@ -71,6 +81,8 @@ export interface AppConfig {
   embedding: EmbeddingConfig;
   /** 索引过程默认参数。 */
   indexing: IndexingConfig;
+  /** 日志配置。 */
+  logging: LoggingConfig;
 }
 
 /**
@@ -129,6 +141,10 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
         "build",
         ".next",
       ]),
+    },
+    logging: {
+      level: logLevelEnv(env, "LOG_LEVEL", "info"),
+      pretty: booleanEnv(env, "LOG_PRETTY", true),
     },
   };
 }
@@ -274,6 +290,34 @@ function embeddingProviderEnv(
 
   throw new Error(
     `Environment variable ${key} must be 'voyage' or 'openai-compatible'`,
+  );
+}
+
+/**
+ * 解析日志级别配置。
+ */
+function logLevelEnv(
+  env: EnvMap,
+  key: string,
+  fallback: LoggingConfig["level"],
+): LoggingConfig["level"] {
+  const value = optionalEnv(env, key);
+
+  if (value === undefined) {
+    return fallback;
+  }
+
+  if (
+    value === "debug" ||
+    value === "info" ||
+    value === "warn" ||
+    value === "error"
+  ) {
+    return value;
+  }
+
+  throw new Error(
+    `Environment variable ${key} must be 'debug', 'info', 'warn' or 'error'`,
   );
 }
 

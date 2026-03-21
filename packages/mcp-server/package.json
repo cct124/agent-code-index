@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@agent-code-index/core": "workspace:*",
-    "@agent-code-index/infra": "workspace:*"
+    "@agent-code-index/infra": "workspace:*",
+    "pino": "^9.9.4",
+    "pino-pretty": "^13.1.2"
   },
   "scripts": {
     "build": "tsc -b tsconfig.json",

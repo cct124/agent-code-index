@@ -20,6 +20,8 @@ function createBaseEnv(): Record<string, string> {
     EMBEDDING_API_KEY: "test-key",
     DEFAULT_TOP_K: "10",
     DEFAULT_SCAN_IGNORE_PATTERNS: "node_modules,.git,dist",
+    LOG_LEVEL: "info",
+    LOG_PRETTY: "true",
   };
 }
 
@@ -53,6 +55,23 @@ describe("loadConfig", () => {
       ".git",
       "dist",
     ]);
+    expect(config.logging).toEqual({
+      level: "info",
+      pretty: true,
+    });
+  });
+
+  it("loads logging configuration", () => {
+    const config = loadConfig({
+      ...createBaseEnv(),
+      LOG_LEVEL: "debug",
+      LOG_PRETTY: "false",
+    });
+
+    expect(config.logging).toEqual({
+      level: "debug",
+      pretty: false,
+    });
   });
 
   it("fails when project space format is invalid", () => {

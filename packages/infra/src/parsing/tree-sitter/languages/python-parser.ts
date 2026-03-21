@@ -1,4 +1,4 @@
-import type { Chunk, ParseInput } from "@agent-code-index/core";
+import type { Chunk, Logger, ParseInput } from "@agent-code-index/core";
 import { type SyntaxNode } from "tree-sitter";
 import PythonLanguage from "tree-sitter-python";
 
@@ -14,8 +14,8 @@ export class PythonTreeSitterParser extends TreeSitterParser {
   /**
    * 初始化 Python parser。
    */
-  public constructor(options: TreeSitterParserOptions = {}) {
-    super(PythonLanguage, options);
+  public constructor(options: TreeSitterParserOptions = {}, logger?: Logger) {
+    super(PythonLanguage, options, logger);
   }
 
   /**

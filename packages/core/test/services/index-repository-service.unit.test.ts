@@ -4,6 +4,7 @@ import type {
   Chunk,
   ChunkRepository,
   EmbeddingProvider,
+  Logger,
   RepositoryChunkPreparationService,
 } from "../../src/index.js";
 import { DefaultIndexRepositoryService } from "../../src/index.js";
@@ -25,6 +26,18 @@ function createChunk(overrides: Partial<Chunk> = {}): Chunk {
 }
 
 describe("DefaultIndexRepositoryService", () => {
+  function createLogger(): Logger {
+    return {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      child: vi.fn(function (this: Logger) {
+        return this;
+      }),
+    };
+  }
+
   it("prepares chunks, batches embeddings, clears existing repository data and stores indexed chunks", async () => {
     const preparedChunks = [
       createChunk({ id: "chunk-1", filePath: "src/a.ts", searchText: "alpha" }),
@@ -58,11 +71,13 @@ describe("DefaultIndexRepositoryService", () => {
       deleteByRepository: vi.fn(async () => undefined),
       findByFilePath: vi.fn(async () => []),
     };
+    const logger = createLogger();
 
     const service = new DefaultIndexRepositoryService(
       chunkPreparationService,
       embeddingProvider,
       chunkRepository,
+      logger,
     );
 
     const result = await service.execute({
@@ -89,6 +104,21 @@ describe("DefaultIndexRepositoryService", () => {
       expect.objectContaining({ id: "chunk-2", embedding: [0, 1, 0] }),
       expect.objectContaining({ id: "chunk-3", embedding: [0, 0, 1] }),
     ]);
+    expect(logger.info).toHaveBeenCalledWith(
+      "Repository indexing started",
+      expect.objectContaining({
+        rootPath: "/tmp/repo-a",
+        provider: "voyage",
+        embeddingModel: "voyage-code-3",
+      }),
+    );
+    expect(logger.info).toHaveBeenCalledWith(
+      "Repository indexing completed",
+      expect.objectContaining({
+        preparedChunkCount: 3,
+        storedChunkCount: 3,
+      }),
+    );
     expect(result).toEqual({
       scannedFileCount: 4,
       parsedFileCount: 3,
@@ -122,11 +152,13 @@ describe("DefaultIndexRepositoryService", () => {
       deleteByRepository: vi.fn(async () => undefined),
       findByFilePath: vi.fn(async () => []),
     };
+    const logger = createLogger();
 
     const service = new DefaultIndexRepositoryService(
       chunkPreparationService,
       embeddingProvider,
       chunkRepository,
+      logger,
     );
 
     const result = await service.execute({
@@ -147,5 +179,13 @@ describe("DefaultIndexRepositoryService", () => {
       failedFileCount: 1,
       failedFiles: [{ filePath: "README.md", reason: "read failed" }],
     });
+    expect(logger.info).toHaveBeenCalledWith(
+      "Repository indexing completed",
+      expect.objectContaining({
+        preparedChunkCount: 0,
+        storedChunkCount: 0,
+        failedFileCount: 1,
+      }),
+    );
   });
 });

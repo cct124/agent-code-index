@@ -4,6 +4,7 @@
 export type { Chunk, ChunkMetadata } from "./domain/chunk.js";
 export type { ProjectMetadata } from "./domain/project-metadata.js";
 export type { SearchResult } from "./domain/search-result.js";
+export { NOOP_LOGGER, STANDARD_LOG_FIELDS } from "./contracts/logger.js";
 export { DefaultIndexRepositoryService } from "./services/index-repository-service.js";
 export type {
   IndexRepositoryFailure,
@@ -25,6 +26,12 @@ export type {
   EmbeddingPurpose,
   GenerateEmbeddingsInput,
 } from "./contracts/embedding-provider.js";
+export type {
+  LogFields,
+  Logger,
+  LogPrimitive,
+  LogValue,
+} from "./contracts/logger.js";
 export type { FileScanner } from "./contracts/file-scanner.js";
 export type { ParseInput, Parser } from "./contracts/parser.js";
 export type {

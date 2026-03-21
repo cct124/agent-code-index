@@ -1,4 +1,8 @@
-import type { EmbeddingProvider } from "@agent-code-index/core";
+import {
+  NOOP_LOGGER,
+  type EmbeddingProvider,
+  type Logger,
+} from "@agent-code-index/core";
 
 import {
   OpenAICompatibleEmbeddingProvider,
@@ -26,12 +30,41 @@ export type EmbeddingProviderConfig =
  */
 export function createEmbeddingProvider(
   config: EmbeddingProviderConfig,
+  logger: Logger = NOOP_LOGGER,
 ): EmbeddingProvider {
+  const factoryLogger = logger.child({
+    package: "infra",
+    module: "embedding-provider-factory",
+  });
+
+  factoryLogger.info("Creating embedding provider", {
+    provider: config.provider,
+    embeddingModel: config.model,
+  });
+
   switch (config.provider) {
     case "openai-compatible":
-      return new OpenAICompatibleEmbeddingProvider(config);
+      return new OpenAICompatibleEmbeddingProvider(
+        config,
+        logger.child({
+          package: "infra",
+          module: "embedding-provider",
+          component: "OpenAICompatibleEmbeddingProvider",
+          provider: config.provider,
+          embeddingModel: config.model,
+        }),
+      );
     case "voyage":
-      return new VoyageEmbeddingProvider(config);
+      return new VoyageEmbeddingProvider(
+        config,
+        logger.child({
+          package: "infra",
+          module: "embedding-provider",
+          component: "VoyageEmbeddingProvider",
+          provider: config.provider,
+          embeddingModel: config.model,
+        }),
+      );
   }
 }
 

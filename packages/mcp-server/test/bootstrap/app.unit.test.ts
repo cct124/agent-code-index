@@ -7,6 +7,7 @@ import type {
   ChunkRepository,
   EmbeddingProvider,
   IndexRepositoryService,
+  Logger,
   RepositoryChunkPreparationService,
   SearchRepository,
 } from "../../../core/src/index.js";
@@ -83,6 +84,7 @@ function createTestContainer(events: string[]): AppContainer {
 
   return {
     config: createConfig(),
+    logger: createLoggerMock(events),
     embeddingProvider: {
       provider: "voyage",
       model: "voyage-code-3",
@@ -155,6 +157,20 @@ function createTestContainer(events: string[]): AppContainer {
   } as AppContainer;
 }
 
+function createLoggerMock(events: string[]): Logger {
+  return {
+    debug: vi.fn(),
+    info: vi.fn((message: string) => {
+      events.push(`log:${message}`);
+    }),
+    warn: vi.fn(),
+    error: vi.fn(),
+    child: vi.fn(function (this: Logger) {
+      return this;
+    }),
+  };
+}
+
 describe("createApp", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -178,11 +194,17 @@ describe("createApp", () => {
 
     expect(app.config).toBe(config);
     expect(events).toEqual([
+      "log:Application startup started",
       "healthCheck",
+      "log:SurrealDB health check completed",
       "chunkSchemaEnsure",
+      "log:Chunk schema ensured",
       "schemaEnsure",
+      "log:Project metadata schema ensured",
       "getByProjectSpace",
+      "log:Project metadata not found, creating initial record",
       "save",
+      "log:Application startup completed",
     ]);
     expect(container.projectMetadataRepository.save).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -215,10 +237,16 @@ describe("createApp", () => {
     await expect(createApp()).resolves.toBeDefined();
     expect(container.projectMetadataRepository.save).not.toHaveBeenCalled();
     expect(events).toEqual([
+      "log:Application startup started",
       "healthCheck",
+      "log:SurrealDB health check completed",
       "chunkSchemaEnsure",
+      "log:Chunk schema ensured",
       "schemaEnsure",
+      "log:Project metadata schema ensured",
       "getByProjectSpace",
+      "log:Project metadata matched current configuration",
+      "log:Application startup completed",
     ]);
   });
 

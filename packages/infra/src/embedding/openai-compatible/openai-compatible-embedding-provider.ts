@@ -1,7 +1,9 @@
 import type {
   EmbeddingProvider,
   GenerateEmbeddingsInput,
+  Logger,
 } from "@agent-code-index/core";
+import { NOOP_LOGGER } from "@agent-code-index/core";
 
 const DEFAULT_OPENAI_COMPATIBLE_BASE_URL = "https://api.openai.com/v1";
 
@@ -47,11 +49,16 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
 
   /** 基础地址。 */
   private readonly baseUrl: string;
+  /** 结构化日志接口。 */
+  private readonly logger: Logger;
 
   /**
    * 初始化 OpenAI-compatible embedding provider。
    */
-  public constructor(config: OpenAICompatibleEmbeddingProviderConfig) {
+  public constructor(
+    config: OpenAICompatibleEmbeddingProviderConfig,
+    logger: Logger = NOOP_LOGGER,
+  ) {
     if (!config.apiKey?.trim()) {
       throw new Error("OpenAI-compatible embedding provider requires apiKey");
     }
@@ -60,6 +67,7 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
     this.vectorDimension = config.vectorDimension;
     this.apiKey = config.apiKey;
     this.baseUrl = normalizeBaseUrl(config.baseUrl);
+    this.logger = logger;
   }
 
   /**
@@ -71,6 +79,14 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
     if (input.values.length === 0) {
       return [];
     }
+
+    const startedAt = Date.now();
+
+    this.logger.debug("Requesting openai-compatible embeddings", {
+      valueCount: input.values.length,
+      purpose: input.purpose,
+      embeddingModel: this.model,
+    });
 
     const response = await fetch(`${this.baseUrl}/embeddings`, {
       method: "POST",
@@ -86,6 +102,11 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
     });
 
     if (!response.ok) {
+      this.logger.error("OpenAI-compatible embedding request failed", {
+        status: response.status,
+        valueCount: input.values.length,
+        purpose: input.purpose,
+      });
       throw new Error(
         `OpenAI-compatible embedding request failed with status ${response.status}`,
       );
@@ -96,6 +117,12 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
     const embeddings = toEmbeddings(payload, input.values.length);
 
     assertEmbeddingDimensions(embeddings, this.vectorDimension);
+
+    this.logger.info("OpenAI-compatible embeddings generated", {
+      valueCount: input.values.length,
+      durationMs: Date.now() - startedAt,
+      vectorDimension: this.vectorDimension,
+    });
 
     return embeddings;
   }

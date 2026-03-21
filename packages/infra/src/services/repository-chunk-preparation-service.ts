@@ -4,10 +4,12 @@ import path from "node:path";
 import type {
   Chunk,
   FileScanner,
+  Logger,
   PrepareRepositoryChunksInput,
   PrepareRepositoryChunksResult,
   RepositoryChunkPreparationService as RepositoryChunkPreparationServiceContract,
 } from "@agent-code-index/core";
+import { NOOP_LOGGER } from "@agent-code-index/core";
 
 import { ParserFactory } from "../parsing/parser-factory.js";
 export type {
@@ -26,13 +28,24 @@ export class RepositoryChunkPreparationService implements RepositoryChunkPrepara
   private readonly fileScanner: FileScanner;
   /** 用于按文件类型选择解析器的工厂。 */
   private readonly parserFactory: ParserFactory;
+  /** 结构化日志接口。 */
+  private readonly logger: Logger;
 
   /**
    * 初始化仓库 chunk 准备服务。
    */
-  public constructor(fileScanner: FileScanner, parserFactory: ParserFactory) {
+  public constructor(
+    fileScanner: FileScanner,
+    parserFactory: ParserFactory,
+    logger: Logger = NOOP_LOGGER,
+  ) {
     this.fileScanner = fileScanner;
     this.parserFactory = parserFactory;
+    this.logger = logger.child({
+      package: "infra",
+      module: "repository-chunk-preparation-service",
+      component: "RepositoryChunkPreparationService",
+    });
   }
 
   /**
@@ -48,11 +61,20 @@ export class RepositoryChunkPreparationService implements RepositoryChunkPrepara
   public async prepare(
     input: PrepareRepositoryChunksInput,
   ): Promise<PrepareRepositoryChunksResult> {
+    const logger = this.logger.child({
+      operation: "prepare-repository-chunks",
+      repositoryId: input.repositoryId,
+      rootPath: input.rootPath,
+    });
     const files = await this.fileScanner.scan(input.rootPath);
     const chunks: Chunk[] = [];
     const failedFiles: Array<{ filePath: string; reason: string }> = [];
     let parsedFileCount = 0;
     let skippedFileCount = 0;
+
+    logger.info("Repository chunk preparation started", {
+      scannedFileCount: files.length,
+    });
 
     for (const absolutePath of files) {
       const relativePath = normalizeRelativePath(
@@ -64,6 +86,9 @@ export class RepositoryChunkPreparationService implements RepositoryChunkPrepara
 
         if (content.includes("\u0000")) {
           skippedFileCount += 1;
+          logger.debug("Skipping binary file during repository preparation", {
+            filePath: relativePath,
+          });
           continue;
         }
 
@@ -76,18 +101,37 @@ export class RepositoryChunkPreparationService implements RepositoryChunkPrepara
 
         if (parsedChunks.length === 0) {
           skippedFileCount += 1;
+          logger.debug("Parser returned no chunks for file", {
+            filePath: relativePath,
+          });
           continue;
         }
 
         parsedFileCount += 1;
         chunks.push(...parsedChunks);
+        logger.debug("Parsed file into chunks", {
+          filePath: relativePath,
+          chunkCount: parsedChunks.length,
+        });
       } catch (error) {
         failedFiles.push({
           filePath: relativePath,
           reason: error instanceof Error ? error.message : String(error),
         });
+        logger.warn("Failed to prepare file chunks", {
+          filePath: relativePath,
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
       }
     }
+
+    logger.info("Repository chunk preparation completed", {
+      scannedFileCount: files.length,
+      parsedFileCount,
+      skippedFileCount,
+      chunkCount: chunks.length,
+      failedFileCount: failedFiles.length,
+    });
 
     return {
       scannedFileCount: files.length,

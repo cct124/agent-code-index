@@ -1,7 +1,9 @@
 import type {
   EmbeddingProvider,
   GenerateEmbeddingsInput,
+  Logger,
 } from "@agent-code-index/core";
+import { NOOP_LOGGER } from "@agent-code-index/core";
 
 const DEFAULT_VOYAGE_BASE_URL = "https://api.voyageai.com/v1";
 
@@ -47,11 +49,16 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
 
   /** Voyage API 基础地址。 */
   private readonly baseUrl: string;
+  /** 结构化日志接口。 */
+  private readonly logger: Logger;
 
   /**
    * 初始化 Voyage embedding provider。
    */
-  public constructor(config: VoyageEmbeddingProviderConfig) {
+  public constructor(
+    config: VoyageEmbeddingProviderConfig,
+    logger: Logger = NOOP_LOGGER,
+  ) {
     if (!config.apiKey?.trim()) {
       throw new Error("Voyage embedding provider requires apiKey");
     }
@@ -60,6 +67,7 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
     this.vectorDimension = config.vectorDimension;
     this.apiKey = config.apiKey;
     this.baseUrl = normalizeBaseUrl(config.baseUrl);
+    this.logger = logger;
   }
 
   /**
@@ -71,6 +79,14 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
     if (input.values.length === 0) {
       return [];
     }
+
+    const startedAt = Date.now();
+
+    this.logger.debug("Requesting voyage embeddings", {
+      valueCount: input.values.length,
+      purpose: input.purpose,
+      embeddingModel: this.model,
+    });
 
     const response = await fetch(`${this.baseUrl}/embeddings`, {
       method: "POST",
@@ -86,6 +102,11 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
     });
 
     if (!response.ok) {
+      this.logger.error("Voyage embedding request failed", {
+        status: response.status,
+        valueCount: input.values.length,
+        purpose: input.purpose,
+      });
       throw new Error(
         `Voyage embedding request failed with status ${response.status}`,
       );
@@ -95,6 +116,12 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
     const embeddings = toEmbeddings(payload, input.values.length);
 
     assertEmbeddingDimensions(embeddings, this.vectorDimension);
+
+    this.logger.info("Voyage embeddings generated", {
+      valueCount: input.values.length,
+      durationMs: Date.now() - startedAt,
+      vectorDimension: this.vectorDimension,
+    });
 
     return embeddings;
   }

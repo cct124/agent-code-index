@@ -1,6 +1,6 @@
 import { extname } from "node:path";
 
-import type { Chunk, ParseInput } from "@agent-code-index/core";
+import type { Chunk, Logger, ParseInput } from "@agent-code-index/core";
 import { type SyntaxNode } from "tree-sitter";
 import TypeScriptLanguage from "tree-sitter-typescript";
 
@@ -19,12 +19,14 @@ export class TypeScriptTreeSitterParser extends TreeSitterParser {
   public constructor(
     fileExtension: ".ts" | ".tsx" = ".ts",
     options: TreeSitterParserOptions = {},
+    logger?: Logger,
   ) {
     super(
       fileExtension === ".tsx"
         ? TypeScriptLanguage.tsx
         : TypeScriptLanguage.typescript,
       options,
+      logger,
     );
   }
 

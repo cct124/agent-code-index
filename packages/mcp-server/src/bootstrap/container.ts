@@ -6,6 +6,7 @@ import {
   type ChunkRepository,
   type EmbeddingProvider,
   type IndexRepositoryService,
+  type Logger,
   type ProjectMetadataRepository,
   type RepositoryChunkPreparationService,
   type SearchRepository,
@@ -26,6 +27,7 @@ import {
 } from "@agent-code-index/infra";
 
 import type { AppConfig } from "./config.js";
+import { createLogger } from "./logger.js";
 
 /**
  * 运行时依赖容器。
@@ -33,6 +35,8 @@ import type { AppConfig } from "./config.js";
 export interface AppContainer {
   /** 经过校验后的应用配置。 */
   config: AppConfig;
+  /** 应用根 logger。 */
+  logger: Logger;
   /** 当前项目使用的 embedding provider。 */
   embeddingProvider: EmbeddingProvider;
   /** SurrealDB 客户端骨架实例。 */
@@ -57,28 +61,45 @@ export interface AppContainer {
  * 基于当前配置创建应用依赖容器。
  */
 export function createContainer(config: AppConfig): AppContainer {
-  const surrealClient = createSurrealClient(toSurrealConnectionConfig(config));
-  const embeddingProvider = createEmbeddingProvider({
-    provider: config.embedding.provider,
-    model: config.embedding.model,
-    vectorDimension: config.embedding.vectorDimension,
-    apiKey: config.embedding.apiKey,
-    baseUrl: config.embedding.baseUrl,
+  const logger = createLogger(config.logging).child({
+    package: "mcp-server",
+    module: "container",
+    component: "AppContainer",
+    projectSpace: config.projectSpace,
   });
+  const surrealClient = createSurrealClient(toSurrealConnectionConfig(config));
+  const embeddingProvider = createEmbeddingProvider(
+    {
+      provider: config.embedding.provider,
+      model: config.embedding.model,
+      vectorDimension: config.embedding.vectorDimension,
+      apiKey: config.embedding.apiKey,
+      baseUrl: config.embedding.baseUrl,
+    },
+    logger.child({ module: "embedding" }),
+  );
   const chunkRepository = new SurrealChunkRepository(surrealClient);
   const searchRepository = new SurrealSearchRepository(surrealClient);
   const chunkPreparationService = new DefaultRepositoryChunkPreparationService(
     new LocalFileScanner(config.indexing.ignorePatterns),
-    new ParserFactory(),
+    new ParserFactory({}, logger.child({ module: "parsing" })),
+    logger.child({ module: "chunk-preparation" }),
   );
   const indexRepositoryService = new DefaultIndexRepositoryService(
     chunkPreparationService,
     embeddingProvider,
     chunkRepository,
+    logger.child({ module: "indexing" }),
   );
+
+  logger.info("Application container created", {
+    provider: config.embedding.provider,
+    embeddingModel: config.embedding.model,
+  });
 
   return {
     config,
+    logger,
     embeddingProvider,
     surrealClient,
     chunkSchema: new SurrealChunkSchema(surrealClient),

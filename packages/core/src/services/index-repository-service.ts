@@ -1,6 +1,7 @@
 import type { Chunk } from "../domain/chunk.js";
 import type { ChunkRepository } from "../contracts/chunk-repository.js";
 import type { EmbeddingProvider } from "../contracts/embedding-provider.js";
+import { NOOP_LOGGER, type Logger } from "../contracts/logger.js";
 
 /**
  * embedding 批量生成的默认批大小。
@@ -131,6 +132,8 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
   private readonly embeddingProvider: EmbeddingProvider;
   /** chunk 存储接口。 */
   private readonly chunkRepository: ChunkRepository;
+  /** 结构化日志接口。 */
+  private readonly logger: Logger;
 
   /**
    * 初始化默认索引服务。
@@ -139,10 +142,16 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
     chunkPreparationService: RepositoryChunkPreparationService,
     embeddingProvider: EmbeddingProvider,
     chunkRepository: ChunkRepository,
+    logger: Logger = NOOP_LOGGER,
   ) {
     this.chunkPreparationService = chunkPreparationService;
     this.embeddingProvider = embeddingProvider;
     this.chunkRepository = chunkRepository;
+    this.logger = logger.child({
+      package: "core",
+      module: "index-repository-service",
+      component: "DefaultIndexRepositoryService",
+    });
   }
 
   /**
@@ -153,34 +162,76 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
   ): Promise<IndexRepositoryResult> {
     const mode = input.mode ?? "full";
     const batchSize = normalizeEmbeddingBatchSize(input.embeddingBatchSize);
-    const prepared = await this.chunkPreparationService.prepare({
+    const logger = this.logger.child({
+      operation: "index-repository",
       repositoryId: input.repositoryId,
+      batchSize,
+      mode,
+    });
+    const startedAt = Date.now();
+
+    logger.info("Repository indexing started", {
       rootPath: input.rootPath,
+      provider: this.embeddingProvider.provider,
+      embeddingModel: this.embeddingProvider.model,
     });
 
-    const indexedChunks = await this.generateIndexedChunks(
-      prepared.chunks,
-      batchSize,
-    );
+    try {
+      const prepared = await this.chunkPreparationService.prepare({
+        repositoryId: input.repositoryId,
+        rootPath: input.rootPath,
+      });
 
-    if (mode === "full") {
-      await this.chunkRepository.deleteByRepository(input.repositoryId);
+      logger.info("Repository chunk preparation completed", {
+        scannedFileCount: prepared.scannedFileCount,
+        parsedFileCount: prepared.parsedFileCount,
+        skippedFileCount: prepared.skippedFileCount,
+        chunkCount: prepared.chunks.length,
+        failedFileCount: prepared.failedFiles.length,
+      });
+
+      const indexedChunks = await this.generateIndexedChunks(
+        prepared.chunks,
+        batchSize,
+        logger,
+      );
+
+      if (mode === "full") {
+        logger.debug("Clearing existing repository chunks before full reindex");
+        await this.chunkRepository.deleteByRepository(input.repositoryId);
+      }
+
+      if (indexedChunks.length > 0) {
+        logger.info("Persisting indexed chunks", {
+          chunkCount: indexedChunks.length,
+        });
+        await this.chunkRepository.upsertMany(indexedChunks);
+      }
+
+      const result = {
+        scannedFileCount: prepared.scannedFileCount,
+        parsedFileCount: prepared.parsedFileCount,
+        skippedFileCount: prepared.skippedFileCount,
+        preparedChunkCount: prepared.chunks.length,
+        embeddedChunkCount: indexedChunks.length,
+        storedChunkCount: indexedChunks.length,
+        failedFileCount: prepared.failedFiles.length,
+        failedFiles: prepared.failedFiles.map((failure) => ({ ...failure })),
+      };
+
+      logger.info("Repository indexing completed", {
+        ...result,
+        durationMs: Date.now() - startedAt,
+      });
+
+      return result;
+    } catch (error) {
+      logger.error("Repository indexing failed", {
+        durationMs: Date.now() - startedAt,
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
+      throw error;
     }
-
-    if (indexedChunks.length > 0) {
-      await this.chunkRepository.upsertMany(indexedChunks);
-    }
-
-    return {
-      scannedFileCount: prepared.scannedFileCount,
-      parsedFileCount: prepared.parsedFileCount,
-      skippedFileCount: prepared.skippedFileCount,
-      preparedChunkCount: prepared.chunks.length,
-      embeddedChunkCount: indexedChunks.length,
-      storedChunkCount: indexedChunks.length,
-      failedFileCount: prepared.failedFiles.length,
-      failedFiles: prepared.failedFiles.map((failure) => ({ ...failure })),
-    };
   }
 
   /**
@@ -189,6 +240,7 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
   private async generateIndexedChunks(
     chunks: Chunk[],
     batchSize: number,
+    logger: Logger,
   ): Promise<IndexedChunk[]> {
     const indexedChunks: IndexedChunk[] = [];
 
@@ -198,6 +250,11 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
       if (batch.length === 0) {
         continue;
       }
+
+      logger.debug("Generating embeddings for chunk batch", {
+        chunkCount: batch.length,
+        batchStart: start,
+      });
 
       const embeddings = await this.embeddingProvider.generateEmbeddings({
         values: batch.map((chunk) => chunk.searchText),

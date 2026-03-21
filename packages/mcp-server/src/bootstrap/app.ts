@@ -22,27 +22,62 @@ export interface App {
 export async function createApp(): Promise<App> {
   const config = loadConfig();
   const container = createContainer(config);
+  const logger = container.logger.child({
+    module: "app",
+    component: "createApp",
+    projectSpace: config.projectSpace,
+  });
 
-  await container.surrealClient.healthCheck();
-  await container.chunkSchema.ensure();
-  await container.projectMetadataSchema.ensure();
-  await ensureProjectMetadata(container);
+  logger.info("Application startup started", {
+    provider: config.embedding.provider,
+    embeddingModel: config.embedding.model,
+  });
 
-  return {
-    config,
-    container,
-  };
+  const startedAt = Date.now();
+
+  try {
+    await container.surrealClient.healthCheck();
+    logger.info("SurrealDB health check completed", {
+      url: config.surreal.url,
+      database: config.surreal.database,
+      namespace: config.surreal.namespace,
+    });
+    await container.chunkSchema.ensure();
+    logger.info("Chunk schema ensured");
+    await container.projectMetadataSchema.ensure();
+    logger.info("Project metadata schema ensured");
+    await ensureProjectMetadata(container, logger);
+
+    logger.info("Application startup completed", {
+      durationMs: Date.now() - startedAt,
+    });
+
+    return {
+      config,
+      container,
+    };
+  } catch (error) {
+    logger.error("Application startup failed", {
+      durationMs: Date.now() - startedAt,
+      error: error instanceof Error ? error : new Error(String(error)),
+    });
+    throw error;
+  }
 }
 
 /**
  * 确保当前 PROJECT_SPACE 的元数据存在且与当前 embedding 配置一致。
  */
-async function ensureProjectMetadata(container: AppContainer): Promise<void> {
+async function ensureProjectMetadata(
+  container: AppContainer,
+  logger: AppContainer["logger"],
+): Promise<void> {
   const existing = await container.projectMetadataRepository.getByProjectSpace({
     projectSpace: container.config.projectSpace,
   });
 
   if (!existing) {
+    logger.info("Project metadata not found, creating initial record");
     await container.projectMetadataRepository.save(
       createProjectMetadata(container.config),
     );
@@ -50,6 +85,7 @@ async function ensureProjectMetadata(container: AppContainer): Promise<void> {
   }
 
   assertProjectMetadataMatches(container.config, existing);
+  logger.info("Project metadata matched current configuration");
 }
 
 /**
