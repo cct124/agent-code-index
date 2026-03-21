@@ -361,6 +361,12 @@ interface EmbeddingProvider {
 3. `core` 不感知 `voyage-code-3` 的细节
 4. 每次索引与检索都必须使用与项目已落库配置一致的 provider 和 model
 
+补充说明：
+
+1. `EmbeddingProvider` 的输入应支持单次请求携带多个文本片段
+2. 索引服务应显式区分“单批大小”和“批次并发度”两个概念
+3. v1 可以先采用串行批处理，后续再逐步演进到可控并发
+
 ### 7.1.1 项目级模型约束
 
 第一版不支持在同一个 `PROJECT_SPACE` 中混用多个 embedding 模型。
@@ -480,7 +486,7 @@ interface ContextBuilder {
 2. 调用 `FileScanner` 枚举候选文件
 3. 读取文件内容并交给 `Parser`
 4. 对 chunk 执行必要的标准化、摘要或 search text 构建
-5. 调用 `EmbeddingProvider` 批量生成向量
+5. 按批次调用 `EmbeddingProvider` 生成向量
 6. 将 chunk 与向量写入 `ChunkRepository` / `SearchRepository`
 7. 返回索引统计结果
 
@@ -492,6 +498,36 @@ interface ContextBuilder {
 4. 跳过文件数
 5. 失败文件数
 6. 总耗时
+
+### 8.1.1 Embedding 批处理与并发策略
+
+索引链路中的 embedding 生成建议显式区分两个运行参数：
+
+1. `embeddingBatchSize`：单次请求携带的 chunk 数量
+2. `embeddingConcurrency`：允许同时并发的批次数量
+
+两者语义不同：
+
+1. `embeddingBatchSize` 决定单次请求体大小和单次失败影响范围
+2. `embeddingConcurrency` 决定整体吞吐和对第三方 provider 的瞬时压力
+
+v1 建议采用分阶段策略：
+
+1. 第一阶段先支持批处理，但批次之间串行执行
+2. 在真实 provider 调用稳定后，再引入固定并发度的批次执行
+3. 在并发执行前，先补齐重试、退避和限流策略
+
+这样设计的原因是：
+
+1. 串行批处理更容易定位失败批次
+2. 更不容易在早期就触发 provider 的速率限制
+3. 可以先验证“切块 -> embedding -> 存储”主链路的正确性，再优化吞吐
+
+后续优化方向建议为：
+
+1. 将 `embeddingBatchSize` 和 `embeddingConcurrency` 暴露为运行时配置
+2. 为 provider 层增加 429、超时和瞬时故障的有限重试
+3. 在不破坏结果顺序和错误可追踪性的前提下，引入固定大小并发池
 
 ### 8.2 search-code-context-service.ts
 
@@ -711,10 +747,17 @@ v1 可以先不实现完整 migration 系统，但至少应在设计上预留 sc
 应由实现层处理：
 
 1. 批量大小控制
-2. 重试与超时
-3. 模型名配置
-4. API Key 注入
-5. 向量维度声明与校验
+2. 批次并发控制
+3. 重试与超时
+4. 模型名配置
+5. API Key 注入
+6. 向量维度声明与校验
+
+运行策略建议：
+
+1. provider 默认支持单次请求携带多个文本片段
+2. v1 索引服务默认按批次串行调用 provider
+3. 当真实环境的限流、超时和失败模式更明确后，再通过固定并发池提升吞吐
 
 ### 9.2.1 项目级 Embedding 配置
 
