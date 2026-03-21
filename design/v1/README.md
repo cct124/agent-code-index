@@ -36,6 +36,35 @@
 6. 执行语义检索
 7. 返回 MCP Tool 可直接使用的上下文
 
+### 2.3.1 检索文本与结构化 metadata 的接入策略
+
+v1 当前实现已经在切块阶段为支持的语言生成结构化 metadata，例如：
+
+1. TypeScript/TSX：class、function、method、constructor、getter、setter、field、parentSymbol、部分 tags
+2. JavaScript/JSX：class、function、method、constructor、getter、setter、field、parentSymbol、部分 tags
+3. Python：class、function、method、getter、setter、field、decorators、parentSymbol、部分 tags
+4. Markdown：heading、headingPath、sectionLevel、docType、frontmatter
+
+为了让这些 metadata 真正影响召回，v1 采用三层接入策略：
+
+1. `searchText`：仅注入少量高信号语义头部，参与 embedding 生成
+2. `filters`：对离散且稳定的 metadata 提供精确过滤
+3. `rerank`：保留为后续扩展，不在当前 repository 接口内硬编码
+
+当前落地规则如下：
+
+1. `searchText` 在原始 chunk content 前追加轻量语义头部
+2. 语义头部允许包含：language、symbolKind、symbolName、parentSymbol、`static|async|property|getter|setter|constructor|classmethod|staticmethod|default export` 等高价值标签
+3. Markdown 允许把 `docType` 与 `heading` 注入 `searchText`
+4. `private`、`protected`、`readonly`、哈希、行号、原始 frontmatter 等不进入 embedding 文本，避免噪声污染
+5. `tags` 作为精确过滤条件进入查询层，而不是无约束地注入全部 metadata
+
+这样做的目标是：
+
+1. 让向量模型知道当前 chunk 的“语义角色”
+2. 不把低价值技术字段混入 embedding 输入
+3. 为后续 query-aware rerank 预留空间
+
 ### 2.4 模块职责清晰，依赖方向单向
 
 允许的依赖方向如下：

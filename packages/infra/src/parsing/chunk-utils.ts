@@ -69,6 +69,21 @@ export function normalizeSearchText(content: string): string {
 }
 
 /**
+ * 为高价值 metadata 生成轻量语义头部，增强 embedding 输入。
+ */
+export function buildSearchText(input: {
+  content: string;
+  language?: string;
+  metadata?: ChunkMetadata;
+}): string {
+  const semanticHeader = buildSemanticHeader(input.language, input.metadata);
+
+  return normalizeSearchText(
+    [semanticHeader, input.content].filter(Boolean).join("\n"),
+  );
+}
+
+/**
  * 计算 chunk 内容哈希，用于变更检测与去重。
  */
 export function hashChunkContent(content: string): string {
@@ -95,7 +110,11 @@ export function createChunk(input: {
     filePath: normalizedFilePath,
     language: input.language ?? languageFromFilePath(input.filePath),
     content: input.content,
-    searchText: normalizeSearchText(input.content),
+    searchText: buildSearchText({
+      content: input.content,
+      language: input.language ?? languageFromFilePath(input.filePath),
+      metadata: input.metadata,
+    }),
     startLine: input.startLine,
     endLine: input.endLine,
     hash: hashChunkContent(input.content),
@@ -174,4 +193,149 @@ export function sortAndDedupeChunks(chunks: Chunk[]): Chunk[] {
       left.endLine - right.endLine ||
       left.id.localeCompare(right.id),
   );
+}
+
+function buildSemanticHeader(
+  language: string | undefined,
+  metadata: ChunkMetadata | undefined,
+): string {
+  const phrases: string[] = [];
+
+  if (language) {
+    phrases.push(language);
+  }
+
+  const symbolPhrase = buildSymbolPhrase(metadata);
+
+  if (symbolPhrase) {
+    phrases.push(symbolPhrase);
+  }
+
+  const tagPhrase = buildTagPhrase(metadata);
+
+  if (tagPhrase) {
+    phrases.push(tagPhrase);
+  }
+
+  const documentPhrase = buildDocumentPhrase(metadata);
+
+  if (documentPhrase) {
+    phrases.push(documentPhrase);
+  }
+
+  return phrases.join(" ").trim();
+}
+
+function buildSymbolPhrase(metadata: ChunkMetadata | undefined): string {
+  const symbolKind =
+    typeof metadata?.symbolKind === "string" ? metadata.symbolKind : undefined;
+  const symbolName =
+    typeof metadata?.symbolName === "string" ? metadata.symbolName : undefined;
+  const parentSymbol =
+    typeof metadata?.parentSymbol === "string"
+      ? metadata.parentSymbol
+      : undefined;
+
+  if (!symbolKind && !symbolName && !parentSymbol) {
+    return "";
+  }
+
+  const parts: string[] = [];
+
+  if (symbolKind && symbolName) {
+    parts.push(symbolKind, symbolName);
+  } else if (symbolKind) {
+    parts.push(symbolKind);
+  } else if (symbolName) {
+    parts.push(symbolName);
+  }
+
+  if (parentSymbol) {
+    parts.push("of", parentSymbol);
+  }
+
+  return parts.join(" ");
+}
+
+function buildTagPhrase(metadata: ChunkMetadata | undefined): string {
+  const normalizedTags = new Set<string>();
+
+  for (const tag of metadataTags(metadata)) {
+    const phrase = normalizeTagPhrase(tag);
+
+    if (phrase) {
+      normalizedTags.add(phrase);
+    }
+  }
+
+  if (normalizedTags.size === 0) {
+    return "";
+  }
+
+  return [...normalizedTags].join(" ");
+}
+
+function buildDocumentPhrase(metadata: ChunkMetadata | undefined): string {
+  const docType =
+    typeof metadata?.docType === "string" ? metadata.docType : undefined;
+  const heading =
+    typeof metadata?.heading === "string" ? metadata.heading : undefined;
+
+  const parts: string[] = [];
+
+  if (docType) {
+    parts.push(docType, "document");
+  }
+
+  if (heading) {
+    parts.push("section", heading);
+  }
+
+  return parts.join(" ");
+}
+
+function metadataTags(metadata: ChunkMetadata | undefined): string[] {
+  const result: string[] = [];
+
+  if (Array.isArray(metadata?.tags)) {
+    for (const tag of metadata.tags) {
+      if (typeof tag === "string") {
+        result.push(tag);
+      }
+    }
+  }
+
+  if (Array.isArray(metadata?.decorators)) {
+    for (const decorator of metadata.decorators) {
+      if (typeof decorator === "string") {
+        result.push(decorator);
+      }
+    }
+  }
+
+  return result;
+}
+
+function normalizeTagPhrase(tag: string): string {
+  switch (tag) {
+    case "static":
+    case "async":
+    case "property":
+    case "getter":
+    case "setter":
+    case "constructor":
+    case "classmethod":
+    case "staticmethod":
+      return tag;
+    case "export":
+      return "";
+    case "default":
+      return "default export";
+    default:
+      if (tag.endsWith(".setter")) {
+        return "property setter";
+      }
+
+      return "";
+  }
 }

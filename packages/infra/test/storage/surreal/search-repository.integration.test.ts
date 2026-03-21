@@ -168,6 +168,55 @@ describe("SurrealSearchRepository", () => {
     ]);
   });
 
+  it("supports filtering by tags using string and string array values", async () => {
+    const connect = vi.fn(async () => undefined);
+    const query = vi.fn(async () => [[createStoredChunk()]]);
+    const repository = new SurrealSearchRepository({
+      config: {} as never,
+      connect,
+      disconnect: vi.fn(async () => undefined),
+      driver: {
+        query,
+      } as never,
+      healthCheck: vi.fn(async () => ({}) as never),
+    });
+
+    await repository.semanticSearch({
+      repositoryId: "repo-a",
+      embedding: [1, 0, 0],
+      topK: 2,
+      filters: {
+        tags: ["static", "async"],
+      },
+    });
+
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining("metadata.tags CONTAINS $filter_tags_0"),
+      expect.objectContaining({
+        repositoryId: "repo-a",
+        filter_tags_0: "static",
+        filter_tags_1: "async",
+      }),
+    );
+
+    await repository.semanticSearch({
+      repositoryId: "repo-a",
+      embedding: [1, 0, 0],
+      topK: 2,
+      filters: {
+        tags: "property",
+      },
+    });
+
+    expect(query).toHaveBeenLastCalledWith(
+      expect.stringContaining("metadata.tags CONTAINS $filter_tags_0"),
+      expect.objectContaining({
+        repositoryId: "repo-a",
+        filter_tags_0: "property",
+      }),
+    );
+  });
+
   it("rejects unsupported filters before querying the database", async () => {
     const query = vi.fn(async () => [[]]);
     const repository = new SurrealSearchRepository({
@@ -190,6 +239,31 @@ describe("SurrealSearchRepository", () => {
         },
       }),
     ).rejects.toThrow(/Unsupported search filter/);
+    expect(query).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid tag filters before querying the database", async () => {
+    const query = vi.fn(async () => [[]]);
+    const repository = new SurrealSearchRepository({
+      config: {} as never,
+      connect: vi.fn(async () => undefined),
+      disconnect: vi.fn(async () => undefined),
+      driver: {
+        query,
+      } as never,
+      healthCheck: vi.fn(async () => ({}) as never),
+    });
+
+    await expect(
+      repository.semanticSearch({
+        repositoryId: "repo-a",
+        embedding: [1, 0, 0],
+        topK: 3,
+        filters: {
+          tags: ["static", 1],
+        },
+      }),
+    ).rejects.toThrow(/tags must be a string or string\[\]/i);
     expect(query).not.toHaveBeenCalled();
   });
 

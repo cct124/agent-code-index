@@ -65,6 +65,7 @@ const FILTER_FIELD_MAP = {
   heading: "metadata.heading",
   docType: "metadata.docType",
   sectionLevel: "metadata.sectionLevel",
+  tags: "metadata.tags",
 } as const;
 
 /**
@@ -210,6 +211,11 @@ function buildFilterState(filters?: Record<string, unknown>): {
       throw new Error(`Unsupported search filter: ${key}`);
     }
 
+    if (key === "tags") {
+      appendTagFilter(clauses, bindings, value);
+      continue;
+    }
+
     if (
       typeof value !== "string" &&
       typeof value !== "number" &&
@@ -229,6 +235,27 @@ function buildFilterState(filters?: Record<string, unknown>): {
     clauses,
     bindings,
   };
+}
+
+function appendTagFilter(
+  clauses: string[],
+  bindings: Record<string, string | number | boolean>,
+  value: unknown,
+): void {
+  const tags = Array.isArray(value) ? value : [value];
+
+  if (
+    tags.length === 0 ||
+    tags.some((tag) => typeof tag !== "string" || tag.trim().length === 0)
+  ) {
+    throw new Error("Search filter tags must be a string or string[]");
+  }
+
+  for (const [index, tag] of tags.entries()) {
+    const bindingKey = `filter_tags_${index}`;
+    clauses.push(`AND metadata.tags CONTAINS $${bindingKey}`);
+    bindings[bindingKey] = tag as string;
+  }
 }
 
 /**
