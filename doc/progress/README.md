@@ -13,8 +13,8 @@
 4. `voyage` 与 `openai-compatible` 两条 embedding provider 路径已经完成
 5. TypeScript、JavaScript、Python 的 tree-sitter 语义切块与 Markdown 结构化章节切块已经完成
 6. Surreal 原生 HNSW 检索、`3.0.4` 开发基线验证、候选窗口参数配置化与 `EXPLAIN FULL` 真实验证已经完成
-7. VoyageAI 真实 embedding 兼容性验证已经完成
-8. 当前最大的缺口已转为 MCP tool 层与上下文服务，以及 Voyage + Surreal 的端到端闭环，而不是底层解析和索引能力
+7. VoyageAI 真实 embedding 兼容性验证，以及 OpenAI-compatible / Voyage + Surreal 的真实端到端索引验证已经完成
+8. 当前最大的缺口已转为 MCP tool 层、上下文组装服务与 provider 稳定性，而不是底层解析和索引能力
 
 建议阅读顺序：
 

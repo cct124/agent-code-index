@@ -19,6 +19,7 @@
 11. `query text -> query embedding -> search` 正式检索用例落地
 12. Surreal 原生向量检索迁移与 3.0.4 基线验证落地
 13. VoyageAI 真实 embedding 兼容性验证落地
+14. 真实 embedding provider 与 Surreal 端到端索引闭环验证落地
 
 ## 2. 里程碑一：架构设计与工程骨架完成
 
@@ -241,9 +242,23 @@
 该里程碑的意义是：
 
 1. `voyage` provider 不再只有单元测试，而是具备真实 API 兼容性验证
-2. 后续补齐 Voyage + Surreal 端到端索引测试时，可以直接复用这条已验证的 provider 基线
+2. Voyage provider 的模型、鉴权与维度校验路径已经具备真实环境基线
 
-## 15. 当前里程碑结论
+## 15. 里程碑十四：真实 embedding provider 与 Surreal 端到端索引闭环验证落地
+
+已完成：
+
+1. `index-repository.real.integration.test.ts` 已验证基于测试 provider 的 `prepare -> embed -> upsert -> search` 真实 SurrealDB 基线链路
+2. `index-repository.real-embedding.integration.test.ts` 已验证 OpenAI-compatible provider 的 `prepare -> real embed -> upsert -> query embed -> search` 端到端链路
+3. `index-repository.real-voyage.integration.test.ts` 已验证 Voyage provider 的 `prepare -> real embed -> upsert -> query embed -> search` 端到端链路
+4. 两条真实 provider 路径都已经通过 `createApp()` 装配后的正式容器执行，而不是调用方手工拼装最小链路
+
+该里程碑的意义是：
+
+1. 项目当前不只验证了 provider API 兼容性，也验证了 provider、索引服务、Surreal 存储和检索之间的真实闭环
+2. 后续工作重点可以从“补链路是否能跑通”转向“MCP 暴露、稳定性和检索质量增强”
+
+## 16. 当前里程碑结论
 
 截至当前，可以将阶段成果概括为：
 
@@ -261,8 +276,9 @@
 12. `query text -> query embedding -> search` 正式检索用例已落地
 13. Surreal 原生向量检索迁移与 `3.0.4` 基线验证已落地
 14. VoyageAI 真实 embedding 兼容性验证已落地
+15. 真实 embedding provider 与 Surreal 端到端索引闭环验证已落地
 
 下一阶段不再是补工程骨架，而是先将现有检索能力收敛为正式 use case：
 
 1. 将该检索用例通过 MCP tool 与上下文服务对外暴露
-2. 再补齐 Voyage + Surreal 端到端索引验证，并增强排序、更复杂过滤组合验证与候选窗口调优
+2. 再增强 provider 稳定性、排序、更复杂过滤组合验证与候选窗口调优
