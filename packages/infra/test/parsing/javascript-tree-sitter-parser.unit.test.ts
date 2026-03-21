@@ -112,6 +112,10 @@ describe("JavaScriptTreeSitterParser", () => {
       filePath: "src/advanced.js",
       content: [
         "export default class Greeter {",
+        "  constructor(name) {",
+        "    this.name = name;",
+        "  }",
+        "",
         "  get name() {",
         "    return this._name;",
         "  }",
@@ -120,13 +124,24 @@ describe("JavaScriptTreeSitterParser", () => {
         "    this._name = value;",
         "  }",
         "",
+        "  static create() {",
+        "    return new Greeter('a');",
+        "  }",
+        "",
+        "  async load() {",
+        "    return 'ok';",
+        "  }",
+        "",
         "  #secret = 1;",
-        "  handler = () => 1;",
+        "  static handler = async () => 1;",
         "}",
         "",
         "export default function helper() {",
         "  return 1;",
         "}",
+        "",
+        "const localHelper = async () => 7;",
+        "export default localHelper;",
         "",
         "export default () => 42;",
       ].join("\n"),
@@ -138,7 +153,15 @@ describe("JavaScriptTreeSitterParser", () => {
           metadata: expect.objectContaining({
             symbolName: "Greeter",
             symbolKind: "class",
-            tags: ["export", "default"],
+            tags: expect.arrayContaining(["export", "default"]),
+          }),
+        }),
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            symbolName: "constructor",
+            symbolKind: "constructor",
+            parentSymbol: "Greeter",
+            tags: expect.arrayContaining(["constructor"]),
           }),
         }),
         expect.objectContaining({
@@ -146,7 +169,7 @@ describe("JavaScriptTreeSitterParser", () => {
             symbolName: "name",
             symbolKind: "getter",
             parentSymbol: "Greeter",
-            tags: ["getter"],
+            tags: expect.arrayContaining(["getter"]),
           }),
         }),
         expect.objectContaining({
@@ -154,7 +177,23 @@ describe("JavaScriptTreeSitterParser", () => {
             symbolName: "name",
             symbolKind: "setter",
             parentSymbol: "Greeter",
-            tags: ["setter"],
+            tags: expect.arrayContaining(["setter"]),
+          }),
+        }),
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            symbolName: "create",
+            symbolKind: "method",
+            parentSymbol: "Greeter",
+            tags: expect.arrayContaining(["static"]),
+          }),
+        }),
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            symbolName: "load",
+            symbolKind: "method",
+            parentSymbol: "Greeter",
+            tags: expect.arrayContaining(["async"]),
           }),
         }),
         expect.objectContaining({
@@ -162,7 +201,7 @@ describe("JavaScriptTreeSitterParser", () => {
             symbolName: "#secret",
             symbolKind: "field",
             parentSymbol: "Greeter",
-            tags: ["private"],
+            tags: expect.arrayContaining(["private"]),
           }),
         }),
         expect.objectContaining({
@@ -170,20 +209,28 @@ describe("JavaScriptTreeSitterParser", () => {
             symbolName: "handler",
             symbolKind: "method",
             parentSymbol: "Greeter",
+            tags: expect.arrayContaining(["static", "async"]),
           }),
         }),
         expect.objectContaining({
           metadata: expect.objectContaining({
             symbolName: "helper",
             symbolKind: "function",
-            tags: ["export", "default"],
+            tags: expect.arrayContaining(["export", "default"]),
+          }),
+        }),
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            symbolName: "localHelper",
+            symbolKind: "function",
+            tags: expect.arrayContaining(["export", "default", "async"]),
           }),
         }),
         expect.objectContaining({
           metadata: expect.objectContaining({
             symbolName: "default",
             symbolKind: "function",
-            tags: ["export", "default"],
+            tags: expect.arrayContaining(["export", "default"]),
           }),
         }),
       ]),

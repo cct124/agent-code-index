@@ -27,9 +27,10 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
    */
   protected collectChunks(input: ParseInput, rootNode: SyntaxNode): Chunk[] {
     const chunks: Chunk[] = [];
+    const pendingDefaultExports = new Set<string>();
 
     for (const node of rootNode.namedChildren) {
-      this.collectTopLevelNode(input, node, chunks);
+      this.collectTopLevelNode(input, node, chunks, pendingDefaultExports);
     }
 
     return chunks;
@@ -42,13 +43,21 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
     input: ParseInput,
     node: SyntaxNode,
     chunks: Chunk[],
+    pendingDefaultExports: Set<string>,
   ): void {
     const exportState = extractExportState(node);
     const targetNode = exportState.node;
 
     switch (targetNode.type) {
       case "class_declaration": {
-        chunks.push(...this.collectClassChunks(input, targetNode, exportState));
+        chunks.push(
+          ...this.collectClassChunks(
+            input,
+            targetNode,
+            exportState,
+            pendingDefaultExports,
+          ),
+        );
         return;
       }
       case "function_declaration": {
@@ -61,7 +70,11 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
             ...this.createChunksForNode(input, targetNode, {
               symbolName: name,
               symbolKind: "function",
-              tags: exportTags(exportState),
+              tags: mergeTags(
+                exportTags(exportState),
+                resolvePendingDefaultExportTags(name, pendingDefaultExports),
+                asyncTags(targetNode),
+              ),
             }),
           );
         }
@@ -74,7 +87,7 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
             ...this.createChunksForNode(input, targetNode, {
               symbolName: "default",
               symbolKind: "function",
-              tags: exportTags(exportState),
+              tags: mergeTags(exportTags(exportState), asyncTags(targetNode)),
             }),
           );
         }
@@ -83,8 +96,23 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
       case "lexical_declaration":
       case "variable_declaration": {
         chunks.push(
-          ...this.collectVariableFunctionChunks(input, targetNode, exportState),
+          ...this.collectVariableFunctionChunks(
+            input,
+            targetNode,
+            exportState,
+            pendingDefaultExports,
+          ),
         );
+        return;
+      }
+      case "identifier": {
+        if (exportState.isDefault) {
+          applyDefaultExportToExistingChunks(
+            chunks,
+            targetNode.text,
+            pendingDefaultExports,
+          );
+        }
         return;
       }
       default:
@@ -99,6 +127,7 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
     input: ParseInput,
     classNode: SyntaxNode,
     exportState: ExportState,
+    pendingDefaultExports: Set<string>,
   ): Chunk[] {
     const className =
       classNode.childForFieldName("name")?.text ??
@@ -111,7 +140,10 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
     const chunks = this.createChunksForNode(input, classNode, {
       symbolName: className,
       symbolKind: "class",
-      tags: exportTags(exportState),
+      tags: mergeTags(
+        exportTags(exportState),
+        resolvePendingDefaultExportTags(className, pendingDefaultExports),
+      ),
     });
     const bodyNode = classNode.childForFieldName("body");
 
@@ -130,7 +162,7 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
               symbolName: methodName,
               symbolKind: methodKind,
               parentSymbol: className,
-              tags: methodTags(methodKind),
+              tags: methodTags(member, methodKind),
             }),
           );
         }
@@ -150,7 +182,7 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
               symbolName: fieldName,
               symbolKind: "field",
               parentSymbol: className,
-              tags: ["private"],
+              tags: fieldTags(member, fieldName),
             }),
           );
           continue;
@@ -162,6 +194,7 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
               symbolName: fieldName,
               symbolKind: "field",
               parentSymbol: className,
+              tags: fieldTags(member, fieldName),
             }),
           );
           continue;
@@ -173,6 +206,10 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
               symbolName: fieldName,
               symbolKind: "method",
               parentSymbol: className,
+              tags: mergeTags(
+                fieldTags(member, fieldName),
+                asyncTags(valueNode),
+              ),
             }),
           );
         }
@@ -189,6 +226,7 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
     input: ParseInput,
     node: SyntaxNode,
     exportState: ExportState,
+    pendingDefaultExports: Set<string>,
   ): Chunk[] {
     const chunks: Chunk[] = [];
 
@@ -208,7 +246,11 @@ export class JavaScriptTreeSitterParser extends TreeSitterParser {
         ...this.createChunksForNode(input, child, {
           symbolName: name,
           symbolKind: "function",
-          tags: exportTags(exportState),
+          tags: mergeTags(
+            exportTags(exportState),
+            resolvePendingDefaultExportTags(name, pendingDefaultExports),
+            asyncTags(valueNode),
+          ),
         }),
       );
     }
@@ -262,6 +304,12 @@ function fieldNameForMember(member: SyntaxNode): string | undefined {
 }
 
 function methodKindForMember(member: SyntaxNode): string {
+  const name = member.childForFieldName("name")?.text;
+
+  if (name === "constructor") {
+    return "constructor";
+  }
+
   if (member.children.some((child) => child.type === "get")) {
     return "getter";
   }
@@ -273,12 +321,25 @@ function methodKindForMember(member: SyntaxNode): string {
   return "method";
 }
 
-function methodTags(kind: string): string[] | undefined {
-  if (kind === "getter" || kind === "setter") {
-    return [kind];
+function methodTags(member: SyntaxNode, kind: string): string[] | undefined {
+  return mergeTags(kindTags(kind), memberModifierTags(member));
+}
+
+function fieldTags(
+  member: SyntaxNode,
+  fieldName: string,
+): string[] | undefined {
+  const tags: string[] = [];
+
+  if (fieldName.startsWith("#")) {
+    tags.push("private");
   }
 
-  return undefined;
+  if (member.children.some((child) => child.type === "static")) {
+    tags.push("static");
+  }
+
+  return tags.length > 0 ? tags : undefined;
 }
 
 function exportTags(exportState: ExportState): string[] | undefined {
@@ -287,4 +348,76 @@ function exportTags(exportState: ExportState): string[] | undefined {
   }
 
   return undefined;
+}
+
+function kindTags(kind: string): string[] | undefined {
+  if (kind === "getter" || kind === "setter" || kind === "constructor") {
+    return [kind];
+  }
+
+  return undefined;
+}
+
+function memberModifierTags(member: SyntaxNode): string[] | undefined {
+  const tags: string[] = [];
+
+  if (member.children.some((child) => child.type === "static")) {
+    tags.push("static");
+  }
+
+  if (member.children.some((child) => child.type === "async")) {
+    tags.push("async");
+  }
+
+  return tags.length > 0 ? tags : undefined;
+}
+
+function asyncTags(node: SyntaxNode): string[] | undefined {
+  if (node.children.some((child) => child.type === "async")) {
+    return ["async"];
+  }
+
+  return undefined;
+}
+
+function mergeTags(
+  ...tagLists: Array<string[] | undefined>
+): string[] | undefined {
+  const merged = [...new Set(tagLists.flatMap((tags) => tags ?? []))];
+
+  return merged.length > 0 ? merged : undefined;
+}
+
+function resolvePendingDefaultExportTags(
+  symbolName: string,
+  pendingDefaultExports: Set<string>,
+): string[] | undefined {
+  if (!pendingDefaultExports.has(symbolName)) {
+    return undefined;
+  }
+
+  pendingDefaultExports.delete(symbolName);
+
+  return ["export", "default"];
+}
+
+function applyDefaultExportToExistingChunks(
+  chunks: Chunk[],
+  symbolName: string,
+  pendingDefaultExports: Set<string>,
+): void {
+  const matchingChunks = chunks.filter(
+    (chunk) =>
+      chunk.metadata.parentSymbol === undefined &&
+      chunk.metadata.symbolName === symbolName,
+  );
+
+  if (matchingChunks.length === 0) {
+    pendingDefaultExports.add(symbolName);
+    return;
+  }
+
+  for (const chunk of matchingChunks) {
+    chunk.metadata.tags = mergeTags(chunk.metadata.tags, ["export", "default"]);
+  }
 }
