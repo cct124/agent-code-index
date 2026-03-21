@@ -103,4 +103,90 @@ describe("JavaScriptTreeSitterParser", () => {
       }),
     );
   });
+
+  it("extracts getter, setter, private field, and export default semantics from javascript", async () => {
+    const parser = new JavaScriptTreeSitterParser(".js");
+
+    const chunks = await parser.parse({
+      repositoryId: "repo-a",
+      filePath: "src/advanced.js",
+      content: [
+        "export default class Greeter {",
+        "  get name() {",
+        "    return this._name;",
+        "  }",
+        "",
+        "  set name(value) {",
+        "    this._name = value;",
+        "  }",
+        "",
+        "  #secret = 1;",
+        "  handler = () => 1;",
+        "}",
+        "",
+        "export default function helper() {",
+        "  return 1;",
+        "}",
+        "",
+        "export default () => 42;",
+      ].join("\n"),
+    });
+
+    expect(chunks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            symbolName: "Greeter",
+            symbolKind: "class",
+            tags: ["export", "default"],
+          }),
+        }),
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            symbolName: "name",
+            symbolKind: "getter",
+            parentSymbol: "Greeter",
+            tags: ["getter"],
+          }),
+        }),
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            symbolName: "name",
+            symbolKind: "setter",
+            parentSymbol: "Greeter",
+            tags: ["setter"],
+          }),
+        }),
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            symbolName: "#secret",
+            symbolKind: "field",
+            parentSymbol: "Greeter",
+            tags: ["private"],
+          }),
+        }),
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            symbolName: "handler",
+            symbolKind: "method",
+            parentSymbol: "Greeter",
+          }),
+        }),
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            symbolName: "helper",
+            symbolKind: "function",
+            tags: ["export", "default"],
+          }),
+        }),
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            symbolName: "default",
+            symbolKind: "function",
+            tags: ["export", "default"],
+          }),
+        }),
+      ]),
+    );
+  });
 });
