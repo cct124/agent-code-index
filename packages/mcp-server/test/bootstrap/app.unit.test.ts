@@ -9,6 +9,7 @@ import type {
   IndexRepositoryService,
   Logger,
   RepositoryChunkPreparationService,
+  SearchCodeContextService,
   SearchRepository,
 } from "../../../core/src/index.js";
 import type { ProjectMetadata } from "../../../core/src/domain/project-metadata.js";
@@ -53,6 +54,8 @@ function createConfig(): AppConfig {
     indexing: {
       defaultTopK: 10,
       ignorePatterns: ["node_modules", ".git"],
+      nativeCandidateMultiplier: 20,
+      nativeEfSearchMin: 100,
     },
     logging: {
       level: "info",
@@ -136,6 +139,9 @@ function createTestContainer(events: string[]): AppContainer {
     searchRepository: {
       semanticSearch: vi.fn(async () => []),
     } as SearchRepository,
+    searchCodeContextService: {
+      execute: vi.fn(async () => []),
+    } as SearchCodeContextService,
     indexRepositoryService: {
       execute: vi.fn(async () => ({
         scannedFileCount: 0,
