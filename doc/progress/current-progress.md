@@ -155,13 +155,15 @@
 6. Surreal 存储层日志、错误分类和脱敏策略相关单元测试已通过
 7. searchText 的 metadata 注入策略与 tags 检索过滤相关测试已通过
 8. `DefaultSearchCodeContextService` 单元测试已通过
+9. 开发用 SurrealDB 已在空库重部署后验证通过 `3.0.4`，项目级真实 HNSW 搜索链路可用
+10. 在干净的 `3.0.4` 环境中，`repositoryId + 多个精确过滤条件 + HNSW KNN` 的最小复现场景与真实仓储测试均已通过
 
 ## 4. 当前仍未完成内容
 
 以下能力仍未真正落地：
 
 1. 更多语言的 tree-sitter 语义解析支持，例如 Go / Java / Rust
-2. 基于数据库向量索引而不是应用侧余弦排序的检索优化
+2. 原生向量检索路径的进一步调优与回退策略收敛，例如更多过滤条件下推、`EF` 参数调优与 fallback 收敛
 3. MCP tool server 与具体工具实现
 4. 检索结果到 `ContextPacket` 的完整上下文组装服务
 5. Voyage provider 的实网端到端索引测试
@@ -172,8 +174,8 @@
 
 ### 5.1 风险点
 
-1. `project_metadata` 与 chunk schema 已落地，但检索仍然是应用侧余弦相似度排序，不是数据库原生向量检索
-2. `SurrealSearchRepository` 当前采用应用侧余弦相似度排序，不是数据库侧向量索引检索
+1. `SurrealSearchRepository` 已默认采用数据库原生 HNSW KNN 检索，但当前仍保留“DB 侧 `repositoryId + KNN`，其余精确过滤在应用层二次过滤”的保守策略，后续仍需继续验证更激进的过滤条件下推
+2. 开发环境从 `2.4.1` 切到 `3.0.4` 时无法直接复用旧 RocksDB 数据目录，后续若要做版本升级而不是空库重建，必须单独遵循官方升级路径
 3. 当前 parser 已具备 TypeScript、TSX、JavaScript、JSX、Python 和 Markdown 的第一版结构感知能力，但更多语言尚未覆盖
 4. 当前已接入 Voyage 与 OpenAI-compatible provider，其中 OpenAI-compatible / SiliconFlow 已具备 opt-in 的实网验证；Voyage 的实网端到端验证仍未补齐
 5. `createApp()` 已经是异步启动流程，后续接入真实 MCP server 时必须正确 await
@@ -233,7 +235,7 @@
 
 1. 丰富 `SearchRepository` 可过滤 metadata
 2. 引入更稳定的结果去重与轻量重排
-3. 评估数据库侧向量索引能力，逐步替换应用侧余弦排序
+3. 在 `3.0.4` 基线下继续评估更多过滤条件下推、`EXPLAIN` 观测与 fallback 收敛，逐步减少应用侧二次过滤
 
 ### 6.3 第三优先级：扩展更多语言 parser
 

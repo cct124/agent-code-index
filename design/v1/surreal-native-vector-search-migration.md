@@ -2,7 +2,7 @@
 
 ## 1. 文档目标
 
-本文档用于指导 `agent-code-index` 从当前的“应用侧余弦相似度排序”迁移到 “Surreal 原生向量索引与 KNN 查询”。
+本文档用于指导 `agent-code-index` 从原先的“应用侧余弦相似度排序”迁移到 “Surreal 原生向量索引与 KNN 查询”。
 
 目标不是重写整个检索链路，而是在保持 `core` 接口不变的前提下，替换 `infra` 层的 Surreal 搜索实现，并保留可控回退路径。
 
@@ -21,11 +21,11 @@
 
 当前语义检索实现位于 [packages/infra/src/storage/surreal/surreal-search-repository.ts](../../packages/infra/src/storage/surreal/surreal-search-repository.ts)。
 
-当前行为为：
+截至 2026-03-21，当前实现已经完成 v1 迁移，默认行为为：
 
-1. 先按 `repositoryId + filters` 查询候选 chunk
-2. 再在 Node.js 应用层计算余弦相似度
-3. 最后排序并截断 `topK`
+1. 先在 SurrealDB 中执行 `repositoryId + HNSW KNN` 原生查询
+2. 再在应用层补充剩余精确过滤条件的兼容性筛选
+3. 最后按数据库返回距离映射后的分值排序并截断 `topK`
 
 当前 schema 位于 [packages/infra/src/storage/surreal/surreal-chunk-schema.ts](../../packages/infra/src/storage/surreal/surreal-chunk-schema.ts)。
 
@@ -33,7 +33,7 @@
 
 1. `embedding` 已可持久化
 2. 已存在普通索引：`repositoryId`、`repositoryId + filePath`、`repositoryId + hash`
-3. 尚未定义向量索引
+3. 已定义 HNSW 向量索引
 
 当前 `core` 层接口位于 [packages/core/src/contracts/search-repository.ts](../../packages/core/src/contracts/search-repository.ts)，输入已经足够表达数据库原生向量检索：
 
@@ -42,7 +42,7 @@
 3. `topK`
 4. `filters`
 
-因此，迁移重点不在 `core`，而在 `infra` 的 schema 和仓储实现。
+因此，当前文档除保留迁移设计外，也记录已验证的版本边界与落地结果。
 
 ## 3. 迁移目标
 
@@ -97,6 +97,20 @@
 1. `INFO FOR DB;`
 2. `INFO FOR TABLE chunk;`
 3. 在本地 Surrealist 或测试脚本中验证最小 KNN 查询
+
+### 4.1 已验证的版本结论
+
+截至 2026-03-21，仓库已完成以下实测结论：
+
+1. 本地开发用 Docker SurrealDB 已从 `2.4.1` 切换到 `3.0.4`
+2. `2.4.1` 的旧 RocksDB 数据目录不能被 `3.0.4` 直接打开，实测会报磁盘格式版本不匹配，因此开发环境采用空库重部署而不是原地升级
+3. 在干净的 `3.0.4` 环境中，最小复现场景下的 `repositoryId + 多个精确过滤条件 + HNSW KNN` 查询不再出现“返回空结果”的旧现象
+4. 项目真实集成测试在 `3.0.4` 上通过，但需要将 schema 中 `metadata` 字段定义调整为 `TYPE object FLEXIBLE` 这一新版语法顺序
+
+这组实测结果说明：
+
+1. 官方文档所描述的“过滤条件可与 HNSW KNN 组合”在 `3.0.4` 干净环境中是可复现的
+2. 仓库当前保留的“应用层二次过滤”更适合作为旧环境兼容和风险控制措施，而不应继续当作 `3.0.4` 的语义限制
 
 ## 5. 接口保持不变的原则
 
@@ -302,6 +316,12 @@ ORDER BY distance;
 
 建议继续保留 `buildFilterState(...)`，只替换最终 `SELECT` 语句的主体。
 
+补充说明：
+
+1. 当前仓库实现并没有把全部精确过滤直接下推到 KNN 查询，而是保守地先做 `repositoryId + HNSW KNN`，再在应用层做剩余过滤
+2. 这样做的原因不是官方语义不支持，而是仓库曾在旧版本真实环境中观察到多精确过滤与 KNN 组合异常，需要一个稳定过渡方案
+3. 在 `3.0.4` 基线上，可以继续逐步增加更多过滤条件的数据库侧下推验证，但不应在没有真实回归测试的情况下直接删掉 fallback 与二次过滤
+
 ### 7.6 日志建议
 
 迁移后新增以下日志字段：
@@ -370,6 +390,16 @@ ORDER BY distance;
 
 1. 验证上层业务用例未受影响
 2. 验证新仓储实现可以直接替换旧实现
+
+另外，建议至少保留一条真实数据库回归测试，明确覆盖：
+
+1. `repositoryId`
+2. `filePath`
+3. `language`
+4. `metadata.symbolName`
+5. `metadata.parentSymbol`
+6. `tags`
+7. 与 HNSW KNN 同时使用时仍返回非空且正确的结果
 
 ### 8.4 回退路径测试
 

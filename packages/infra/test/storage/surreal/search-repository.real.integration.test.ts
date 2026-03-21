@@ -125,6 +125,82 @@ if (!isRealSurrealIntegrationEnabled()) {
       expect(results[0]?.reason).toBe("surreal vector search");
       expect(results[1]?.reason).toBe("surreal vector search");
     });
+
+    it("supports multiple exact-match filters together with native HNSW search", async () => {
+      await chunkSchema.ensure();
+      await chunkRepository.upsertMany([
+        createChunk(repositoryId, {
+          id: "chunk-multi-1",
+          filePath: "src/example.ts",
+          language: "typescript",
+          content: "export function alpha() {}",
+          searchText: "export function alpha",
+          startLine: 1,
+          endLine: 3,
+          hash: "hash-multi-1",
+          metadata: {
+            symbolName: "alpha",
+            symbolKind: "function",
+            parentSymbol: "ExampleModule",
+            tags: ["export", "public"],
+          },
+          embedding: [1, 0, 0],
+        }),
+        createChunk(repositoryId, {
+          id: "chunk-multi-2",
+          filePath: "src/example.ts",
+          language: "typescript",
+          content: "export function alphaHelper() {}",
+          searchText: "export function alphaHelper",
+          startLine: 8,
+          endLine: 10,
+          hash: "hash-multi-2",
+          metadata: {
+            symbolName: "alphaHelper",
+            symbolKind: "function",
+            parentSymbol: "ExampleModule",
+            tags: ["export"],
+          },
+          embedding: [0.92, 0.08, 0],
+        }),
+        createChunk(repositoryId, {
+          id: "chunk-multi-3",
+          filePath: "src/example.ts",
+          language: "typescript",
+          content: "export function alpha() {}",
+          searchText: "export function alpha",
+          startLine: 12,
+          endLine: 14,
+          hash: "hash-multi-3",
+          metadata: {
+            symbolName: "alpha",
+            symbolKind: "function",
+            parentSymbol: "OtherModule",
+            tags: ["export", "public"],
+          },
+          embedding: [0.97, 0.03, 0],
+        }),
+      ]);
+
+      const results = await repository.semanticSearch({
+        repositoryId,
+        embedding: [1, 0, 0],
+        topK: 3,
+        filters: {
+          filePath: "src/example.ts",
+          language: "typescript",
+          symbolName: "alpha",
+          parentSymbol: "ExampleModule",
+          tags: ["export", "public"],
+        },
+      });
+
+      expect(results).toHaveLength(1);
+      expect(results[0]?.chunk.id).toBe("chunk-multi-1");
+      expect(results[0]?.chunk.metadata.symbolName).toBe("alpha");
+      expect(results[0]?.chunk.metadata.parentSymbol).toBe("ExampleModule");
+      expect(results[0]?.reason).toBe("surreal vector search");
+    });
   });
 }
 
