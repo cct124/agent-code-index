@@ -4,7 +4,13 @@
 
 本文档用于指导 `agent-code-index` 从原先的“应用侧余弦相似度排序”迁移到 “Surreal 原生向量索引与 KNN 查询”。
 
-目标不是重写整个检索链路，而是在保持 `core` 接口不变的前提下，替换 `infra` 层的 Surreal 搜索实现，并保留可控回退路径。
+目标不是重写整个检索链路，而是在保持 `core` 接口不变的前提下，替换 `infra` 层的 Surreal 搜索实现。
+
+截至 2026-03-21，这份文档已经从“迁移计划”转为“迁移结果 + 后续调优说明”：
+
+1. HNSW schema、native KNN 查询和真实环境验证已经完成
+2. 当前仓库默认只保留数据库原生检索路径
+3. 文中涉及 fallback、灰度阶段与实施顺序的段落，应优先按“历史决策记录”而不是“当前待办”理解
 
 本文档覆盖以下内容：
 
@@ -23,9 +29,9 @@
 
 截至 2026-03-21，当前实现已经完成 v1 迁移，默认行为为：
 
-1. 先在 SurrealDB 中执行 `repositoryId + HNSW KNN` 原生查询
-2. 再在应用层补充剩余精确过滤条件的兼容性筛选
-3. 最后按数据库返回距离映射后的分值排序并截断 `topK`
+1. 在 SurrealDB 中执行“全部精确过滤条件数据库下推 + HNSW KNN”原生查询
+2. 应用层仅做 distance 到 score 的单调映射、排序稳定化与 `topK` 截断
+3. v1 已不再维护应用侧余弦 fallback
 
 当前 schema 位于 [packages/infra/src/storage/surreal/surreal-chunk-schema.ts](../../packages/infra/src/storage/surreal/surreal-chunk-schema.ts)。
 
@@ -110,7 +116,7 @@
 这组实测结果说明：
 
 1. 官方文档所描述的“过滤条件可与 HNSW KNN 组合”在 `3.0.4` 干净环境中是可复现的
-2. 仓库当前保留的“应用层二次过滤”更适合作为旧环境兼容和风险控制措施，而不应继续当作 `3.0.4` 的语义限制
+2. 因此仓库当前已切换为“全部精确过滤数据库下推 + KNN”的单一路径，不再把应用层二次过滤作为 `3.0.4` 基线的一部分
 
 ## 5. 接口保持不变的原则
 
@@ -224,16 +230,15 @@ DIST COSINE;
 
 ### 7.3 推荐内部结构
 
-建议把 `semanticSearch` 拆成两个内部路径：
+当前实现已经收敛为单一内部路径：
 
 1. `nativeVectorSearch(...)`
-2. `fallbackApplicationCosineSearch(...)`
 
-调用策略：
+原因：
 
-1. 默认先尝试 `nativeVectorSearch`
-2. 当数据库版本、索引状态或语法不兼容时，回退到旧实现
-3. 回退时写 `warn` 日志，明确当前未使用原生向量索引
+1. 干净的 SurrealDB `3.0.4` 环境已经验证“多精确过滤条件 + HNSW KNN”稳定可用
+2. 保留应用侧余弦 fallback 会让实现、测试和日志语义继续分叉
+3. 当前 v1 基线更需要稳定的单一路径，而不是同时维护两套召回语义
 
 ### 7.4 推荐查询结构
 
@@ -318,15 +323,15 @@ ORDER BY distance;
 
 补充说明：
 
-1. 当前仓库实现并没有把全部精确过滤直接下推到 KNN 查询，而是保守地先做 `repositoryId + HNSW KNN`，再在应用层做剩余过滤
-2. 这样做的原因不是官方语义不支持，而是仓库曾在旧版本真实环境中观察到多精确过滤与 KNN 组合异常，需要一个稳定过渡方案
-3. 在 `3.0.4` 基线上，可以继续逐步增加更多过滤条件的数据库侧下推验证，但不应在没有真实回归测试的情况下直接删掉 fallback 与二次过滤
+1. 当前仓库实现已经把支持的精确过滤条件全部直接下推到 KNN 查询
+2. 之所以曾经保守处理，是因为旧版本真实环境里观察到过多精确过滤与 KNN 组合异常
+3. 在 `3.0.4` 基线上，该异常已不再复现，因此当前正式基线就是单一路径 native 查询
 
 ### 7.6 日志建议
 
 迁移后新增以下日志字段：
 
-1. `searchStrategy: "surreal-native-vector" | "application-cosine-fallback"`
+1. `searchStrategy: "surreal-native-vector"`
 2. `vectorDistanceMetric`
 3. `nativeVectorIndexUsed`
 
@@ -369,7 +374,7 @@ ORDER BY distance;
 3. `tags` 过滤仍然可用
 4. 返回结果映射正确
 5. `reason` 变为更中性的数据库检索描述
-6. fallback 路径若触发，则查询语句切换为显式距离度量的 brute-force 写法
+6. candidate window 与 `efSearch` 参数会按仓储配置注入 native 查询
 
 ### 8.3 Real Integration
 
@@ -401,54 +406,31 @@ ORDER BY distance;
 6. `tags`
 7. 与 HNSW KNN 同时使用时仍返回非空且正确的结果
 
-### 8.4 回退路径测试
+### 8.4 当前测试结论
 
-若保留 fallback，必须增加一组测试：
+当前迁移完成后，测试重点已经变为：
 
-1. 当 native 查询抛出“索引不存在 / 语法不兼容 / 功能未启用”时
-2. repository 自动回退到旧实现
-3. 日志中明确记录 fallback
+1. 查询语句是否包含 `<|K,EF|>` 形式的 native HNSW 片段
+2. `repositoryId` 与全部支持的精确过滤条件是否被正确下推
+3. `EXPLAIN FULL` 是否能观察到预期的 KnnScan 计划
+4. 真实 SurrealDB + 真实 embedding provider 的整链路是否继续通过
 
-## 9. 灰度与回退策略
+## 9. 当前后续工作
 
-建议不要一次性删除旧实现。
+当前不再以“是否保留 fallback”为重点，后续工作主要是：
 
-### 9.1 第一阶段
+1. 继续验证更复杂过滤组合与更大候选窗口下的表现
+2. 基于真实数据分布调优 `SEARCH_NATIVE_CANDIDATE_MULTIPLIER` 与 `SEARCH_NATIVE_EF_SEARCH_MIN`
+3. 通过 `EXPLAIN FULL` 持续校验查询计划没有因版本变化或 schema 偏差而退化
 
-1. schema 增加向量索引
-2. repository 新增 native 查询实现
-3. 默认启用 native
-4. 保留 fallback
+## 10. 已完成实施结果
 
-### 9.2 第二阶段
+截至当前，以下步骤已经完成：
 
-1. 在本地开发环境完成 SiliconFlow + SurrealDB 实测
-2. 在真实数据集上检查排序质量
-3. 观察日志中 native 命中与 fallback 比例
-
-### 9.3 第三阶段
-
-1. 当 native 路径稳定后，再考虑移除 fallback
-2. 或通过配置显式控制是否允许 fallback
-
-建议增加配置项：
-
-1. `SEARCH_USE_NATIVE_VECTOR=true|false`
-2. `SEARCH_ALLOW_NATIVE_FALLBACK=true|false`
-
-v1 若不想新增配置，也至少应在仓储内部保留清晰的 fallback 分支。
-
-## 10. 实施顺序
-
-建议按下面顺序推进：
-
-1. 修改 [packages/infra/src/storage/surreal/surreal-chunk-schema.ts](../../packages/infra/src/storage/surreal/surreal-chunk-schema.ts)，新增 HNSW 向量索引
-2. 先补 schema 集成测试，确保索引创建逻辑成立
-3. 修改 [packages/infra/src/storage/surreal/surreal-search-repository.ts](../../packages/infra/src/storage/surreal/surreal-search-repository.ts)，新增 native KNN 查询路径
-4. 保留当前应用侧 cosine 逻辑作为 fallback
-5. 更新 [packages/infra/test/storage/surreal/search-repository.integration.test.ts](../../packages/infra/test/storage/surreal/search-repository.integration.test.ts)
-6. 运行 [packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts](../../packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts) 验证真实链路
-7. 验证排序质量后，再考虑去掉 fallback
+1. [packages/infra/src/storage/surreal/surreal-chunk-schema.ts](../../packages/infra/src/storage/surreal/surreal-chunk-schema.ts) 已落地 HNSW 向量索引定义
+2. schema 与 search repository 的轻量集成测试已经更新
+3. [packages/infra/src/storage/surreal/surreal-search-repository.ts](../../packages/infra/src/storage/surreal/surreal-search-repository.ts) 已切换到单一路径 native KNN 查询
+4. [packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts](../../packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts) 与 [packages/mcp-server/test/bootstrap/index-repository.real-voyage.integration.test.ts](../../packages/mcp-server/test/bootstrap/index-repository.real-voyage.integration.test.ts) 已验证真实链路
 
 ## 11. 实施完成标准
 
@@ -459,7 +441,7 @@ v1 若不想新增配置，也至少应在仓储内部保留清晰的 fallback �
 3. `SearchRepository` 与 `SearchCodeContextService` 对外接口未变化
 4. 轻量测试与真实整链路测试全部通过
 5. 真实 SiliconFlow + SurrealDB 环境下，查询结果相关性不劣于当前实现
-6. 日志能区分 native 路径与 fallback 路径
+6. `EXPLAIN FULL` 能验证预期的 KnnScan 执行计划
 
 ## 12. 一句话迁移结论
 
@@ -468,4 +450,4 @@ v1 若不想新增配置，也至少应在仓储内部保留清晰的 fallback �
 1. 保持 `SearchRepository` 与 `SearchCodeContextService` 不变
 2. 在 `SurrealChunkSchema` 中补向量索引
 3. 在 `SurrealSearchRepository` 内部切换到原生 KNN 查询
-4. 用 fallback 和真实整链路测试保障迁移安全
+4. 用真实整链路测试和 `EXPLAIN FULL` 计划断言保障迁移安全

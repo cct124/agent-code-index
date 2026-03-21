@@ -4,6 +4,13 @@
 
 本文档定义 `agent-code-index` 第一版的系统设计，目标是先把“代码仓库索引 -> 语义检索 -> 上下文组装 -> 通过 MCP 对外提供能力”这条主链路打通。
 
+截至 2026-03-21，本设计文档中的状态应按以下方式理解：
+
+1. `core`、`infra`、`mcp-server/bootstrap` 三层结构已经落地
+2. 索引、embedding、Surreal 原生检索、`search-code-context-service` 已经落地并通过真实集成测试验证
+3. `get-file-context-service`、`ContextPacket` 组装、MCP adapters 与 tools 仍属于设计目标，尚未落地
+4. 文中凡涉及“下一步优先新增 OpenAI-compatible provider”“保留应用侧 cosine fallback”之类表述，均应以当前代码为准，不再视为最新实施状态
+
 相关专项实施文档：
 
 1. [Surreal 原生向量检索迁移实施指南](surreal-native-vector-search-migration.md)
@@ -138,54 +145,71 @@ agent-code-index/
           search-repository.ts
           file-scanner.ts
           parser.ts
-          context-builder.ts
 
         domain/
           chunk.ts
-          search-query.ts
+          project-metadata.ts
           search-result.ts
-          context-packet.ts
 
         services/
           index-repository-service.ts
           search-code-context-service.ts
-          get-file-context-service.ts
 
-        utils/
-          chunking.ts
-          hashing.ts
+      test/
+        services/
 
-      tests/
-        unit/
+      未来可新增：
+        contracts/context-builder.ts
+        domain/context-packet.ts
+        services/get-file-context-service.ts
 
     infra/
       package.json
       tsconfig.json
       src/
-        storage/
-          surreal/
-            surreal-client.ts
-            surreal-chunk-repository.ts
-            surreal-search-repository.ts
+        index.ts
 
         embedding/
           provider-factory.ts
-          voyage/
-            voyage-client.ts
-            voyage-embedding-provider.ts
+          openai-compatible/
+            openai-compatible-embedding-provider.ts
+          voyage-embedding-provider.ts
 
         parsing/
+          chunk-utils.ts
           parser-factory.ts
           fallback-parser.ts
           markdown/
             markdown-parser.ts
             markdown-section-chunker.ts
+          tree-sitter/
+            tree-sitter-parser.ts
+            languages/
+              typescript-parser.ts
+              javascript-parser.ts
+              python-parser.ts
 
         scanning/
           local-file-scanner.ts
 
-      tests/
-        integration/
+        services/
+          repository-chunk-preparation-service.ts
+
+        storage/
+          surreal/
+            surreal-client.ts
+            surreal-chunk-schema.ts
+            surreal-chunk-repository.ts
+            surreal-project-metadata-schema.ts
+            surreal-project-metadata-repository.ts
+            surreal-search-repository.ts
+
+      test/
+        embedding/
+        parsing/
+        scanning/
+        services/
+        storage/
 
     mcp-server/
       package.json
@@ -198,14 +222,20 @@ agent-code-index/
           config.ts
           container.ts
 
-        adapters/
-          mcp/
-            server.ts
-            tools/
-              index-repository-tool.ts
-              search-code-context-tool.ts
-              get-file-context-tool.ts
+      test/
+        bootstrap/
+
+      未来可新增：
+        src/adapters/mcp/server.ts
+        src/adapters/mcp/tools/index-repository-tool.ts
+        src/adapters/mcp/tools/search-code-context-tool.ts
+        src/adapters/mcp/tools/get-file-context-tool.ts
 ```
+
+说明：
+
+1. 上述目录结构已经按当前仓库现状对齐，而不是保留最初的纯规划态草图
+2. `ContextBuilder`、`ContextPacket`、`get-file-context-service` 和 MCP adapters 仍属于计划中的下一批增量
 
 ## 5. 分层设计
 
@@ -566,13 +596,15 @@ v1 建议采用分阶段策略：
 
 该服务负责检索链路总编排。
 
+当前状态：该 service 已在 `core` 落地，但当前实现的输出仍然是 `SearchResult[]`，尚未进入 `ContextPacket` 组装阶段。
+
 推荐流程：
 
 1. 接收自然语言查询和过滤条件
 2. 生成查询 embedding
 3. 调用 `SearchRepository.semanticSearch`
-4. 必要时做规则过滤、去重和简单重排
-5. 调用 `ContextBuilder` 输出 `ContextPacket`
+4. 当前实现先直接返回 `SearchResult[]`
+5. 后续在引入 `ContextBuilder` 后，再做规则过滤、去重、简单重排与 `ContextPacket` 输出
 
 第一版建议只做轻量重排：
 
@@ -583,6 +615,8 @@ v1 建议采用分阶段策略：
 ### 8.3 get-file-context-service.ts
 
 该服务面向“按文件取上下文”的场景。
+
+当前状态：该服务尚未落地，仍是设计目标。
 
 推荐流程：
 
@@ -761,37 +795,33 @@ v1 可以先不实现完整 migration 系统，但至少应在设计上预留 sc
 
 ### 9.2 Embedding Provider 策略
 
-当前代码中的最小实现先落了 Voyage provider，但设计上的下一优先级应调整为：先补齐一个 OpenAI-compatible embedding provider，再在其上兼容更多服务商。
+截至当前，`voyage` 与 `openai-compatible` 两类 provider 都已经落地，provider factory 也已经完成统一装配。
 
 建议职责拆分，代码位于 `packages/infra`：
 
 1. `embedding/provider-factory.ts`：根据配置选择具体 provider
-2. `embedding/openai-compatible/openai-compatible-client.ts`：封装 OpenAI-compatible HTTP 调用细节
-3. `embedding/openai-compatible/openai-compatible-embedding-provider.ts`：实现 `EmbeddingProvider`
-4. `embedding/voyage/voyage-client.ts`：封装 Voyage SDK 或 HTTP 调用细节
-5. `embedding/voyage/voyage-embedding-provider.ts`：实现 `EmbeddingProvider`
-6. 后续可新增 `embedding/<other-provider>/...`
-
-优先实现 OpenAI-compatible provider 的原因：
-
-1. 一层适配即可覆盖更多兼容 OpenAI embeddings 接口的服务商
-2. 可显著降低接入新 provider 的边际成本
-3. 更适合作为多 provider 演进前的过渡层，而不必立即引入完整网关
-4. 硅基流动这类服务可作为首批验证目标，因为其接口语义接近 OpenAI-compatible 生态
+2. `embedding/openai-compatible/openai-compatible-embedding-provider.ts`：实现 `EmbeddingProvider`
+3. `embedding/voyage-embedding-provider.ts`：实现 `EmbeddingProvider`
+4. 后续可新增 `embedding/<other-provider>/...`
 
 第一版的实现策略：
 
 1. 同一项目只启用一个 provider
 2. 不同项目可启用不同 provider
 3. provider 与 model 一旦为项目初始化，即默认锁定
-4. 当前实现可以继续保留 Voyage 作为默认值，但设计上不应把默认值等同于唯一优先演进方向
+4. 当前实现中 `voyage` 仍是默认 provider，但这不等于后续演进要围绕 Voyage 独占设计
 
-建议的近期演进顺序：
+当前已经完成的结果：
 
 1. 保留 Voyage provider，作为已存在的专用实现
-2. 下一步优先新增 `openai-compatible` provider
-3. 让硅基流动优先通过 `openai-compatible` provider 接入，而不是单独先做一套 `siliconflow` 专有抽象
-4. 当某个服务商出现显著的私有参数、鉴权流程或返回差异时，再单独拆分专有 provider
+2. `openai-compatible` provider 已落地，并已用于真实 embedding 与端到端索引验证
+3. 硅基流动等兼容 OpenAI embeddings API 的服务可通过 `baseUrl` 接入，而不是单独创建 `siliconflow` 抽象
+
+建议的后续演进顺序：
+
+1. 优先增强重试、超时、限流与并发控制
+2. 统一 provider 级错误分类与日志字段
+3. 当某个服务商出现显著的私有参数、鉴权流程或返回差异时，再单独拆分专有 provider
 
 应由实现层处理：
 
@@ -811,12 +841,14 @@ v1 可以先不实现完整 migration 系统，但至少应在设计上预留 sc
 
 ### 9.2.1 OpenAI-compatible provider 优先级
 
-对于“尽可能支持更多 embedding 服务商”的目标，建议优先顺序为：
+这一节的设计决策已经完成落地。当前应将其理解为“为何仓库同时保留 `voyage` 与 `openai-compatible` 两条 provider 路径”的解释，而不是待办项。
 
-1. 先做 `openai-compatible` provider
-2. 用它接入硅基流动等兼容 OpenAI embeddings API 的服务
-3. 再根据真实差异补充 Voyage、Jina、OpenRouter 或其他专有 provider
-4. 当 provider 数量、路由策略、审计、fallback、计费治理等需求明显增多时，再评估接入 Portkey 一类网关
+已落地的优先顺序结果为：
+
+1. 已完成 `openai-compatible` provider
+2. 已保留 Voyage 专有 provider
+3. 当前真实验证路径同时覆盖了 OpenAI-compatible 与 Voyage
+4. 当 provider 数量、路由策略、审计、fallback、计费治理等需求明显增多时，再评估接入网关类方案
 
 这样做的理由是：
 
@@ -1120,13 +1152,16 @@ MCP Request
 3. `SearchRepository -> SurrealSearchRepository`
 4. `FileScanner -> LocalFileScanner`
 5. `Parser -> ParserFactory / FallbackParser`
-6. `ContextBuilder -> 默认上下文构建实现`
+6. `SearchCodeContextService -> DefaultSearchCodeContextService`
+7. `IndexRepositoryService -> DefaultIndexRepositoryService`
+
+当前状态：上述前 7 项中，除 `ContextBuilder` 相关能力外都已落地；当前 container 尚未装配文件上下文服务与上下文构建器。
 
 其中 embedding 相关装配建议遵循：
 
 1. 具体 provider 实现由配置驱动选择，而不是在 container 中写死
 2. 当前实现可以继续保留 Voyage 作为默认配置
-3. 下一步优先新增 `openai-compatible` provider，并允许通过 `baseUrl` 接入硅基流动等兼容服务
+3. `openai-compatible` provider 已经落地，并允许通过 `baseUrl` 接入硅基流动等兼容服务
 4. container 只负责装配，不承担不同服务商协议差异判断
 
 ### 11.3 app.ts
@@ -1137,8 +1172,8 @@ MCP Request
 2. 初始化 container
 3. 执行 Surreal 连接与能力校验
 4. 校验 `PROJECT_SPACE` 的项目元数据与模型配置是否一致
-5. 创建 MCP server
-6. 启动服务
+5. 当前实现到此为止返回应用对象
+6. 后续接入 MCP adapters 后，再由协议层创建 MCP server 并启动服务
 
 ### 11.4 v1 打包与部署策略
 
@@ -1204,10 +1239,9 @@ Natural Language Query
   -> EmbeddingProvider
   -> SearchRepository
   -> SearchResult[]
-  -> ContextBuilder
-  -> ContextPacket
-  -> MCP Tool Response
 ```
+
+当前实现已落地到 `SearchResult[]`；`ContextBuilder -> ContextPacket -> MCP Tool Response` 仍是下一阶段目标。
 
 ### 12.3 文件上下文流程
 
@@ -1218,6 +1252,8 @@ RepositoryId + FilePath
   -> File Context Assembly
   -> MCP Tool Response
 ```
+
+该流程当前仍属于设计目标，尚未在代码中落地。
 
 ## 13. 工程约束与实现建议
 
@@ -1233,8 +1269,15 @@ RepositoryId + FilePath
 
 1. `core/services` 的单元测试
 2. `fallback-parser` 的边界测试
-3. `context-builder` 的截断与聚合测试
-4. Surreal 与 Voyage 接口的基础集成测试
+3. TypeScript / JavaScript / Python tree-sitter parser 与 Markdown parser 测试
+4. Surreal chunk/search repository 的轻量集成测试与真实集成测试
+5. OpenAI-compatible 与 Voyage provider 的真实 embedding 集成测试
+6. `prepare -> embed -> upsert -> search` 的真实 SurrealDB 端到端测试
+
+当前尚未覆盖但后续应补齐：
+
+1. `context-builder` 的截断与聚合测试
+2. `get-file-context-service` 与 MCP tool 层测试
 
 ### 13.3 配置与环境变量
 
