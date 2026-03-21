@@ -16,17 +16,17 @@ export {
 } from "./storage/surreal/surreal-client.js";
 export { FallbackParser } from "./parsing/fallback-parser.js";
 export { ParserFactory } from "./parsing/parser-factory.js";
-export {
-  RepositoryChunkPreparationService,
-  type PrepareRepositoryChunksInput,
-  type PrepareRepositoryChunksResult,
-} from "./services/repository-chunk-preparation-service.js";
+export { RepositoryChunkPreparationService } from "./services/repository-chunk-preparation-service.js";
 export { LocalFileScanner } from "./scanning/local-file-scanner.js";
 export { SurrealChunkRepository } from "./storage/surreal/surreal-chunk-repository.js";
 export { SurrealChunkSchema } from "./storage/surreal/surreal-chunk-schema.js";
 export { SurrealProjectMetadataRepository } from "./storage/surreal/surreal-project-metadata-repository.js";
 export { SurrealProjectMetadataSchema } from "./storage/surreal/surreal-project-metadata-schema.js";
 export { SurrealSearchRepository } from "./storage/surreal/surreal-search-repository.js";
+export type {
+  PrepareRepositoryChunksInput,
+  PrepareRepositoryChunksResult,
+} from "@agent-code-index/core";
 export type {
   SurrealClient,
   SurrealClientHealthStatus,

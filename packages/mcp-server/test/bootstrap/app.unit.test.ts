@@ -3,6 +3,13 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type {
+  ChunkRepository,
+  EmbeddingProvider,
+  IndexRepositoryService,
+  RepositoryChunkPreparationService,
+  SearchRepository,
+} from "../../../core/src/index.js";
 import type { ProjectMetadata } from "../../../core/src/domain/project-metadata.js";
 
 import type { AppContainer } from "../../src/bootstrap/container.js";
@@ -76,6 +83,12 @@ function createTestContainer(events: string[]): AppContainer {
 
   return {
     config: createConfig(),
+    embeddingProvider: {
+      provider: "voyage",
+      model: "voyage-code-3",
+      vectorDimension: 1024,
+      generateEmbeddings: vi.fn(async () => []),
+    } as EmbeddingProvider,
     surrealClient: {
       config: {} as never,
       driver: {} as never,
@@ -100,6 +113,35 @@ function createTestContainer(events: string[]): AppContainer {
         events.push("schemaEnsure");
       }),
     } as unknown as AppContainer["projectMetadataSchema"],
+    chunkPreparationService: {
+      prepare: vi.fn(async () => ({
+        scannedFileCount: 0,
+        parsedFileCount: 0,
+        skippedFileCount: 0,
+        chunks: [],
+        failedFiles: [],
+      })),
+    } as RepositoryChunkPreparationService,
+    chunkRepository: {
+      upsertMany: vi.fn(async () => undefined),
+      deleteByRepository: vi.fn(async () => undefined),
+      findByFilePath: vi.fn(async () => []),
+    } as ChunkRepository,
+    searchRepository: {
+      semanticSearch: vi.fn(async () => []),
+    } as SearchRepository,
+    indexRepositoryService: {
+      execute: vi.fn(async () => ({
+        scannedFileCount: 0,
+        parsedFileCount: 0,
+        skippedFileCount: 0,
+        preparedChunkCount: 0,
+        embeddedChunkCount: 0,
+        storedChunkCount: 0,
+        failedFileCount: 0,
+        failedFiles: [],
+      })),
+    } as IndexRepositoryService,
     projectMetadataRepository: {
       getByProjectSpace: vi.fn(async () => {
         events.push("getByProjectSpace");

@@ -1,38 +1,19 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import type { Chunk, FileScanner } from "@agent-code-index/core";
+import type {
+  Chunk,
+  FileScanner,
+  PrepareRepositoryChunksInput,
+  PrepareRepositoryChunksResult,
+  RepositoryChunkPreparationService as RepositoryChunkPreparationServiceContract,
+} from "@agent-code-index/core";
 
 import { ParserFactory } from "../parsing/parser-factory.js";
-
-/**
- * 仓库 chunk 准备输入。
- */
-export interface PrepareRepositoryChunksInput {
-  /** 所属仓库标识。 */
-  repositoryId: string;
-  /** 仓库根目录。 */
-  rootPath: string;
-}
-
-/**
- * 仓库 chunk 准备结果。
- */
-export interface PrepareRepositoryChunksResult {
-  /** 扫描到的文件数。 */
-  scannedFileCount: number;
-  /** 成功解析的文件数。 */
-  parsedFileCount: number;
-  /** 被跳过的文件数。 */
-  skippedFileCount: number;
-  /** 解析得到的 chunk。 */
-  chunks: Chunk[];
-  /** 失败文件列表。 */
-  failedFiles: Array<{
-    filePath: string;
-    reason: string;
-  }>;
-}
+export type {
+  PrepareRepositoryChunksInput,
+  PrepareRepositoryChunksResult,
+} from "@agent-code-index/core";
 
 /**
  * 仓库扫描与 chunk 准备服务。
@@ -40,7 +21,7 @@ export interface PrepareRepositoryChunksResult {
  * 该服务负责串联“扫描目录 -> 读取文件 -> 选择解析器 -> 产出 chunk”这条主流程，
  * 但不负责 embedding 生成与存储写入。
  */
-export class RepositoryChunkPreparationService {
+export class RepositoryChunkPreparationService implements RepositoryChunkPreparationServiceContract {
   /** 用于枚举候选文件的扫描器。 */
   private readonly fileScanner: FileScanner;
   /** 用于按文件类型选择解析器的工厂。 */
