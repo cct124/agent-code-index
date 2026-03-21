@@ -40,6 +40,7 @@ describe("DefaultSearchCodeContextService", () => {
           startLine: 1,
           endLine: 1,
           hash: "hash-1",
+          embedding: [0.9, 0.1, 0],
           metadata: {
             symbolName: "ShippingQuoteService",
             symbolKind: "class",
