@@ -12,6 +12,7 @@
 4. 先支持 MCP，后续可扩展到 HTTP、CLI 或其他 Agent 协议。
 5. 底层先集成 Surreal 作为存储，`voyage-code-3` 作为 embedding 模型。
 6. 同一项目在同一时间只启用一个 embedding 模型，不同项目可以通过 MCP 环境变量指定不同模型。
+7. 在代码索引之外，同时支持软件工程常见 Markdown 文档的结构化索引。
 
 ## 2. 设计原则
 
@@ -66,7 +67,8 @@
 3. 支持通过 embedding 建立向量索引。
 4. 支持结合元数据进行语义检索。
 5. 支持将召回结果组装为适合 Agent 消费的上下文包。
-6. 通过 MCP Tool 暴露以下能力：
+6. 支持对 README、设计文档、ADR、运行手册等 Markdown 文档按章节进行结构化切块。
+7. 通过 MCP Tool 暴露以下能力：
    1. 索引仓库
    2. 搜索代码上下文
    3. 获取指定文件上下文
@@ -142,6 +144,9 @@ agent-code-index/
         parsing/
           parser-factory.ts
           fallback-parser.ts
+          markdown/
+            markdown-parser.ts
+            markdown-section-chunker.ts
 
         scanning/
           local-file-scanner.ts
@@ -439,6 +444,7 @@ interface Parser {
 1. 第一版同时支持 AST 驱动切块与保守的 fallback parser
 2. 优先保证可用性，再逐步增强语言感知能力
 3. AST 解析能力由 `packages/infra` 提供，`core` 只依赖抽象接口
+4. 对 Markdown 文档采用结构感知切块，而不是仅按固定行窗口切块
 
 ### 7.6 ContextBuilder
 
@@ -735,6 +741,7 @@ v1 可以先不实现完整 migration 系统，但至少应在设计上预留 sc
 1. `local-file-scanner.ts` 仅负责本地文件发现
 2. `parser-factory.ts` 根据扩展名选择解析器
 3. `fallback-parser.ts` 负责通用文本切块
+4. `markdown-parser.ts` 负责 Markdown 文档的结构化切块
 
 这些实现同样建议位于 `packages/infra`，由 `mcp-server` 在启动时装配。
 
@@ -757,7 +764,33 @@ v1 解析层建议采用 `tree-sitter` 的 Node.js 原生绑定方案，作为 P
 
 这里的使用方式不是“直接引用 Rust 源码”，而是通过 npm 包使用 tree-sitter 对 Node.js 暴露的 API。底层实现细节由库本身封装，业务代码只在 TypeScript 中调用解析接口。
 
-### 9.3.2 Node.js 集成方式
+### 9.3.2 Markdown 解析选型
+
+对于软件工程中的 Markdown 文档，v1 不建议继续沿用纯文本固定窗口切块，而应采用结构感知的 Markdown AST 方案。
+
+推荐技术选型：
+
+1. `unified`
+2. `remark-parse`
+3. `remark-frontmatter`
+4. `unist-util-visit`
+5. `mdast-util-to-string`
+
+选择该方案的原因：
+
+1. Markdown 文档的主要检索边界通常是标题章节，而不是固定行数
+2. 软件工程文档中常见的 frontmatter、代码块、列表和链接都需要结构化理解
+3. `unified + remark-parse` 可以输出稳定的 Markdown AST，便于后续扩展更丰富的 metadata
+4. 与 `tree-sitter` 类似，都属于“由 `infra` 负责结构解析，`core` 只依赖抽象接口”的设计思路
+
+第一版设计要求：
+
+1. `.md` 文件默认进入索引范围，不应被视为普通噪声文本
+2. Markdown 解析逻辑限制在 `packages/infra/src/parsing/markdown`
+3. `core` 不直接依赖 `unified`、`remark` 或 mdast 类型
+4. 如果 Markdown 结构解析失败，允许回退到 `fallback-parser.ts`
+
+### 9.3.3 Node.js 集成方式
 
 v1 采用方式一，也就是 Node 原生绑定方案。
 
@@ -776,6 +809,9 @@ packages/infra/
     parsing/
       parser-factory.ts
       fallback-parser.ts
+      markdown/
+        markdown-parser.ts
+        markdown-section-chunker.ts
       tree-sitter/
         tree-sitter-parser.ts
         languages/
@@ -788,9 +824,11 @@ packages/infra/
 1. `tree-sitter-parser.ts`：封装通用 parser 初始化、语言切换和节点遍历工具
 2. `typescript-parser.ts`：提取 TypeScript 的类、函数、方法等 symbol chunk
 3. `python-parser.ts`：提取 Python 的类、函数、方法等 symbol chunk
-4. `fallback-parser.ts`：当语言不支持、解析失败或 chunk 过大时提供退化策略
+4. `markdown-parser.ts`：基于 `unified + remark-parse` 解析 Markdown AST 并输出章节级 chunk
+5. `markdown-section-chunker.ts`：围绕标题节点构造 section，并补充章节路径等 metadata
+6. `fallback-parser.ts`：当语言不支持、解析失败或 chunk 过大时提供退化策略
 
-### 9.3.3 切块策略
+### 9.3.4 切块策略
 
 对于 Python 和 TypeScript，v1 建议按语义边界切块，而不是只按固定窗口切块。
 
@@ -819,14 +857,51 @@ packages/infra/
 3. 保留文件路径与父级符号信息，便于检索结果回溯
 4. 对于无法可靠识别语义结构的文件，退回通用文本切块
 
-### 9.3.4 Fallback 策略
+### 9.3.5 Markdown 文档切块策略
+
+对于 Markdown 文档，v1 建议采用“以标题为主边界”的章节切块策略，而不是纯行窗口切块。
+
+建议规则：
+
+1. 遇到 `heading` 节点时开启新的 section
+2. 当前标题之后、下一个同级或更高层标题之前的内容归入同一 section
+3. 没有标题的文档前导内容应归入一个隐式的引言 section
+4. fenced code block 应保留在所属 section 内，必要时可在后续版本拆分为独立 chunk
+5. frontmatter 不直接作为正文 chunk，但应解析后写入 chunk metadata
+
+每个 Markdown chunk 至少应携带以下元数据：
+
+1. `filePath`
+2. `language=markdown`
+3. `heading`
+4. `headingPath`
+5. `sectionLevel`
+6. `startLine`
+7. `endLine`
+8. `repositoryId`
+9. 可选的 `docType`
+
+当前推荐的 `docType` 来源包括：
+
+1. frontmatter 中的显式字段
+2. 文件路径约定，例如 `README.md`、`docs/`、`design/`、`adr/`
+3. 无法识别时回退为通用 `markdown`
+
+这样设计的目标是：
+
+1. 提升 README、设计文档、ADR 和运行手册的检索质量
+2. 为后续上下文组装提供章节级来源信息
+3. 避免固定窗口切块破坏文档章节边界
+
+### 9.3.6 Fallback 策略
 
 在没有成熟 AST 策略前，或者在以下场景下，fallback parser 仍然需要保留：
 
 1. 文件语言暂不支持
 2. tree-sitter 解析失败
 3. 单个函数或类过大，需要进一步切分
-4. 非代码文本文件仍需进入索引链路
+4. Markdown AST 解析失败
+5. 非代码文本文件仍需进入索引链路
 
 fallback parser 至少需要做到：
 
@@ -834,13 +909,15 @@ fallback parser 至少需要做到：
 2. 保留行号范围
 3. 尽量维持块的可读性
 
-### 9.3.5 工程约束
+### 9.3.7 工程约束
 
 由于 tree-sitter 采用 Node 原生绑定方案，工程上需要额外注意：
 
 1. 在本地开发、CI 和容器环境中验证依赖安装流程
 2. 将 tree-sitter 及 grammar 依赖限制在 `packages/infra`，避免泄漏到 `core`
 3. 通过 `parser-factory.ts` 隔离具体库，保留未来替换为 ts-morph、LibCST 或 WASM 方案的空间
+4. 将 `unified`、`remark-parse` 与相关 mdast 工具限制在 `packages/infra`
+5. 保持 MarkdownParser 与 TreeSitterParser 并列，不要将 Markdown 文档错误纳入代码 AST 解析链路
 
 ## 10. MCP 适配层设计
 
