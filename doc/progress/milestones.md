@@ -16,6 +16,7 @@
 8. 代码 AST 解析与 Markdown 结构化 chunk 能力落地
 9. 第一版结构化日志、错误分类与脱敏能力落地
 10. metadata 驱动的 searchText 增强与 OpenAI-compatible / SiliconFlow 实网验证落地
+11. `query text -> query embedding -> search` 正式检索用例落地
 
 ## 2. 里程碑一：架构设计与工程骨架完成
 
@@ -194,6 +195,23 @@
 
 ## 12. 当前里程碑结论
 
+## 12. 里程碑十一：`query text -> query embedding -> search` 正式检索用例落地
+
+已完成：
+
+1. `DefaultSearchCodeContextService` 已在 `core` 中落地
+2. 新 service 已统一封装 `query text -> query embedding -> semantic search`
+3. `mcp-server` container 已装配 `searchCodeContextService`
+4. service 单元测试已补齐
+5. 真实 SurrealDB + OpenAI-compatible provider 的整链路验证已改为走正式 service，而不是调用方手工传 embedding
+
+该里程碑的意义是：
+
+1. 检索链路已经从“调用方自己先算 embedding 再传给 repository”升级为可复用的正式业务用例
+2. 后续 MCP tool 与上下文服务可以直接依赖 core use case，而不是重复拼装 query embedding 流程
+
+## 13. 当前里程碑结论
+
 截至当前，可以将阶段成果概括为：
 
 1. 架构已定型
@@ -207,5 +225,9 @@
 9. 代码 AST 解析与 Markdown 结构化 chunk 能力已落地
 10. 第一版结构化日志、错误分类与脱敏能力已落地
 11. metadata 驱动的 searchText 增强与 OpenAI-compatible / SiliconFlow 实网验证已落地
+12. `query text -> query embedding -> search` 正式检索用例已落地
 
-下一阶段不再是补工程骨架，而是将现有能力通过 MCP tool 与上下文服务真正对外暴露。
+下一阶段不再是补工程骨架，而是先将现有检索能力收敛为正式 use case：
+
+1. 将该检索用例通过 MCP tool 与上下文服务对外暴露
+2. 再增强排序、过滤与数据库侧向量能力

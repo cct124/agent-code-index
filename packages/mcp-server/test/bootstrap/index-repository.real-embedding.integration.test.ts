@@ -81,15 +81,10 @@ if (
           rootPath: tempRoot,
           embeddingBatchSize: 2,
         });
-        const [queryEmbedding] =
-          await app.container.embeddingProvider.generateEmbeddings({
-            values: ["shipping quote service factory create method"],
-            purpose: "query",
-          });
         const searchResults =
-          await app.container.searchRepository.semanticSearch({
+          await app.container.searchCodeContextService.execute({
             repositoryId: context.projectSpace,
-            embedding: queryEmbedding ?? [],
+            query: "shipping quote service factory create method",
             topK: 2,
           });
 

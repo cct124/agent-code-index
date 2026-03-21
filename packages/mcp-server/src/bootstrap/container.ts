@@ -3,12 +3,14 @@
  */
 import {
   DefaultIndexRepositoryService,
+  DefaultSearchCodeContextService,
   type ChunkRepository,
   type EmbeddingProvider,
   type IndexRepositoryService,
   type Logger,
   type ProjectMetadataRepository,
   type RepositoryChunkPreparationService,
+  type SearchCodeContextService,
   type SearchRepository,
 } from "@agent-code-index/core";
 import {
@@ -51,6 +53,8 @@ export interface AppContainer {
   chunkRepository: ChunkRepository;
   /** 语义搜索仓储。 */
   searchRepository: SearchRepository;
+  /** 正式的 query-text 代码检索服务。 */
+  searchCodeContextService: SearchCodeContextService;
   /** 仓库索引服务。 */
   indexRepositoryService: IndexRepositoryService;
   /** 项目元数据仓储。 */
@@ -100,6 +104,11 @@ export function createContainer(config: AppConfig): AppContainer {
     chunkRepository,
     logger.child({ module: "indexing" }),
   );
+  const searchCodeContextService = new DefaultSearchCodeContextService(
+    embeddingProvider,
+    searchRepository,
+    logger.child({ module: "search-code-context" }),
+  );
 
   logger.info("Application container created", {
     provider: config.embedding.provider,
@@ -116,6 +125,7 @@ export function createContainer(config: AppConfig): AppContainer {
     chunkPreparationService,
     chunkRepository,
     searchRepository,
+    searchCodeContextService,
     indexRepositoryService,
     projectMetadataRepository: new SurrealProjectMetadataRepository(
       surrealClient,

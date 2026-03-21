@@ -6,6 +6,7 @@ export type { ProjectMetadata } from "./domain/project-metadata.js";
 export type { SearchResult } from "./domain/search-result.js";
 export { NOOP_LOGGER, STANDARD_LOG_FIELDS } from "./contracts/logger.js";
 export { DefaultIndexRepositoryService } from "./services/index-repository-service.js";
+export { DefaultSearchCodeContextService } from "./services/search-code-context-service.js";
 export type {
   IndexRepositoryFailure,
   IndexedChunk,
@@ -17,6 +18,10 @@ export type {
   PrepareRepositoryChunksResult,
   RepositoryChunkPreparationService,
 } from "./services/index-repository-service.js";
+export type {
+  SearchCodeContextInput,
+  SearchCodeContextService,
+} from "./services/search-code-context-service.js";
 export type {
   ChunkRepository,
   FindChunksByFilePathInput,

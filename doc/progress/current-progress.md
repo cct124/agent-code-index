@@ -17,7 +17,8 @@
 7. parser 与 chunking 已从 fallback 主流程演进到“tree-sitter 代码语义解析 + Markdown 章节切块 + fallback 兜底”的完整第一版实现
 8. 启动、索引、embedding、parser 与 Surreal 存储主链路的第一版结构化日志已落地，并引入统一错误分类与日志脱敏策略
 9. 轻量集成测试、真实 SurrealDB 集成测试和基于真实模板文件的 parser 集成测试已覆盖当前主链路
-10. MCP tool server 与具体工具实现仍未落地
+10. `query text -> query embedding -> search` 的 core service 已落地，检索已升级为正式用例
+11. MCP tool server 与具体工具实现仍未落地
 
 ## 2. 当前项目结构
 
@@ -89,6 +90,7 @@
 5. provider factory 已支持 `voyage | openai-compatible`
 6. `searchText` 已承载高信号 metadata 语义头，并作为 document embedding 的直接输入
 7. 已补齐 opt-in 的真实 OpenAI-compatible / SiliconFlow provider 集成测试
+8. `DefaultSearchCodeContextService` 已在 `core` 中落地，负责 `query text -> query embedding -> semantic search`
 
 ### 3.5 可观测性能力
 
@@ -107,7 +109,9 @@
 1. `DefaultIndexRepositoryService` 已在 `core` 中落地
 2. 已支持“prepare -> batch embed -> full replace -> upsert”主流程
 3. `mcp-server` 的 container 已装配 `chunkPreparationService / embeddingProvider / chunkRepository / searchRepository / indexRepositoryService`
-4. 已具备真实 SurrealDB 环境下的 `prepare -> embed -> upsert -> search` 链路集成测试
+4. `mcp-server` 的 container 已装配 `searchCodeContextService`
+5. 已具备真实 SurrealDB 环境下的 `prepare -> embed -> upsert -> search` 链路集成测试
+6. 已具备真实 SurrealDB + OpenAI-compatible provider 的 `query text -> query embedding -> search` 正式用例验证
 
 ### 3.7 当前测试覆盖
 
@@ -139,6 +143,7 @@
 24. `chunk-utils` 的 searchText 语义增强单元测试
 25. 真实 OpenAI-compatible provider 集成测试
 26. 真实 SurrealDB + OpenAI-compatible provider 的 `prepare -> real embed -> upsert -> query embed -> search` 集成测试
+27. `DefaultSearchCodeContextService` 单元测试
 
 截至最近一次回归，以下验证已通过：
 
@@ -149,6 +154,7 @@
 5. 真实 SurrealDB 环境下的启动链路、chunk/search 仓储和索引整链路测试已通过
 6. Surreal 存储层日志、错误分类和脱敏策略相关单元测试已通过
 7. searchText 的 metadata 注入策略与 tags 检索过滤相关测试已通过
+8. `DefaultSearchCodeContextService` 单元测试已通过
 
 ## 4. 当前仍未完成内容
 
@@ -253,4 +259,4 @@
 
 1. 先把 MCP tool 层和上下文服务补齐
 2. 再增强检索排序和数据库侧向量能力
-3. 最后扩展更多语言 parser 与真实 provider 端到端验证
+3. 最后扩展更多语言 parser 与更多 provider 端到端验证
