@@ -35,6 +35,11 @@ describe("SurrealChunkSchema", () => {
     );
     expect(query).toHaveBeenCalledWith(
       expect.stringContaining(
+        "DEFINE FIELD IF NOT EXISTS metadata ON TABLE chunk TYPE object FLEXIBLE;",
+      ),
+    );
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining(
         "DEFINE INDEX IF NOT EXISTS chunk_repository_file_idx ON TABLE chunk FIELDS repositoryId, filePath;",
       ),
     );

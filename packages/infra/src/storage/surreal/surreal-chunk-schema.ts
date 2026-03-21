@@ -38,7 +38,7 @@ DEFINE FIELD IF NOT EXISTS startLine ON TABLE chunk TYPE int;
 DEFINE FIELD IF NOT EXISTS endLine ON TABLE chunk TYPE int;
 DEFINE FIELD IF NOT EXISTS hash ON TABLE chunk TYPE string;
 DEFINE FIELD IF NOT EXISTS embedding ON TABLE chunk TYPE option<array<float>>;
-DEFINE FIELD IF NOT EXISTS metadata ON TABLE chunk FLEXIBLE TYPE object;
+DEFINE FIELD IF NOT EXISTS metadata ON TABLE chunk TYPE object FLEXIBLE;
 DEFINE INDEX IF NOT EXISTS chunk_repository_idx ON TABLE chunk FIELDS repositoryId;
 DEFINE INDEX IF NOT EXISTS chunk_repository_file_idx ON TABLE chunk FIELDS repositoryId, filePath;
 DEFINE INDEX IF NOT EXISTS chunk_repository_hash_idx ON TABLE chunk FIELDS repositoryId, hash;
