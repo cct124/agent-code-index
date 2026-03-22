@@ -142,6 +142,7 @@ function buildComparison(
   lines.push(
     `Missing in right report: ${aggregateMetrics.missingInRightCount}`,
   );
+  lines.push(`Missing in left report: ${aggregateMetrics.missingInLeftCount}`);
   lines.push(
     `Average chunk overlap per query: ${aggregateMetrics.averageChunkOverlap.toFixed(2)}`,
   );
@@ -238,6 +239,7 @@ function collectAggregateMetrics(
   left: StoredQualityRun,
   right: StoredQualityRun,
 ) {
+  const leftById = new Map(left.queries.map((item) => [item.id, item]));
   const rightById = new Map(right.queries.map((item) => [item.id, item]));
   const leftAllFiles = new Set<string>();
   const rightAllFiles = new Set<string>();
@@ -246,6 +248,7 @@ function collectAggregateMetrics(
 
   let comparedQueryCount = 0;
   let missingInRightCount = 0;
+  let missingInLeftCount = 0;
   let totalChunkOverlap = 0;
   let totalFileOverlap = 0;
   let totalTop3FileOverlap = 0;
@@ -283,20 +286,18 @@ function collectAggregateMetrics(
   }
 
   for (const rightQuery of right.queries) {
-    if (!rightById.has(rightQuery.id)) {
+    if (leftById.has(rightQuery.id)) {
       continue;
     }
 
-    if (left.queries.some((item) => item.id === rightQuery.id)) {
-      continue;
-    }
-
+    missingInLeftCount += 1;
     accumulateQueryCategories(rightQuery, rightCategoryCounts, rightAllFiles);
   }
 
   return {
     comparedQueryCount,
     missingInRightCount,
+    missingInLeftCount,
     averageChunkOverlap:
       comparedQueryCount === 0 ? 0 : totalChunkOverlap / comparedQueryCount,
     averageFileOverlap:
