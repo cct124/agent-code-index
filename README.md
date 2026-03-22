@@ -63,6 +63,8 @@ doc/
 4. [doc/progress/milestones.md](doc/progress/milestones.md)：看已经完成的阶段成果
 5. [doc/progress/current-progress.md](doc/progress/current-progress.md)：看剩余缺口、风险与下一步优先级
 
+如果你关心“如何按项目通过 MCP 配置 env”，优先看 [packages/mcp-server/README.md](packages/mcp-server/README.md) 中的 `MCP JSON 配置约定` 一节。
+
 ## 当前设计边界
 
 当前代码与文档统一约束为：

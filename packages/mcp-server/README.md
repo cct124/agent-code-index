@@ -43,6 +43,8 @@ src/
 5. 读取索引链路默认参数
 6. 校验 embedding 必填配置
 
+当前直接支持从进程环境变量读取配置，因此天然适合由 MCP host 在 `mcp.json` 中按 server 注入 env。
+
 ### bootstrap/container.ts
 
 负责创建应用依赖容器。
@@ -115,6 +117,117 @@ src/
 1. `createApp()` 单元测试
 2. `createApp()` 真实 SurrealDB 集成测试
 3. 真实整链路测试，验证 `prepare -> embed -> upsert -> search`
+
+## MCP JSON 配置约定
+
+当前 `mcp-server` 还没有真正的 MCP adapters 和 tools，但配置模型已经适合按 MCP server 进程做项目级隔离。
+
+推荐约定是：
+
+1. 一个 `mcp.json` server 条目对应一个 `PROJECT_SPACE`
+2. 每个 server 条目通过 `env` 提供自己的 Surreal 与 embedding 配置
+3. 不同项目不要复用同一个 `PROJECT_SPACE`
+4. 同一个 `PROJECT_SPACE` 一旦写入 `project_metadata`，就不应再切换 provider / model / vectorDimension
+
+### 必填环境变量
+
+以下字段是当前配置模型要求的最小集合：
+
+1. `PROJECT_SPACE`
+2. `SURREAL_URL`
+3. `SURREAL_DATABASE`
+4. `EMBEDDING_PROVIDER`
+5. `EMBEDDING_VECTOR_DIMENSION`
+6. `EMBEDDING_API_KEY`
+
+另外，Surreal 认证需要二选一：
+
+1. `SURREAL_USERNAME` + `SURREAL_PASSWORD`
+2. `SURREAL_TOKEN`
+
+### 常用可选环境变量
+
+1. `EMBEDDING_MODEL`
+2. `EMBEDDING_BASE_URL`
+3. `SURREAL_USE_TLS`
+4. `SURREAL_DEPLOYMENT_MODE`
+5. `DEFAULT_TOP_K`
+6. `DEFAULT_SCAN_IGNORE_PATTERNS`
+7. `SEARCH_NATIVE_CANDIDATE_MULTIPLIER`
+8. `SEARCH_NATIVE_EF_SEARCH_MIN`
+9. `LOG_LEVEL`
+10. `LOG_PRETTY`
+
+### 推荐的 mcp.json 形态
+
+下面的示例体现的是“一个 server 对应一个项目配置”的推荐做法：
+
+```json
+{
+  "servers": {
+    "agent-code-index-project-a": {
+      "command": "node",
+      "args": ["./packages/mcp-server/dist/index.js"],
+      "env": {
+        "PROJECT_SPACE": "project_a",
+        "SURREAL_URL": "ws://127.0.0.1:8100/rpc",
+        "SURREAL_DATABASE": "default",
+        "SURREAL_USERNAME": "surrealdb",
+        "SURREAL_PASSWORD": "surrealdb",
+        "SURREAL_USE_TLS": "false",
+        "SURREAL_DEPLOYMENT_MODE": "local",
+        "EMBEDDING_PROVIDER": "openai-compatible",
+        "EMBEDDING_MODEL": "Qwen/Qwen3-Embedding-8B",
+        "EMBEDDING_VECTOR_DIMENSION": "4096",
+        "EMBEDDING_API_KEY": "${input:agentCodeIndexApiKey}",
+        "EMBEDDING_BASE_URL": "https://api.siliconflow.cn/v1",
+        "DEFAULT_TOP_K": "10",
+        "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next",
+        "SEARCH_NATIVE_CANDIDATE_MULTIPLIER": "20",
+        "SEARCH_NATIVE_EF_SEARCH_MIN": "100",
+        "LOG_LEVEL": "info",
+        "LOG_PRETTY": "true"
+      }
+    },
+    "agent-code-index-project-b": {
+      "command": "node",
+      "args": ["./packages/mcp-server/dist/index.js"],
+      "env": {
+        "PROJECT_SPACE": "project_b",
+        "SURREAL_URL": "ws://127.0.0.1:8100/rpc",
+        "SURREAL_DATABASE": "default",
+        "SURREAL_USERNAME": "surrealdb",
+        "SURREAL_PASSWORD": "surrealdb",
+        "SURREAL_USE_TLS": "false",
+        "SURREAL_DEPLOYMENT_MODE": "local",
+        "EMBEDDING_PROVIDER": "voyage",
+        "EMBEDDING_MODEL": "voyage-code-3",
+        "EMBEDDING_VECTOR_DIMENSION": "1024",
+        "EMBEDDING_API_KEY": "${input:voyageApiKey}",
+        "DEFAULT_TOP_K": "10",
+        "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next",
+        "SEARCH_NATIVE_CANDIDATE_MULTIPLIER": "20",
+        "SEARCH_NATIVE_EF_SEARCH_MIN": "100",
+        "LOG_LEVEL": "info",
+        "LOG_PRETTY": "true"
+      }
+    }
+  }
+}
+```
+
+### 为什么推荐这种方式
+
+1. 当前 `loadConfig()` 直接读取进程环境变量，实现简单且可预测
+2. `PROJECT_SPACE` 会派生 Surreal namespace，避免每个项目重复维护两套标识
+3. 项目级 provider / model / vectorDimension 锁定已经在启动期校验，不容易混索引
+4. 这种方式比“一个进程动态切多个项目”更符合当前 v1 的稳定性目标
+
+### 当前限制
+
+1. 现在还没有真正的 MCP tool registration，所以这份约定描述的是“配置模型如何接入 MCP host”，不是“当前已经可直接启动的完整协议层”
+2. 当前更适合每个项目起一个独立 server 进程，而不是共享一个进程做多项目动态路由
+3. `mcp.json` 中不建议直接提交明文 API key、token 或数据库密码
 
 ## 当前边界
 
