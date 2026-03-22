@@ -94,92 +94,98 @@ async function main(): Promise<void> {
     await readFile(queriesFile, "utf8"),
   ) as QuerySpec[];
 
-  const app = await createApp();
-  const indexResult = await app.container.indexRepositoryService.execute({
-    repositoryId,
-    rootPath,
-    embeddingBatchSize: args.embeddingBatchSize,
-    embeddingConcurrency: args.embeddingConcurrency,
-  });
+  let app: Awaited<ReturnType<typeof createApp>> | undefined;
 
-  const queries = [] as QualityRunReport["queries"];
-
-  for (const spec of querySpecs) {
-    const topK = spec.topK ?? DEFAULT_TOP_K;
-    const searchResult = await app.container.searchCodeContextService.execute({
-      repositoryId,
-      query: spec.query,
-      topK,
-      tokenBudget: spec.tokenBudget,
-    });
-
-    queries.push({
-      id: spec.id,
-      query: spec.query,
-      topK,
-      tokenBudget: spec.tokenBudget,
-      resultCount: searchResult.resultCount,
-      files: unique(searchResult.results.map((item) => item.chunk.filePath)),
-      results: searchResult.results.map((item, index) => ({
-        rank: index + 1,
-        score: item.score,
-        reason: item.reason,
-        filePath: item.chunk.filePath,
-        chunkId: item.chunk.id,
-        language: item.chunk.language,
-        startLine: item.chunk.startLine,
-        endLine: item.chunk.endLine,
-        metadata: item.chunk.metadata ?? {},
-        preview: compactPreview(item.chunk.content),
-      })),
-    });
-  }
-
-  const report: QualityRunReport = {
-    generatedAt: new Date().toISOString(),
-    label,
-    environment: {
-      envFile,
-      projectSpace: app.config.projectSpace,
+  try {
+    app = await createApp();
+    const indexResult = await app.container.indexRepositoryService.execute({
       repositoryId,
       rootPath,
-      provider: app.config.embedding.provider,
-      model: app.config.embedding.model,
-      vectorDimension: app.config.embedding.vectorDimension,
-    },
-    indexing: {
       embeddingBatchSize: args.embeddingBatchSize,
       embeddingConcurrency: args.embeddingConcurrency,
-      scannedFileCount: indexResult.scannedFileCount,
-      parsedFileCount: indexResult.parsedFileCount,
-      skippedFileCount: indexResult.skippedFileCount,
-      preparedChunkCount: indexResult.preparedChunkCount,
-      embeddedChunkCount: indexResult.embeddedChunkCount,
-      storedChunkCount: indexResult.storedChunkCount,
-      failedFileCount: indexResult.failedFileCount,
-    },
-    queries,
-  };
+    });
 
-  await mkdir(path.dirname(outputFile), { recursive: true });
-  await writeFile(outputFile, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+    const queries = [] as QualityRunReport["queries"];
 
-  console.log(
-    JSON.stringify(
-      {
-        outputFile,
-        label,
-        provider: report.environment.provider,
-        model: report.environment.model,
+    for (const spec of querySpecs) {
+      const topK = spec.topK ?? DEFAULT_TOP_K;
+      const searchResult = await app.container.searchCodeContextService.execute({
         repositoryId,
-        queryCount: report.queries.length,
-        scannedFileCount: report.indexing.scannedFileCount,
-        storedChunkCount: report.indexing.storedChunkCount,
+        query: spec.query,
+        topK,
+        tokenBudget: spec.tokenBudget,
+      });
+
+      queries.push({
+        id: spec.id,
+        query: spec.query,
+        topK,
+        tokenBudget: spec.tokenBudget,
+        resultCount: searchResult.resultCount,
+        files: unique(searchResult.results.map((item) => item.chunk.filePath)),
+        results: searchResult.results.map((item, index) => ({
+          rank: index + 1,
+          score: item.score,
+          reason: item.reason,
+          filePath: item.chunk.filePath,
+          chunkId: item.chunk.id,
+          language: item.chunk.language,
+          startLine: item.chunk.startLine,
+          endLine: item.chunk.endLine,
+          metadata: item.chunk.metadata ?? {},
+          preview: compactPreview(item.chunk.content),
+        })),
+      });
+    }
+
+    const report: QualityRunReport = {
+      generatedAt: new Date().toISOString(),
+      label,
+      environment: {
+        envFile,
+        projectSpace: app.config.projectSpace,
+        repositoryId,
+        rootPath,
+        provider: app.config.embedding.provider,
+        model: app.config.embedding.model,
+        vectorDimension: app.config.embedding.vectorDimension,
       },
-      null,
-      2,
-    ),
-  );
+      indexing: {
+        embeddingBatchSize: args.embeddingBatchSize,
+        embeddingConcurrency: args.embeddingConcurrency,
+        scannedFileCount: indexResult.scannedFileCount,
+        parsedFileCount: indexResult.parsedFileCount,
+        skippedFileCount: indexResult.skippedFileCount,
+        preparedChunkCount: indexResult.preparedChunkCount,
+        embeddedChunkCount: indexResult.embeddedChunkCount,
+        storedChunkCount: indexResult.storedChunkCount,
+        failedFileCount: indexResult.failedFileCount,
+      },
+      queries,
+    };
+
+    await mkdir(path.dirname(outputFile), { recursive: true });
+    await writeFile(outputFile, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+
+    console.log(
+      JSON.stringify(
+        {
+          outputFile,
+          label,
+          provider: report.environment.provider,
+          model: report.environment.model,
+          repositoryId,
+          queryCount: report.queries.length,
+          scannedFileCount: report.indexing.scannedFileCount,
+          storedChunkCount: report.indexing.storedChunkCount,
+        },
+        null,
+        2,
+      ),
+    );
+  } finally {
+    await app?.container.surrealClient.disconnect();
+  }
 }
 
 function parseArgs(argv: string[]): ParsedArgs {
