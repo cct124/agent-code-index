@@ -3,6 +3,7 @@
  */
 import {
   DefaultDeleteFilesService,
+  DefaultGetFileContextService,
   DefaultIndexFilesService,
   DefaultIndexRepositoryService,
   DefaultSearchCodeContextService,
@@ -10,6 +11,7 @@ import {
   type DeleteFilesService,
   type EmbeddingProvider,
   type FileChunkPreparationService,
+  type GetFileContextService,
   type IndexFilesService,
   type IndexRepositoryService,
   type Logger,
@@ -70,6 +72,8 @@ export interface AppContainer {
   indexFilesService: IndexFilesService;
   /** 文件级删除服务。 */
   deleteFilesService: DeleteFilesService;
+  /** 文件上下文读取服务。 */
+  getFileContextService: GetFileContextService;
   /** 项目元数据仓储。 */
   projectMetadataRepository: ProjectMetadataRepository;
 }
@@ -132,6 +136,10 @@ export function createContainer(config: AppConfig): AppContainer {
     chunkRepository,
     logger.child({ module: "delete-files" }),
   );
+  const getFileContextService = new DefaultGetFileContextService(
+    chunkRepository,
+    logger.child({ module: "get-file-context" }),
+  );
   const searchCodeContextService = new DefaultSearchCodeContextService(
     embeddingProvider,
     searchRepository,
@@ -160,6 +168,7 @@ export function createContainer(config: AppConfig): AppContainer {
     indexRepositoryService,
     indexFilesService,
     deleteFilesService,
+    getFileContextService,
     projectMetadataRepository: new SurrealProjectMetadataRepository(
       surrealClient,
     ),

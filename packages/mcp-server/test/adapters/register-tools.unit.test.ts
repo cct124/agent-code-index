@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type {
   DeleteFilesService,
+  GetFileContextService,
   IndexFilesService,
   IndexRepositoryService,
   Logger,
@@ -38,6 +39,7 @@ describe("registerAgentCodeIndexTools", () => {
     const listed = await client.listTools();
     expect(listed.tools.map((tool) => tool.name).sort()).toEqual([
       "delete_files",
+      "get_file_context",
       "index_files",
       "index_repository",
       "search_code_context",
@@ -81,6 +83,29 @@ describe("registerAgentCodeIndexTools", () => {
       expect.objectContaining({
         repositoryId: "repo-b",
         deletedChunkCount: 3,
+      }),
+    );
+
+    const getFileContextResult = await client.callTool({
+      name: "get_file_context",
+      arguments: {
+        filePath: " src/index.ts ",
+      },
+    });
+
+    expect(app.container.getFileContextService.execute).toHaveBeenCalledWith({
+      repositoryId: "repo-a",
+      filePath: "src/index.ts",
+    });
+    expect(getFileContextResult.structuredContent).toEqual(
+      expect.objectContaining({
+        repositoryId: "repo-a",
+        filePath: "src/index.ts",
+        chunkCount: 2,
+        assembledContext: {
+          content: expect.stringContaining("export const value = 1;"),
+          truncated: false,
+        },
       }),
     );
 
@@ -177,6 +202,43 @@ function createTestApp(): App {
           deletedChunkCount: 3,
         })),
       } as DeleteFilesService,
+      getFileContextService: {
+        execute: vi.fn(async () => ({
+          repositoryId: "repo-a",
+          filePath: "src/index.ts",
+          chunkCount: 2,
+          chunks: [
+            {
+              id: "chunk-a",
+              filePath: "src/index.ts",
+              language: "typescript",
+              content: "export const value = 1;",
+              startLine: 1,
+              endLine: 1,
+              metadata: {
+                symbolName: "value",
+              },
+            },
+            {
+              id: "chunk-b",
+              filePath: "src/index.ts",
+              language: "typescript",
+              content: "export function readValue() { return value; }",
+              startLine: 3,
+              endLine: 3,
+              metadata: {
+                symbolName: "readValue",
+                symbolKind: "function",
+              },
+            },
+          ],
+          assembledContext: {
+            content:
+              "[chunk 1 | lines 1-1 | symbol value]\nexport const value = 1;\n\n[chunk 2 | lines 3-3 | function readValue]\nexport function readValue() { return value; }",
+            truncated: false,
+          },
+        })),
+      } as GetFileContextService,
       projectMetadataRepository: {} as never,
     },
   };

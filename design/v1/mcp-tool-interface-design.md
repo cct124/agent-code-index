@@ -37,7 +37,7 @@
 因此，本文档中的接口分为两类：
 
 1. `index_repository` / `search_code_context` / `index_files` / `delete_files`：已实现并已通过 MCP adapter 暴露
-2. `get_file_context`：先冻结契约，待对应 `core` service 落地后再实现
+2. `get_file_context`：已按最小可用契约落地，后续再扩展更强的上下文包组装
 
 ## 3. 设计原则
 
@@ -155,7 +155,7 @@ MCP `mcp.json` 中推荐通过不同 server 条目完成项目级隔离。
 | `search_code_context` | 已实现   | `DefaultSearchCodeContextService` | `SearchResult[]` + 摘要 |
 | `index_files`         | 已实现   | `IndexFilesService`               | 文件级重建摘要          |
 | `delete_files`        | 已实现   | `DeleteFilesService`              | 删除摘要                |
-| `get_file_context`    | 待实现   | `GetFileContextService`           | 文件上下文包            |
+| `get_file_context`    | 已实现   | `GetFileContextService`           | 返回文件级连续上下文包  |
 
 ## 5. 通用输入约束
 
@@ -535,7 +535,7 @@ interface DeleteFilesToolResult {
 
 ### 10.3 当前状态
 
-当前只有契约设计，`core` service 尚未落地，因此该 tool 仍处于预留状态。
+当前已落地最小可用版本：`core` service 与 MCP tool 已实现，可返回结构化 `chunks[]` 和 `assembledContext`。
 
 ### 10.4 输入 schema
 
@@ -578,7 +578,7 @@ interface GetFileContextToolResult {
 
 1. `chunks` 提供结构化来源
 2. `assembledContext` 提供对 Agent 更友好的连续文本
-3. 是否截断由未来 `GetFileContextService` 负责定义
+3. 当前实现不截断，因此 `truncated = false`；后续可在 `GetFileContextService` 内扩展截断策略
 
 ## 11. 错误模型
 
@@ -631,9 +631,9 @@ interface ToolErrorPayload {
 | --------------------- | --------------------------------- | -------- | ------------------------------- |
 | `index_repository`    | `DefaultIndexRepositoryService`   | 已可接入 | 可直接落 adapter                |
 | `search_code_context` | `DefaultSearchCodeContextService` | 已可接入 | 当前输出先保持 `SearchResult[]` |
-| `index_files`         | `IndexFilesService`               | 未实现   | 建议定义为覆盖式重建            |
-| `delete_files`        | `DeleteFilesService`              | 未实现   | 处理文件删除与旧路径清理        |
-| `get_file_context`    | `GetFileContextService`           | 未实现   | 先冻结接口                      |
+| `index_files`         | `IndexFilesService`               | 已实现   | 覆盖式重建                      |
+| `delete_files`        | `DeleteFilesService`              | 已实现   | 处理文件删除与旧路径清理        |
+| `get_file_context`    | `GetFileContextService`           | 已实现   | 当前为最小连续文本组装          |
 
 ## 13. 示例
 
@@ -695,14 +695,14 @@ interface ToolErrorPayload {
 
 ## 14. 结论
 
-当前仓库已经具备把 `index_repository` 与 `search_code_context` 通过 MCP tool 暴露出去的核心 use case，但文件级增量索引与文件上下文能力仍缺少对应的 `core` service、repository 扩展与协议层实现。
+当前仓库已经具备把 `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context` 通过 MCP tool 暴露出去的核心 use case。
 
 在单仓库部署场景下，建议进一步通过 `MCP_REPOSITORY_ROOT` 固定仓库根目录，使 `index_repository` 与 `index_files` 可以默认从 server 配置解析 `rootPath`，从而减少重复入参。
 
 因此，下一阶段最合理的推进顺序是：
 
-1. 先按本文档实现 `index_repository` 与 `search_code_context` adapter
-2. 再补 `ChunkRepository.deleteByFilePaths(...)` 等基础接口扩展
-3. 基于文件级基础接口实现 `index_files` 与 `delete_files`
+1. 在现有 `get_file_context` 之上补更完整的 `ContextPacket` 组装
+2. 进一步统一多 tool 的错误码与错误详情模型
+3. 继续补充更多上下文提取与检索后处理能力
 4. 再补 `get_file_context` service 与 tool
 5. 最后把 `search_code_context` 从 `SearchResult[]` 升级到 `ContextPacket`

@@ -8,6 +8,7 @@ export { NOOP_LOGGER, STANDARD_LOG_FIELDS } from "./contracts/logger.js";
 export { DefaultIndexRepositoryService } from "./services/index-repository-service.js";
 export { DefaultIndexFilesService } from "./services/index-files-service.js";
 export { DefaultDeleteFilesService } from "./services/delete-files-service.js";
+export { DefaultGetFileContextService } from "./services/get-file-context-service.js";
 export { DefaultSearchCodeContextService } from "./services/search-code-context-service.js";
 export type {
   DeleteFilesInput,
@@ -34,6 +35,12 @@ export type {
   PrepareFilesInput,
   PrepareFilesResult,
 } from "./services/index-files-service.js";
+export type {
+  FileContextChunk,
+  GetFileContextInput,
+  GetFileContextResult,
+  GetFileContextService,
+} from "./services/get-file-context-service.js";
 export type {
   SearchCodeContextInput,
   SearchCodeContextService,

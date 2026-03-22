@@ -8,6 +8,7 @@ import type {
   DeleteFilesService,
   EmbeddingProvider,
   FileChunkPreparationService,
+  GetFileContextService,
   IndexFilesService,
   IndexRepositoryService,
   Logger,
@@ -189,6 +190,18 @@ function createTestContainer(events: string[]): AppContainer {
         deletedChunkCount: 0,
       })),
     } as DeleteFilesService,
+    getFileContextService: {
+      execute: vi.fn(async () => ({
+        repositoryId: "repo-a",
+        filePath: "src/example.ts",
+        chunkCount: 0,
+        chunks: [],
+        assembledContext: {
+          content: "",
+          truncated: false,
+        },
+      })),
+    } as GetFileContextService,
     projectMetadataRepository: {
       getByProjectSpace: vi.fn(async () => {
         events.push("getByProjectSpace");

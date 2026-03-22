@@ -20,7 +20,7 @@
 8. SurrealDB `3.0.4` 基线下的原生 HNSW 检索
 9. `voyage` 与 `openai-compatible` 两条 provider 路径
 10. OpenAI-compatible / Voyage + Surreal 的真实端到端索引与检索验证
-11. 基于官方 MCP SDK 的 `index_repository` / `search_code_context` / `index_files` / `delete_files` tools
+11. 基于官方 MCP SDK 的 `index_repository` / `search_code_context` / `index_files` / `delete_files` / `get_file_context` tools
 
 当前仍未落地的主要能力包括：
 

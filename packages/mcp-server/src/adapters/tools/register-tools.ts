@@ -1,4 +1,4 @@
-import type { SearchResult } from "@agent-code-index/core";
+import type { FileContextChunk, SearchResult } from "@agent-code-index/core";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
@@ -39,6 +39,11 @@ const indexFilesInputSchema = z.object({
 const deleteFilesInputSchema = z.object({
   repositoryId: z.string().optional(),
   filePaths: z.array(z.string()).min(1),
+});
+
+const getFileContextInputSchema = z.object({
+  repositoryId: z.string().optional(),
+  filePath: z.string(),
 });
 
 /**
@@ -243,6 +248,48 @@ export function registerAgentCodeIndexTools(server: McpServer, app: App): void {
       }
     },
   );
+
+  server.registerTool(
+    "get_file_context",
+    {
+      title: "读取文件上下文",
+      description:
+        "按仓库与文件路径读取已索引的文件上下文，并返回连续文本与结构化 chunk。",
+      inputSchema: getFileContextInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (args) => {
+      try {
+        const repositoryId = resolveRepositoryId(app.config, args.repositoryId);
+        const filePath = normalizeRequiredString("filePath", args.filePath);
+        const result = await app.container.getFileContextService.execute({
+          repositoryId,
+          filePath,
+        });
+        const structuredContent = {
+          repositoryId: result.repositoryId,
+          filePath: result.filePath,
+          chunkCount: result.chunkCount,
+          chunks: result.chunks.map(toFileContextToolChunk),
+          assembledContext: result.assembledContext,
+        };
+
+        return {
+          content: createTextContent(
+            `Loaded file context for ${result.filePath} in ${result.repositoryId}: assembled ${result.chunkCount} chunks.`,
+          ),
+          structuredContent,
+        };
+      } catch (error) {
+        return createToolErrorResult(logger, "get_file_context", error);
+      }
+    },
+  );
 }
 
 function toSearchToolResultItem(result: SearchResult): Record<string, unknown> {
@@ -261,6 +308,20 @@ function toSearchToolResultItem(result: SearchResult): Record<string, unknown> {
       hash: result.chunk.hash,
       metadata: result.chunk.metadata,
     },
+  };
+}
+
+function toFileContextToolChunk(
+  chunk: FileContextChunk,
+): Record<string, unknown> {
+  return {
+    id: chunk.id,
+    filePath: chunk.filePath,
+    language: chunk.language,
+    content: chunk.content,
+    startLine: chunk.startLine,
+    endLine: chunk.endLine,
+    metadata: chunk.metadata,
   };
 }
 

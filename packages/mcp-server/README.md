@@ -104,6 +104,7 @@ src/
 2. `search_code_context`
 3. `index_files`
 4. `delete_files`
+5. `get_file_context`
 
 ### server.ts
 
@@ -150,7 +151,18 @@ src/
 4. `search_code_context` tool 注册
 5. `index_files` tool 注册
 6. `delete_files` tool 注册
-7. tool 输入参数清洗、默认值回填与错误映射
+7. `get_file_context` tool 注册
+8. tool 输入参数清洗、默认值回填与错误映射
+
+### 4.1 get_file_context 的当前语义
+
+当前 `get_file_context` 已按最小可用原则落地：
+
+1. 从已索引 chunk 中按 `repositoryId + filePath` 读取当前文件
+2. 返回结构化 `chunks[]`
+3. 同时返回一个面向 Agent 的 `assembledContext.content`
+4. 当前实现不做截断，因此 `assembledContext.truncated = false`
+5. `assembledContext` 只是已索引 chunk 的连续文本视图，不等价于直接重读磁盘原文件
 
 ### 5. 启动与索引链验证
 
@@ -288,16 +300,113 @@ src/
 
 ### 当前限制
 
-1. 当前已实现的 tools 仅覆盖 `index_repository`、`search_code_context`、`index_files`、`delete_files`
-2. `get_file_context` 与 `ContextPacket` 组装仍未落地
+1. 当前已实现的 tools 包括 `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context`
+2. 更完整的 `ContextPacket` 组装仍未落地
 3. 当前更适合每个项目起一个独立 server 进程，而不是共享一个进程做多项目动态路由
 4. `mcp.json` 中不建议直接提交明文 API key、token 或数据库密码
+
+## 本地启动与最小接入示例
+
+下面给出一个最小可运行的本地流程，用来验证当前 stdio MCP server 的实际接入方式。
+
+### 1. 构建 server
+
+在仓库根目录执行：
+
+```bash
+yarn build
+```
+
+构建完成后，stdio 入口为：
+
+```text
+./packages/mcp-server/dist/index.js
+```
+
+### 2. 通过 MCP host 配置接入
+
+如果使用支持 `mcp.json` 的 host，可配置一个最小条目：
+
+```json
+{
+  "servers": {
+    "agent-code-index-local": {
+      "command": "node",
+      "args": ["./packages/mcp-server/dist/index.js"],
+      "env": {
+        "PROJECT_SPACE": "agent_code_index_local",
+        "SURREAL_URL": "ws://127.0.0.1:8100/rpc",
+        "SURREAL_DATABASE": "default",
+        "SURREAL_USERNAME": "surrealdb",
+        "SURREAL_PASSWORD": "surrealdb",
+        "SURREAL_USE_TLS": "false",
+        "SURREAL_DEPLOYMENT_MODE": "local",
+        "EMBEDDING_PROVIDER": "openai-compatible",
+        "EMBEDDING_MODEL": "Qwen/Qwen3-Embedding-8B",
+        "EMBEDDING_VECTOR_DIMENSION": "4096",
+        "EMBEDDING_API_KEY": "<your-api-key>",
+        "EMBEDDING_BASE_URL": "https://api.siliconflow.cn/v1",
+        "MCP_DEFAULT_REPOSITORY_ID": "agent-code-index",
+        "MCP_REPOSITORY_ROOT": "/home/janex/project/ai-agent/agent-code-index"
+      }
+    }
+  }
+}
+```
+
+这条配置的含义是：
+
+1. host 会以子进程方式启动 `node ./packages/mcp-server/dist/index.js`
+2. server 通过标准输入输出与 host 通信，而不是监听 HTTP 端口
+3. `repositoryId` 与 `rootPath` 可在单仓场景下通过环境变量提供默认值
+
+### 3. 最小调用示例
+
+接入成功后，可以直接让 host 调用以下 tool 参数。
+
+先做一次全量索引：
+
+```json
+{
+  "name": "index_repository",
+  "arguments": {
+    "mode": "full",
+    "embeddingBatchSize": 16
+  }
+}
+```
+
+然后读取某个文件的已索引上下文：
+
+```json
+{
+  "name": "get_file_context",
+  "arguments": {
+    "filePath": "packages/mcp-server/src/server.ts"
+  }
+}
+```
+
+预期结果要点：
+
+1. 返回值中包含 `repositoryId`、`filePath`、`chunkCount`
+2. `chunks[]` 会给出结构化 chunk 明细
+3. `assembledContext.content` 会给出适合 Agent 连续阅读的文本
+
+### 4. 调试判断标准
+
+如果 stdio 接入正确，通常会观察到：
+
+1. host 能成功列出 5 个 tools
+2. `index_repository` 可以在不显式传 `repositoryId` / `rootPath` 的情况下运行
+3. `get_file_context` 可以在不显式传 `repositoryId` 的情况下返回目标文件的已索引上下文
+4. 如果漏配 `MCP_DEFAULT_REPOSITORY_ID` 或 `MCP_REPOSITORY_ROOT`，server 会返回明确的校验错误，而不是猜测默认值
 
 ## 当前边界
 
 `mcp-server` 当前明确还不负责：
 
-1. `get_file_context` 等尚未落地 use case 的 tool 实现
+1. 更完整的 `ContextPacket` 与检索结果二次组装
 2. 定义核心业务语义
 3. 实现具体存储和 embedding 技术细节
 
@@ -312,5 +421,6 @@ src/
 3. 启动阶段的真实数据库健康检查与元数据锁定能力
 4. 对完整最小索引链的运行时装配能力
 5. 可通过 stdio 对外暴露的 MCP tool server
+6. 文件级已索引上下文读取能力
 
-也就是说，当前 `mcp-server` 已经承担起“把系统真正启动起来、装配完成并暴露当前可用 tools”的职责；下一阶段主要补齐剩余 tools 与上下文组装即可。
+也就是说，当前 `mcp-server` 已经承担起“把系统真正启动起来、装配完成并暴露当前可用 tools”的职责；下一阶段主要集中在更完整的上下文包组装，而不是补最小可用 tool 集。

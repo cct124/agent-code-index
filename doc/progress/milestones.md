@@ -269,7 +269,7 @@
 4. `RepositoryFileChunkPreparationService` 已在 `infra` 中落地
 5. `packages/mcp-server` 已接入官方 MCP TypeScript SDK
 6. 已实现真实 `McpServer` 创建与 stdio transport 启动入口
-7. `index_repository`、`search_code_context`、`index_files`、`delete_files` 四个 tools 已注册并可调用
+7. `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context` 五个 tools 已注册并可调用
 8. `repositoryId` / `rootPath` 默认回填已收敛为共享 resolver
 9. MCP tool 注册与调用、文件级索引/删除、按文件删除仓储能力相关测试已补齐
 
@@ -277,7 +277,7 @@
 
 1. 项目已经从“索引与检索能力存在，但未对 Agent 暴露”推进到“核心能力已可通过 MCP 正式调用”
 2. 文件修改/删除场景已经具备增量索引能力，不再只支持全仓重建
-3. 下一阶段的主要缺口已经收敛为 `get_file_context` 与更完整的上下文包组装
+3. 下一阶段的主要缺口已经收敛为更完整的上下文包组装与检索后处理
 
 ## 16. 当前里程碑结论
 
@@ -302,5 +302,5 @@
 
 下一阶段不再是补工程骨架，而是先将现有检索能力收敛为正式 use case：
 
-1. 将剩余的文件上下文与上下文包能力通过 MCP tool 与上下文服务对外暴露
+1. 将更完整的上下文包能力通过 MCP tool 与上下文服务对外暴露
 2. 再增强 provider 稳定性、排序、更复杂过滤组合验证与候选窗口调优

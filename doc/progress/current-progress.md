@@ -177,7 +177,7 @@
 
 1. 更多语言的 tree-sitter 语义解析支持，例如 Go / Java / Rust
 2. 原生向量检索路径的进一步调优，例如更复杂过滤组合验证、`EF` 参数调优与候选窗口默认值调优
-3. `get_file_context` 与检索结果到 `ContextPacket` 的完整上下文组装服务
+3. 检索结果到 `ContextPacket` 的更完整上下文组装服务
 4. parser metadata 的进一步增强，例如 imports、继承/implements、调用点与更完整的可见性/修饰信息
 5. provider 级重试、超时、限流与并发控制仍未形成正式能力
 6. provider / MCP / storage 跨模块统一错误码文档仍未形成
@@ -229,18 +229,17 @@
 建议先完成：
 
 1. `get-file-context-service`
-2. `get_file_context` 的 MCP tool 暴露
-3. 最小可用的 ContextPacket 组装逻辑
-4. 将 `search_code_context` 结果逐步升级为更稳定的上下文包输出
+2. 最小可用的 ContextPacket 组装逻辑
+3. 将 `search_code_context` 结果逐步升级为更稳定的上下文包输出
 
 原因：
 
-1. 当前索引写入主流程、provider、存储、parser 和 4 个 MCP tools 都已经落地
-2. 项目当前最大的缺口已经收敛为“文件上下文与上下文包仍未对外暴露”
+1. 当前索引写入主流程、provider、存储、parser 和 5 个 MCP tools 都已经落地
+2. 项目当前最大的缺口已经收敛为“更完整的上下文包组装与检索后处理仍未对外暴露”
 
 建议交付物：
 
-1. 一个补齐 `get_file_context` 的 MCP server
+1. 一个补齐更完整上下文包组装的 MCP server
 2. 至少 5 个已注册并可调用的工具：index repository、search、index files、delete files、get-file-context
 3. 一条从 query 到上下文包返回的最小演示链路
 
@@ -298,7 +297,7 @@
 
 当前最合理的开发重点是：
 
-1. 先把剩余的 `get_file_context` 和上下文服务补齐
+1. 先把剩余的上下文包组装与检索后处理补齐
 2. 再优先补齐 provider 稳定性、错误分类与本地测试手册
 3. 然后增强检索排序、过滤能力与 native 参数调优
 4. 最后扩展更多语言 parser 与 metadata 深度
