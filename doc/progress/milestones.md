@@ -276,13 +276,15 @@
 11. `search_code_context` 已升级返回 `results + richer ContextPacket` 双轨结果
 12. richer `ContextBuilder` 已支持相邻 chunk 合并、按文件聚合与 token budget 驱动的 `max_items` 截断
 13. `ContextPacket.truncation` 已补齐 `budgetTokens / estimatedTotalTokens / estimatedReturnedTokens` 预算元数据
+14. `mcp-server` 已支持通过环境变量把日志额外落盘到本地文件，默认写结构化 JSON，并支持切换为 pretty 文件日志
 
 该里程碑的意义是：
 
 1. 项目已经从“索引与检索能力存在，但未对 Agent 暴露”推进到“核心能力已可通过 MCP 正式调用”
 2. 文件修改/删除场景已经具备增量索引能力，不再只支持全仓重建
 3. `ContextPacket` 已从最小可用版本推进到带预算与聚合语义的 richer 版本
-4. 下一阶段的主要缺口已经收敛为跨文件重排、query-aware summarization 与更高级的检索后处理
+4. 当前 stdio MCP server 已具备更完整的本地排障能力，不再只能依赖终端瞬时日志
+5. 下一阶段的主要缺口已经收敛为跨文件重排、query-aware summarization 与更高级的检索后处理
 
 ## 16. 当前里程碑结论
 

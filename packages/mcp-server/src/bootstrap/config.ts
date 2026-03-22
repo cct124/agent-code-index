@@ -89,6 +89,10 @@ export interface LoggingConfig {
   level: "debug" | "info" | "warn" | "error";
   /** 是否启用开发态 pretty 输出。 */
   pretty: boolean;
+  /** 可选的本地日志文件路径。 */
+  filePath?: string;
+  /** 文件日志是否使用 pretty 格式。 */
+  filePretty: boolean;
 }
 
 /**
@@ -179,6 +183,8 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
     logging: {
       level: logLevelEnv(env, "LOG_LEVEL", "info"),
       pretty: booleanEnv(env, "LOG_PRETTY", true),
+      filePath: optionalEnv(env, "LOG_FILE_PATH"),
+      filePretty: booleanEnv(env, "LOG_FILE_PRETTY", false),
     },
   };
 }

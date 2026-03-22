@@ -47,7 +47,8 @@ src/
 4. 读取 embedding 配置
 5. 读取索引链路默认参数
 6. 读取 MCP adapter 默认参数，例如 `MCP_DEFAULT_REPOSITORY_ID`、`MCP_REPOSITORY_ROOT`
-7. 校验 embedding 必填配置
+7. 读取日志输出配置，例如 `LOG_LEVEL`、`LOG_PRETTY`、`LOG_FILE_PATH`、`LOG_FILE_PRETTY`
+8. 校验 embedding 必填配置
 
 当前直接支持从进程环境变量读取配置，因此天然适合由 MCP host 在 `mcp.json` 中按 server 注入 env。
 
@@ -226,6 +227,8 @@ src/
 10. `SEARCH_NATIVE_EF_SEARCH_MIN`
 11. `LOG_LEVEL`
 12. `LOG_PRETTY`
+13. `LOG_FILE_PATH`
+14. `LOG_FILE_PRETTY`
 
 其中：
 
@@ -234,8 +237,10 @@ src/
 3. 它不会改变 `core` 层 use case 仍要求显式 `repositoryId` / `rootPath` 的事实；adapter 只是做默认值解析
 4. 如果未来一个 server 要服务多个仓库，仍建议在每次 tool 调用时显式传入 `repositoryId`
 5. `rootPath` 的解析优先级应为：tool 输入值 > `MCP_REPOSITORY_ROOT` > 校验错误
-6. 如果没有配置 `MCP_DEFAULT_REPOSITORY_ID`，且调用 MCP tool 时也没有传 `repositoryId`，adapter 应直接返回校验错误，而不是猜测仓库身份
-7. 如果没有配置 `MCP_REPOSITORY_ROOT`，且调用 `index_repository` / `index_files` 时也没有传 `rootPath`，adapter 应直接返回校验错误，而不是依赖工作目录推断仓库根目录
+6. `LOG_FILE_PATH` 若配置，则当前 server 会额外把日志写入本地文件，默认写结构化 JSON
+7. `LOG_FILE_PRETTY=true` 时，文件日志会改为 pretty 文本格式，便于本地人工阅读
+8. 如果没有配置 `MCP_DEFAULT_REPOSITORY_ID`，且调用 MCP tool 时也没有传 `repositoryId`，adapter 应直接返回校验错误，而不是猜测仓库身份
+9. 如果没有配置 `MCP_REPOSITORY_ROOT`，且调用 `index_repository` / `index_files` 时也没有传 `rootPath`，adapter 应直接返回校验错误，而不是依赖工作目录推断仓库根目录
 
 ### 推荐的 mcp.json 形态
 
@@ -269,7 +274,9 @@ src/
         "SEARCH_NATIVE_CANDIDATE_MULTIPLIER": "20",
         "SEARCH_NATIVE_EF_SEARCH_MIN": "100",
         "LOG_LEVEL": "info",
-        "LOG_PRETTY": "true"
+        "LOG_PRETTY": "true",
+        "LOG_FILE_PATH": "/tmp/agent-code-index/project-a.log",
+        "LOG_FILE_PRETTY": "false"
       }
     },
     "agent-code-index-project-b": {
@@ -294,7 +301,9 @@ src/
         "SEARCH_NATIVE_CANDIDATE_MULTIPLIER": "20",
         "SEARCH_NATIVE_EF_SEARCH_MIN": "100",
         "LOG_LEVEL": "info",
-        "LOG_PRETTY": "true"
+        "LOG_PRETTY": "true",
+        "LOG_FILE_PATH": "/tmp/agent-code-index/project-b.log",
+        "LOG_FILE_PRETTY": "false"
       }
     }
   }

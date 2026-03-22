@@ -37,6 +37,8 @@ function createConfig(): AppConfig {
     logging: {
       level: "info",
       pretty: true,
+      filePath: undefined,
+      filePretty: false,
     },
   };
 }

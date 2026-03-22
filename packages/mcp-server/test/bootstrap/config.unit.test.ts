@@ -22,6 +22,7 @@ function createBaseEnv(): Record<string, string> {
     DEFAULT_SCAN_IGNORE_PATTERNS: "node_modules,.git,dist",
     LOG_LEVEL: "info",
     LOG_PRETTY: "true",
+    LOG_FILE_PRETTY: "false",
   };
 }
 
@@ -64,6 +65,8 @@ describe("loadConfig", () => {
     expect(config.logging).toEqual({
       level: "info",
       pretty: true,
+      filePath: undefined,
+      filePretty: false,
     });
   });
 
@@ -90,11 +93,15 @@ describe("loadConfig", () => {
       ...createBaseEnv(),
       LOG_LEVEL: "debug",
       LOG_PRETTY: "false",
+      LOG_FILE_PATH: "/tmp/agent-code-index.log",
+      LOG_FILE_PRETTY: "true",
     });
 
     expect(config.logging).toEqual({
       level: "debug",
       pretty: false,
+      filePath: "/tmp/agent-code-index.log",
+      filePretty: true,
     });
   });
 

@@ -16,13 +16,14 @@
 6. `EmbeddingProvider` contract、provider factory、`VoyageEmbeddingProvider` 与 `OpenAI-compatible provider` 已落地
 7. parser 与 chunking 已从 fallback 主流程演进到“tree-sitter 代码语义解析 + Markdown 章节切块 + fallback 兜底”的完整第一版实现
 8. 启动、索引、embedding、parser 与 Surreal 存储主链路的第一版结构化日志已落地，并引入统一错误分类与日志脱敏策略
-9. 轻量集成测试、真实 SurrealDB 集成测试和基于真实模板文件的 parser 集成测试已覆盖当前主链路
-10. `query text -> query embedding -> search` 的 core service 已落地，检索已升级为正式用例
-11. VoyageAI 真实 embedding 兼容性已补齐验证
-12. OpenAI-compatible 与 Voyage 两条 provider 路径都已具备本地 SurrealDB 端到端索引与检索验证
-13. `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context` 已通过 MCP tool server 对外暴露
-14. `search_code_context` 已升级为 `results + richer ContextPacket` 双轨输出，并具备相邻 chunk 合并、文件聚合和 token budget 驱动的 `max_items` 截断
-15. 以“索引、检索、文件级更新、文件上下文读取、MCP 暴露”作为 v1 功能闭环来看，当前实现已经达到可定版状态
+9. `mcp-server` 已支持通过环境变量把日志额外落盘到本地文件，默认写结构化 JSON，并可按配置切换为 pretty 文件日志
+10. 轻量集成测试、真实 SurrealDB 集成测试和基于真实模板文件的 parser 集成测试已覆盖当前主链路
+11. `query text -> query embedding -> search` 的 core service 已落地，检索已升级为正式用例
+12. VoyageAI 真实 embedding 兼容性已补齐验证
+13. OpenAI-compatible 与 Voyage 两条 provider 路径都已具备本地 SurrealDB 端到端索引与检索验证
+14. `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context` 已通过 MCP tool server 对外暴露
+15. `search_code_context` 已升级为 `results + richer ContextPacket` 双轨输出，并具备相邻 chunk 合并、文件聚合和 token budget 驱动的 `max_items` 截断
+16. 以“索引、检索、文件级更新、文件上下文读取、MCP 暴露”作为 v1 功能闭环来看，当前实现已经达到可定版状态
 
 ## 2. 当前项目结构
 
@@ -124,8 +125,9 @@
 1. `core` 已定义跨包统一 `Logger` 抽象和标准日志字段约定
 2. `mcp-server` 已使用 `pino` 作为统一日志实现
 3. 开发态已支持 pretty 输出，生产态可直接输出结构化 JSON
-4. 启动、索引、embedding、parser、Surreal client、chunk repository、search repository 已使用统一 child logger 模式
-5. 日志默认避免输出 token、password、apiKey 等敏感字段
+4. 已支持通过 `LOG_FILE_PATH` 额外将日志落盘到本地文件，默认写结构化 JSON，并可用 `LOG_FILE_PRETTY=true` 切换为 pretty 文件日志
+5. 启动、索引、embedding、parser、Surreal client、chunk repository、search repository 已使用统一 child logger 模式
+6. 日志默认避免输出 token、password、apiKey 等敏感字段
 
 ### 3.7 索引主链路能力
 

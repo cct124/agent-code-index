@@ -1,4 +1,12 @@
-import pino, { type Logger as PinoLogger } from "pino";
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
+
+import pino, {
+  destination,
+  multistream,
+  type Logger as PinoLogger,
+} from "pino";
+import pretty from "pino-pretty";
 
 import type { LogFields, Logger } from "@agent-code-index/core";
 
@@ -10,28 +18,84 @@ const PRETTY_IGNORE_FIELDS = "pid,hostname";
  * 基于运行时配置创建应用根 logger。
  */
 export function createLogger(config: LoggingConfig): Logger {
+  const streams = createStreams(config);
+
   return new PinoLoggerAdapter(
-    pino({
-      level: config.level,
-      base: undefined,
-      timestamp: pino.stdTimeFunctions.isoTime,
-      formatters: {
-        level(label) {
-          return { level: label };
+    pino(
+      {
+        level: config.level,
+        base: undefined,
+        timestamp: pino.stdTimeFunctions.isoTime,
+        formatters: {
+          level(label) {
+            return { level: label };
+          },
         },
       },
-      transport: config.pretty
-        ? {
-            target: "pino-pretty",
-            options: {
-              colorize: true,
-              ignore: PRETTY_IGNORE_FIELDS,
-              translateTime: "SYS:standard",
-            },
-          }
-        : undefined,
-    }),
+      streams,
+    ),
   );
+}
+
+function createStreams(config: LoggingConfig) {
+  if (!config.pretty && !config.filePath) {
+    return undefined;
+  }
+
+  const streams = [
+    {
+      stream: createConsoleStream(config.pretty),
+    },
+  ];
+
+  if (config.filePath) {
+    ensureParentDirectory(config.filePath);
+    streams.push({
+      stream: createFileStream(config),
+    });
+  }
+
+  return multistream(streams);
+}
+
+function createConsoleStream(usePretty: boolean) {
+  if (!usePretty) {
+    return destination({ dest: 1, sync: false });
+  }
+
+  return pretty({
+    colorize: true,
+    ignore: PRETTY_IGNORE_FIELDS,
+    translateTime: "SYS:standard",
+    destination: 1,
+  });
+}
+
+function createFileStream(config: LoggingConfig) {
+  if (!config.filePath) {
+    throw new Error(
+      "LOG_FILE_PATH must be provided when creating a file stream",
+    );
+  }
+
+  if (!config.filePretty) {
+    return destination({
+      dest: config.filePath,
+      mkdir: true,
+      sync: true,
+    });
+  }
+
+  return pretty({
+    colorize: false,
+    ignore: PRETTY_IGNORE_FIELDS,
+    translateTime: "SYS:standard",
+    destination: config.filePath,
+  });
+}
+
+function ensureParentDirectory(filePath: string): void {
+  mkdirSync(dirname(filePath), { recursive: true });
 }
 
 /**
