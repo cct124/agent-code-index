@@ -1,0 +1,1027 @@
+{
+  "generatedAt": "2026-03-22T15:16:54.491Z",
+  "label": "qwen-v4",
+  "environment": {
+    "envFile": "/home/janex/project/ai-agent/agent-code-index/.env.development",
+    "projectSpace": "agent_code_index_dev",
+    "repositoryId": "agent-code-index",
+    "rootPath": "/home/janex/project/ai-agent/agent-code-index",
+    "provider": "openai-compatible",
+    "model": "Qwen/Qwen3-Embedding-8B",
+    "vectorDimension": 4096
+  },
+  "indexing": {
+    "embeddingBatchSize": 16,
+    "embeddingConcurrency": 8,
+    "scannedFileCount": 127,
+    "parsedFileCount": 127,
+    "skippedFileCount": 0,
+    "preparedChunkCount": 975,
+    "embeddedChunkCount": 975,
+    "storedChunkCount": 975,
+    "failedFileCount": 0
+  },
+  "queries": [
+    {
+      "id": "code-mcp-index-wiring-v4",
+      "query": "locate index_repository wiring in code. find register-tools/createApp/container path, prefer .ts implementation and tests, not README/design docs.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": ["test/template/main.py"],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7587212374618935,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1048-1127",
+          "language": "python",
+          "startLine": 1048,
+          "endLine": 1127,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "AsyncMemoryClient"
+          },
+          "preview": "return payload def _prepare_params(self, kwargs: Optional[Dict[str, Any]] = None) -> Dict[str, Any]: \"\"\"Prepare query parameters for API requests. Args: kwargs: Keyword arguments to include in the parameters. Returns: A "
+        },
+        {
+          "rank": 2,
+          "score": 0.7587212374618935,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1048-1127",
+          "language": "python",
+          "startLine": 1048,
+          "endLine": 1127,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "AsyncMemoryClient"
+          },
+          "preview": "return payload def _prepare_params(self, kwargs: Optional[Dict[str, Any]] = None) -> Dict[str, Any]: \"\"\"Prepare query parameters for API requests. Args: kwargs: Keyword arguments to include in the parameters. Returns: A "
+        },
+        {
+          "rank": 3,
+          "score": 0.7587212374618935,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1048-1127",
+          "language": "python",
+          "startLine": 1048,
+          "endLine": 1127,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "AsyncMemoryClient"
+          },
+          "preview": "return payload def _prepare_params(self, kwargs: Optional[Dict[str, Any]] = None) -> Dict[str, Any]: \"\"\"Prepare query parameters for API requests. Args: kwargs: Keyword arguments to include in the parameters. Returns: A "
+        },
+        {
+          "rank": 4,
+          "score": 0.7448170795456822,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1034-1048",
+          "language": "python",
+          "startLine": 1034,
+          "endLine": 1048,
+          "metadata": {
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "_prepare_payload"
+          },
+          "preview": "def _prepare_payload(self, messages: List[Dict[str, str]], kwargs: Dict[str, Any]) -> Dict[str, Any]: \"\"\"Prepare the payload for API requests. Args: messages: The messages to include in the payload. kwargs: Additional ke"
+        },
+        {
+          "rank": 5,
+          "score": 0.7448170795456822,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1034-1048",
+          "language": "python",
+          "startLine": 1034,
+          "endLine": 1048,
+          "metadata": {
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "_prepare_payload"
+          },
+          "preview": "def _prepare_payload(self, messages: List[Dict[str, str]], kwargs: Dict[str, Any]) -> Dict[str, Any]: \"\"\"Prepare the payload for API requests. Args: messages: The messages to include in the payload. kwargs: Additional ke"
+        },
+        {
+          "rank": 6,
+          "score": 0.7448170795456822,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1034-1048",
+          "language": "python",
+          "startLine": 1034,
+          "endLine": 1048,
+          "metadata": {
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "_prepare_payload"
+          },
+          "preview": "def _prepare_payload(self, messages: List[Dict[str, str]], kwargs: Dict[str, Any]) -> Dict[str, Any]: \"\"\"Prepare the payload for API requests. Args: messages: The messages to include in the payload. kwargs: Additional ke"
+        },
+        {
+          "rank": 7,
+          "score": 0.7209990018653748,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:988-1067",
+          "language": "python",
+          "startLine": 988,
+          "endLine": 1067,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "AsyncMemoryClient"
+          },
+          "preview": "}, timeout=300, ) self.user_email = self._validate_api_key() # Initialize project manager self.project = AsyncProject( client=self.async_client, org_id=self.org_id, project_id=self.project_id, user_email=self.user_email,"
+        },
+        {
+          "rank": 8,
+          "score": 0.7209990018653748,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:988-1067",
+          "language": "python",
+          "startLine": 988,
+          "endLine": 1067,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "AsyncMemoryClient"
+          },
+          "preview": "}, timeout=300, ) self.user_email = self._validate_api_key() # Initialize project manager self.project = AsyncProject( client=self.async_client, org_id=self.org_id, project_id=self.project_id, user_email=self.user_email,"
+        },
+        {
+          "rank": 9,
+          "score": 0.7209990018653748,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:988-1067",
+          "language": "python",
+          "startLine": 988,
+          "endLine": 1067,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "AsyncMemoryClient"
+          },
+          "preview": "}, timeout=300, ) self.user_email = self._validate_api_key() # Initialize project manager self.project = AsyncProject( client=self.async_client, org_id=self.org_id, project_id=self.project_id, user_email=self.user_email,"
+        },
+        {
+          "rank": 10,
+          "score": 0.7187701437924581,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:863-884",
+          "language": "python",
+          "startLine": 863,
+          "endLine": 884,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "feedback"
+          },
+          "preview": "def feedback( self, memory_id: str, feedback: Optional[str] = None, feedback_reason: Optional[str] = None, ) -> Dict[str, str]: VALID_FEEDBACK_VALUES = {\"POSITIVE\", \"NEGATIVE\", \"VERY_NEGATIVE\"} feedback = feedback.upper("
+        }
+      ]
+    },
+    {
+      "id": "code-local-file-scanner-override-v4",
+      "query": "find includePatterns override logic in LocalFileScanner. need implementation + unit test for ignore/.gitignore override.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": ["yarn.lock", "test/template/main.py", "tsconfig.json"],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7517519219231195,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:2161-2240",
+          "language": "text",
+          "startLine": 2161,
+          "endLine": 2240,
+          "metadata": {},
+          "preview": "checksum: 10c0/2a51b63feb799d2bb34669205eee7c0eaf9dce01883261a5b77410c9408aa447e478efd191b4de6fc1101e796ff5892f8443ef20d9544385819093dbb32d36bd languageName: node linkType: hard \"minipass-pipeline@npm:^1.2.4\": version: 1"
+        },
+        {
+          "rank": 2,
+          "score": 0.7466338051761794,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:864-925",
+          "language": "python",
+          "startLine": 864,
+          "endLine": 925,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "MemoryClient"
+          },
+          "preview": "self, memory_id: str, feedback: Optional[str] = None, feedback_reason: Optional[str] = None, ) -> Dict[str, str]: VALID_FEEDBACK_VALUES = {\"POSITIVE\", \"NEGATIVE\", \"VERY_NEGATIVE\"} feedback = feedback.upper() if feedback "
+        },
+        {
+          "rank": 3,
+          "score": 0.7466338051761794,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:864-925",
+          "language": "python",
+          "startLine": 864,
+          "endLine": 925,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "MemoryClient"
+          },
+          "preview": "self, memory_id: str, feedback: Optional[str] = None, feedback_reason: Optional[str] = None, ) -> Dict[str, str]: VALID_FEEDBACK_VALUES = {\"POSITIVE\", \"NEGATIVE\", \"VERY_NEGATIVE\"} feedback = feedback.upper() if feedback "
+        },
+        {
+          "rank": 4,
+          "score": 0.6689515339136369,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:863-884",
+          "language": "python",
+          "startLine": 863,
+          "endLine": 884,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "feedback"
+          },
+          "preview": "def feedback( self, memory_id: str, feedback: Optional[str] = None, feedback_reason: Optional[str] = None, ) -> Dict[str, str]: VALID_FEEDBACK_VALUES = {\"POSITIVE\", \"NEGATIVE\", \"VERY_NEGATIVE\"} feedback = feedback.upper("
+        },
+        {
+          "rank": 5,
+          "score": 0.6689515339136369,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:863-884",
+          "language": "python",
+          "startLine": 863,
+          "endLine": 884,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "feedback"
+          },
+          "preview": "def feedback( self, memory_id: str, feedback: Optional[str] = None, feedback_reason: Optional[str] = None, ) -> Dict[str, str]: VALID_FEEDBACK_VALUES = {\"POSITIVE\", \"NEGATIVE\", \"VERY_NEGATIVE\"} feedback = feedback.upper("
+        },
+        {
+          "rank": 6,
+          "score": 0.661201730200417,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:835-860",
+          "language": "python",
+          "startLine": 835,
+          "endLine": 860,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "delete_webhook"
+          },
+          "preview": "def delete_webhook(self, webhook_id: int) -> Dict[str, str]: \"\"\"Delete a webhook configuration. Args: webhook_id: ID of the webhook to delete Returns: Dictionary containing success message. Raises: ValidationError: If th"
+        },
+        {
+          "rank": 7,
+          "score": 0.661201730200417,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:835-860",
+          "language": "python",
+          "startLine": 835,
+          "endLine": 860,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "delete_webhook"
+          },
+          "preview": "def delete_webhook(self, webhook_id: int) -> Dict[str, str]: \"\"\"Delete a webhook configuration. Args: webhook_id: ID of the webhook to delete Returns: Dictionary containing success message. Raises: ValidationError: If th"
+        },
+        {
+          "rank": 8,
+          "score": 0.6516365606356909,
+          "reason": "surreal vector search",
+          "filePath": "tsconfig.json",
+          "chunkId": "tsconfig.json:1-9",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 9,
+          "metadata": {},
+          "preview": "{ \"files\": [], \"references\": [ { \"path\": \"./packages/core\" }, { \"path\": \"./packages/infra\" }, { \"path\": \"./packages/mcp-server\" } ] }"
+        },
+        {
+          "rank": 9,
+          "score": 0.6442378914286994,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:773-798",
+          "language": "python",
+          "startLine": 773,
+          "endLine": 798,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "create_webhook"
+          },
+          "preview": "def create_webhook(self, url: str, name: str, project_id: str, event_types: List[str]) -> Dict[str, Any]: \"\"\"Create a webhook for the current project. Args: url: The URL to send the webhook to. name: The name of the webh"
+        },
+        {
+          "rank": 10,
+          "score": 0.6442378914286994,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:773-798",
+          "language": "python",
+          "startLine": 773,
+          "endLine": 798,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "create_webhook"
+          },
+          "preview": "def create_webhook(self, url: str, name: str, project_id: str, event_types: List[str]) -> Dict[str, Any]: \"\"\"Create a webhook for the current project. Args: url: The URL to send the webhook to. name: The name of the webh"
+        }
+      ]
+    },
+    {
+      "id": "code-context-packet-budget-v4",
+      "query": "trace search_code_context tokenBudget in code. find ContextPacket, context-builder, truncation logic, and related tests.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": ["test/template/main.py"],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7942961246348792,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1118-1147",
+          "language": "python",
+          "startLine": 1118,
+          "endLine": 1147,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "get_all",
+            "tags": ["async"]
+          },
+          "preview": "async def get_all(self, **kwargs) -> Dict[str, Any]: params = self._prepare_params(kwargs) params.pop(\"async_mode\", None) if \"page\" in params and \"page_size\" in params: query_params = { \"page\": params.pop(\"page\"), \"page_"
+        },
+        {
+          "rank": 2,
+          "score": 0.7942961246348792,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1118-1147",
+          "language": "python",
+          "startLine": 1118,
+          "endLine": 1147,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "get_all",
+            "tags": ["async"]
+          },
+          "preview": "async def get_all(self, **kwargs) -> Dict[str, Any]: params = self._prepare_params(kwargs) params.pop(\"async_mode\", None) if \"page\" in params and \"page_size\" in params: query_params = { \"page\": params.pop(\"page\"), \"page_"
+        },
+        {
+          "rank": 3,
+          "score": 0.7942961246348792,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1118-1147",
+          "language": "python",
+          "startLine": 1118,
+          "endLine": 1147,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "get_all",
+            "tags": ["async"]
+          },
+          "preview": "async def get_all(self, **kwargs) -> Dict[str, Any]: params = self._prepare_params(kwargs) params.pop(\"async_mode\", None) if \"page\" in params and \"page_size\" in params: query_params = { \"page\": params.pop(\"page\"), \"page_"
+        },
+        {
+          "rank": 4,
+          "score": 0.7820932409868888,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1110-1115",
+          "language": "python",
+          "startLine": 1110,
+          "endLine": 1115,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "get",
+            "tags": ["async"]
+          },
+          "preview": "async def get(self, memory_id: str) -> Dict[str, Any]: params = self._prepare_params() response = await self.async_client.get(f\"/v1/memories/{memory_id}/\", params=params) response.raise_for_status() capture_client_event("
+        },
+        {
+          "rank": 5,
+          "score": 0.7820932409868888,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1110-1115",
+          "language": "python",
+          "startLine": 1110,
+          "endLine": 1115,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "get",
+            "tags": ["async"]
+          },
+          "preview": "async def get(self, memory_id: str) -> Dict[str, Any]: params = self._prepare_params() response = await self.async_client.get(f\"/v1/memories/{memory_id}/\", params=params) response.raise_for_status() capture_client_event("
+        },
+        {
+          "rank": 6,
+          "score": 0.7820932409868888,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1110-1115",
+          "language": "python",
+          "startLine": 1110,
+          "endLine": 1115,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "get",
+            "tags": ["async"]
+          },
+          "preview": "async def get(self, memory_id: str) -> Dict[str, Any]: params = self._prepare_params() response = await self.async_client.get(f\"/v1/memories/{memory_id}/\", params=params) response.raise_for_status() capture_client_event("
+        },
+        {
+          "rank": 7,
+          "score": 0.7749423974069443,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1228-1307",
+          "language": "python",
+          "startLine": 1228,
+          "endLine": 1307,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "AsyncMemoryClient"
+          },
+          "preview": "params = self._prepare_params() response = await self.async_client.delete(f\"/v1/memories/{memory_id}/\", params=params) response.raise_for_status() capture_client_event(\"client.delete\", self, {\"memory_id\": memory_id, \"syn"
+        },
+        {
+          "rank": 8,
+          "score": 0.731112841049563,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1168-1247",
+          "language": "python",
+          "startLine": 1168,
+          "endLine": 1247,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "AsyncMemoryClient"
+          },
+          "preview": "}, ) result = response.json() # Ensure v1.1 format (wrap raw list if needed) if isinstance(result, list): return {\"results\": result} return result @api_error_handler async def update( self, memory_id: str, text: Optional"
+        },
+        {
+          "rank": 9,
+          "score": 0.7293449177868345,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1211-1232",
+          "language": "python",
+          "startLine": 1211,
+          "endLine": 1232,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "delete",
+            "tags": ["async"]
+          },
+          "preview": "async def delete(self, memory_id: str) -> Dict[str, Any]: \"\"\"Delete a specific memory by ID. Args: memory_id: The ID of the memory to delete. Returns: A dictionary containing the API response. Raises: ValidationError: If"
+        },
+        {
+          "rank": 10,
+          "score": 0.7141098357155766,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1653-1684",
+          "language": "python",
+          "startLine": 1653,
+          "endLine": 1684,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "update_webhook",
+            "tags": ["async"]
+          },
+          "preview": "async def update_webhook( self, webhook_id: int, name: Optional[str] = None, url: Optional[str] = None, event_types: Optional[List[str]] = None, ) -> Dict[str, Any]: \"\"\"Update a webhook configuration. Args: webhook_id: I"
+        }
+      ]
+    },
+    {
+      "id": "code-provider-factory-wiring-v4",
+      "query": "trace embedding provider wiring in code. find provider-factory, openai-compatible provider, voyage provider, and config path.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": ["test/template/main.py", "yarn.lock"],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7096114291945111,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:835-860",
+          "language": "python",
+          "startLine": 835,
+          "endLine": 860,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "delete_webhook"
+          },
+          "preview": "def delete_webhook(self, webhook_id: int) -> Dict[str, str]: \"\"\"Delete a webhook configuration. Args: webhook_id: ID of the webhook to delete Returns: Dictionary containing success message. Raises: ValidationError: If th"
+        },
+        {
+          "rank": 2,
+          "score": 0.7096114291945111,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:835-860",
+          "language": "python",
+          "startLine": 835,
+          "endLine": 860,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "delete_webhook"
+          },
+          "preview": "def delete_webhook(self, webhook_id: int) -> Dict[str, str]: \"\"\"Delete a webhook configuration. Args: webhook_id: ID of the webhook to delete Returns: Dictionary containing success message. Raises: ValidationError: If th"
+        },
+        {
+          "rank": 3,
+          "score": 0.6582507751325891,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:3241-3320",
+          "language": "text",
+          "startLine": 3241,
+          "endLine": 3320,
+          "metadata": {},
+          "preview": "optional: true yaml: optional: true bin: vite: bin/vite.js checksum: 10c0/f1379726cfd50f3f12d172cf6f61b7b067521bd92955176d0bc6e6e9dd538fe76c87e7f7102d5815e4f83f6795e8ba95502fd442507dc8574ba13bcb7230b2c3 languageName: nod"
+        },
+        {
+          "rank": 4,
+          "score": 0.6577216451523739,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:739-745",
+          "language": "python",
+          "startLine": 739,
+          "endLine": 745,
+          "metadata": {
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "chat"
+          },
+          "preview": "def chat(self): \"\"\"Start a chat with the Mem0 AI. (Not implemented) Raises: NotImplementedError: This method is not implemented yet. \"\"\" raise NotImplementedError(\"Chat is not implemented yet\")"
+        },
+        {
+          "rank": 5,
+          "score": 0.6577216451523739,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:739-745",
+          "language": "python",
+          "startLine": 739,
+          "endLine": 745,
+          "metadata": {
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "chat"
+          },
+          "preview": "def chat(self): \"\"\"Start a chat with the Mem0 AI. (Not implemented) Raises: NotImplementedError: This method is not implemented yet. \"\"\" raise NotImplementedError(\"Chat is not implemented yet\")"
+        },
+        {
+          "rank": 6,
+          "score": 0.6577216451523739,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:739-745",
+          "language": "python",
+          "startLine": 739,
+          "endLine": 745,
+          "metadata": {
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "chat"
+          },
+          "preview": "def chat(self): \"\"\"Start a chat with the Mem0 AI. (Not implemented) Raises: NotImplementedError: This method is not implemented yet. \"\"\" raise NotImplementedError(\"Chat is not implemented yet\")"
+        },
+        {
+          "rank": 7,
+          "score": 0.6577216451523739,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:739-745",
+          "language": "python",
+          "startLine": 739,
+          "endLine": 745,
+          "metadata": {
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "chat"
+          },
+          "preview": "def chat(self): \"\"\"Start a chat with the Mem0 AI. (Not implemented) Raises: NotImplementedError: This method is not implemented yet. \"\"\" raise NotImplementedError(\"Chat is not implemented yet\")"
+        },
+        {
+          "rank": 8,
+          "score": 0.6561689589262762,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:2521-2600",
+          "language": "text",
+          "startLine": 2521,
+          "endLine": 2600,
+          "metadata": {},
+          "preview": "side-channel: \"npm:^1.1.0\" checksum: 10c0/ff341078a78a991d8a48b4524d52949211447b4b1ad907f489cac0770cbc346a28e47304455c0320e5fb000f8762d64b03331e3b71865f663bf351bcba8cdb4b languageName: node linkType: hard \"quick-format-u"
+        },
+        {
+          "rank": 9,
+          "score": 0.6550320489932834,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:1981-2060",
+          "language": "text",
+          "startLine": 1981,
+          "endLine": 2060,
+          "metadata": {},
+          "preview": "checksum: 10c0/f15e282af24c8372cbb10b9b0b3e2c0aa681fea0ca323a44d6bc537dc1d9382c819c3689f14eaa000118f5a163245358ce6276b2cda9a84439cdb221f5d86ae7 languageName: node linkType: hard \"micromark-util-decode-numeric-character-r"
+        },
+        {
+          "rank": 10,
+          "score": 0.6540385370544461,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:781-860",
+          "language": "text",
+          "startLine": 781,
+          "endLine": 860,
+          "metadata": {},
+          "preview": "\"brace-expansion@npm:^5.0.2\": version: 5.0.4 resolution: \"brace-expansion@npm:5.0.4\" dependencies: balanced-match: \"npm:^4.0.2\" checksum: 10c0/359cbcfa80b2eb914ca1f3440e92313fbfe7919ee6b274c35db55bec555aded69dac5ee78f102"
+        }
+      ]
+    },
+    {
+      "id": "code-quality-run-disconnect-v4",
+      "query": "find why quality run exits late. locate run-retrieval-quality cleanup and surrealClient.disconnect call in code.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": ["test/template/main.py", "yarn.lock"],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.666252684886753,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1078-1079",
+          "language": "python",
+          "startLine": 1078,
+          "endLine": 1079,
+          "metadata": {
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "__aexit__",
+            "tags": ["async"]
+          },
+          "preview": "async def __aexit__(self, exc_type, exc_val, exc_tb): await self.async_client.aclose()"
+        },
+        {
+          "rank": 2,
+          "score": 0.6639925125002591,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1408-1487",
+          "language": "python",
+          "startLine": 1408,
+          "endLine": 1487,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "AsyncMemoryClient"
+          },
+          "preview": "async def batch_delete(self, memories: List[Dict[str, Any]]) -> Dict[str, Any]: \"\"\"Batch delete memories. Args: memories: List of memory dictionaries to delete. Each dictionary must contain: - memory_id (str): ID of the "
+        },
+        {
+          "rank": 3,
+          "score": 0.6558911578072127,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1711-1725",
+          "language": "python",
+          "startLine": 1711,
+          "endLine": 1725,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "feedback",
+            "tags": ["async"]
+          },
+          "preview": "async def feedback( self, memory_id: str, feedback: Optional[str] = None, feedback_reason: Optional[str] = None ) -> Dict[str, str]: VALID_FEEDBACK_VALUES = {\"POSITIVE\", \"NEGATIVE\", \"VERY_NEGATIVE\"} feedback = feedback.u"
+        },
+        {
+          "rank": 4,
+          "score": 0.6535435903482815,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:3301-3380",
+          "language": "text",
+          "startLine": 3301,
+          "endLine": 3380,
+          "metadata": {},
+          "preview": "optional: true jsdom: optional: true vite: optional: false bin: vitest: vitest.mjs checksum: 10c0/48048e4391e4e8190aa12b1c868bef4ad8d346214631b4506e0dc1f3241ecb8bcb24f296c38a7d98eae712a042375ae209da4b35165db38f9a9bc79a3a"
+        },
+        {
+          "rank": 5,
+          "score": 0.6528991135093827,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1359-1378",
+          "language": "python",
+          "startLine": 1359,
+          "endLine": 1378,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "reset",
+            "tags": ["async"]
+          },
+          "preview": "async def reset(self) -> Dict[str, str]: \"\"\"Reset the client by deleting all users and memories. This method deletes all users, agents, sessions, and memories associated with the client. Returns: Dict[str, str]: Message "
+        },
+        {
+          "rank": 6,
+          "score": 0.6486598813366351,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:3061-3140",
+          "language": "text",
+          "startLine": 3061,
+          "endLine": 3140,
+          "metadata": {},
+          "preview": "dependencies: content-type: \"npm:^1.0.5\" media-typer: \"npm:^1.1.0\" mime-types: \"npm:^3.0.0\" checksum: 10c0/7f7ec0a060b16880bdad36824ab37c26019454b67d73e8a465ed5a3587440fbe158bc765f0da68344498235c877e7dbbb1600beccc94628ed"
+        },
+        {
+          "rank": 7,
+          "score": 0.6486598813366351,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:3061-3140",
+          "language": "text",
+          "startLine": 3061,
+          "endLine": 3140,
+          "metadata": {},
+          "preview": "dependencies: content-type: \"npm:^1.0.5\" media-typer: \"npm:^1.1.0\" mime-types: \"npm:^3.0.0\" checksum: 10c0/7f7ec0a060b16880bdad36824ab37c26019454b67d73e8a465ed5a3587440fbe158bc765f0da68344498235c877e7dbbb1600beccc94628ed"
+        },
+        {
+          "rank": 8,
+          "score": 0.6470543916770543,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:601-680",
+          "language": "text",
+          "startLine": 601,
+          "endLine": 680,
+          "metadata": {},
+          "preview": "vite: ^6.0.0 || ^7.0.0 || ^8.0.0-0 peerDependenciesMeta: msw: optional: true vite: optional: true checksum: 10c0/f61d3df6461008eb1e62ba465172207b29bd0d9866ff6bc88cd40fc99cd5d215ad89e2894ba6de87068e33f75de903b28a65ccc6074"
+        },
+        {
+          "rank": 9,
+          "score": 0.6470543916770543,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:601-680",
+          "language": "text",
+          "startLine": 601,
+          "endLine": 680,
+          "metadata": {},
+          "preview": "vite: ^6.0.0 || ^7.0.0 || ^8.0.0-0 peerDependenciesMeta: msw: optional: true vite: optional: true checksum: 10c0/f61d3df6461008eb1e62ba465172207b29bd0d9866ff6bc88cd40fc99cd5d215ad89e2894ba6de87068e33f75de903b28a65ccc6074"
+        },
+        {
+          "rank": 10,
+          "score": 0.6470543916770543,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:601-680",
+          "language": "text",
+          "startLine": 601,
+          "endLine": 680,
+          "metadata": {},
+          "preview": "vite: ^6.0.0 || ^7.0.0 || ^8.0.0-0 peerDependenciesMeta: msw: optional: true vite: optional: true checksum: 10c0/f61d3df6461008eb1e62ba465172207b29bd0d9866ff6bc88cd40fc99cd5d215ad89e2894ba6de87068e33f75de903b28a65ccc6074"
+        }
+      ]
+    },
+    {
+      "id": "code-indexing-concurrency-flow-v4",
+      "query": "trace embeddingBatchSize and embeddingConcurrency in code. find index-repository batching, worker concurrency, and index-files path.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": ["vitest.unit.config.ts", "yarn.lock", "test/template/main.py"],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.818096625918244,
+          "reason": "surreal vector search",
+          "filePath": "vitest.unit.config.ts",
+          "chunkId": "vitest.unit.config.ts:1-21",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 21,
+          "metadata": {},
+          "preview": "import { fileURLToPath } from \"node:url\"; import { defineConfig } from \"vitest/config\"; export default defineConfig({ resolve: { alias: { \"@agent-code-index/core\": fileURLToPath( new URL(\"./packages/core/src/index.ts\", i"
+        },
+        {
+          "rank": 2,
+          "score": 0.804362834569571,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:2461-2540",
+          "language": "text",
+          "startLine": 2461,
+          "endLine": 2540,
+          "metadata": {},
+          "preview": "linkType: hard \"postcss@npm:^8.5.8\": version: 8.5.8 resolution: \"postcss@npm:8.5.8\" dependencies: nanoid: \"npm:^3.3.11\" picocolors: \"npm:^1.1.1\" source-map-js: \"npm:^1.2.1\" checksum: 10c0/dd918f7127ee7c60a0295bae2e72b378"
+        },
+        {
+          "rank": 3,
+          "score": 0.771652750542892,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:1921-2000",
+          "language": "text",
+          "startLine": 1921,
+          "endLine": 2000,
+          "metadata": {},
+          "preview": "\"micromark-factory-title@npm:^2.0.0\": version: 2.0.1 resolution: \"micromark-factory-title@npm:2.0.1\" dependencies: micromark-factory-space: \"npm:^2.0.0\" micromark-util-character: \"npm:^2.0.0\" micromark-util-symbol: \"npm:"
+        },
+        {
+          "rank": 4,
+          "score": 0.7650942897603535,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1075-1076",
+          "language": "python",
+          "startLine": 1075,
+          "endLine": 1076,
+          "metadata": {
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "__aenter__",
+            "tags": ["async"]
+          },
+          "preview": "async def __aenter__(self): return self"
+        },
+        {
+          "rank": 5,
+          "score": 0.7650942897603535,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1075-1076",
+          "language": "python",
+          "startLine": 1075,
+          "endLine": 1076,
+          "metadata": {
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "__aenter__",
+            "tags": ["async"]
+          },
+          "preview": "async def __aenter__(self): return self"
+        },
+        {
+          "rank": 6,
+          "score": 0.7650942897603535,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1075-1076",
+          "language": "python",
+          "startLine": 1075,
+          "endLine": 1076,
+          "metadata": {
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "__aenter__",
+            "tags": ["async"]
+          },
+          "preview": "async def __aenter__(self): return self"
+        },
+        {
+          "rank": 7,
+          "score": 0.756448019767944,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1292-1356",
+          "language": "python",
+          "startLine": 1292,
+          "endLine": 1356,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "delete_users",
+            "tags": ["async"]
+          },
+          "preview": "async def delete_users( self, user_id: Optional[str] = None, agent_id: Optional[str] = None, app_id: Optional[str] = None, run_id: Optional[str] = None, ) -> Dict[str, str]: \"\"\"Delete specific entities or all entities if"
+        },
+        {
+          "rank": 8,
+          "score": 0.7351877805011822,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:835-860",
+          "language": "python",
+          "startLine": 835,
+          "endLine": 860,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "delete_webhook"
+          },
+          "preview": "def delete_webhook(self, webhook_id: int) -> Dict[str, str]: \"\"\"Delete a webhook configuration. Args: webhook_id: ID of the webhook to delete Returns: Dictionary containing success message. Raises: ValidationError: If th"
+        },
+        {
+          "rank": 9,
+          "score": 0.7351877805011822,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:835-860",
+          "language": "python",
+          "startLine": 835,
+          "endLine": 860,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "delete_webhook"
+          },
+          "preview": "def delete_webhook(self, webhook_id: int) -> Dict[str, str]: \"\"\"Delete a webhook configuration. Args: webhook_id: ID of the webhook to delete Returns: Dictionary containing success message. Raises: ValidationError: If th"
+        },
+        {
+          "rank": 10,
+          "score": 0.7025634716316407,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1050-1073",
+          "language": "python",
+          "startLine": 1050,
+          "endLine": 1073,
+          "metadata": {
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "_prepare_params"
+          },
+          "preview": "def _prepare_params(self, kwargs: Optional[Dict[str, Any]] = None) -> Dict[str, Any]: \"\"\"Prepare query parameters for API requests. Args: kwargs: Keyword arguments to include in the parameters. Returns: A dictionary cont"
+        }
+      ]
+    }
+  ]
+}

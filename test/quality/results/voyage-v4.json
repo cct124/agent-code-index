@@ -1,0 +1,1059 @@
+{
+  "generatedAt": "2026-03-22T15:17:48.212Z",
+  "label": "voyage-v4",
+  "environment": {
+    "envFile": "/home/janex/project/ai-agent/agent-code-index/.env.development.voyageai",
+    "projectSpace": "agent_code_index_voyageai",
+    "repositoryId": "agent-code-index",
+    "rootPath": "/home/janex/project/ai-agent/agent-code-index",
+    "provider": "voyage",
+    "model": "voyage-code-3",
+    "vectorDimension": 1024
+  },
+  "indexing": {
+    "embeddingBatchSize": 16,
+    "embeddingConcurrency": 8,
+    "scannedFileCount": 127,
+    "parsedFileCount": 127,
+    "skippedFileCount": 0,
+    "preparedChunkCount": 975,
+    "embeddedChunkCount": 975,
+    "storedChunkCount": 975,
+    "failedFileCount": 0
+  },
+  "queries": [
+    {
+      "id": "code-mcp-index-wiring-v4",
+      "query": "locate index_repository wiring in code. find register-tools/createApp/container path, prefer .ts implementation and tests, not README/design docs.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/infra/src/storage/surreal/surreal-search-repository.ts",
+        "packages/infra/src/storage/surreal/surreal-client.ts",
+        "packages/mcp-server/src/adapters/tools/register-tools.ts",
+        "packages/infra/test/embedding/real-embedding-test-env.ts",
+        "packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts",
+        "packages/mcp-server/src/bootstrap/container.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7056170297096831,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-search-repository.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-search-repository.ts:116-116",
+          "language": "typescript",
+          "startLine": 116,
+          "endLine": 116,
+          "metadata": {
+            "parentSymbol": "SurrealSearchRepository",
+            "symbolKind": "field",
+            "symbolName": "client",
+            "tags": ["private", "readonly"]
+          },
+          "preview": "private readonly client: SurrealClient"
+        },
+        {
+          "rank": 2,
+          "score": 0.7009009616844832,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-client.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-client.ts:83-83",
+          "language": "typescript",
+          "startLine": 83,
+          "endLine": 83,
+          "metadata": {
+            "parentSymbol": "DefaultSurrealClient",
+            "symbolKind": "field",
+            "symbolName": "logger",
+            "tags": ["private", "readonly"]
+          },
+          "preview": "private readonly logger: Logger"
+        },
+        {
+          "rank": 3,
+          "score": 0.7009009616844832,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/adapters/tools/register-tools.ts",
+          "chunkId": "packages/mcp-server/src/adapters/tools/register-tools.ts:115-194",
+          "language": "typescript",
+          "startLine": 115,
+          "endLine": 194,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "registerAgentCodeIndexTools"
+          },
+          "preview": "return createToolErrorResult(logger, \"index_repository\", error); } }, ); server.registerTool( \"search_code_context\", { title: \"搜索代码上下文\", description: \"对自然语言查询执行语义代码检索，并返回按相关性排序的代码上下文结果。\", inputSchema: searchCodeContextIn"
+        },
+        {
+          "rank": 4,
+          "score": 0.700708492931422,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-client.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-client.ts:75-154",
+          "language": "typescript",
+          "startLine": 75,
+          "endLine": 154,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "DefaultSurrealClient"
+          },
+          "preview": "class DefaultSurrealClient implements SurrealClient { /** 当前使用的连接配置。 */ public readonly config: SurrealConnectionConfig; /** 底层官方客户端实例。 */ public readonly driver: Surreal; /** 结构化日志接口。 */ private readonly logger: Logger;"
+        },
+        {
+          "rank": 5,
+          "score": 0.6907444723345305,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/embedding/real-embedding-test-env.ts",
+          "chunkId": "packages/infra/test/embedding/real-embedding-test-env.ts:7-17",
+          "language": "typescript",
+          "startLine": 7,
+          "endLine": 17,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "requireEmbeddingEnv"
+          },
+          "preview": "function requireEmbeddingEnv(key: string): string { const value = process.env[key]?.trim(); if (!value) { throw new Error( `Missing required environment variable for real embedding integration test: ${key}`, ); } return "
+        },
+        {
+          "rank": 6,
+          "score": 0.6906414814849579,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts:30-30",
+          "language": "typescript",
+          "startLine": 30,
+          "endLine": 30,
+          "metadata": {
+            "parentSymbol": "SurrealProjectMetadataSchema",
+            "symbolKind": "field",
+            "symbolName": "client",
+            "tags": ["private", "readonly"]
+          },
+          "preview": "private readonly client: SurrealClient"
+        },
+        {
+          "rank": 7,
+          "score": 0.6906414814849579,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/container.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/container.ts:146-182",
+          "language": "typescript",
+          "startLine": 146,
+          "endLine": 182,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "createContainer"
+          },
+          "preview": "chunkRepository, logger.child({ module: \"get-file-context\" }), ); const searchCodeContextService = new DefaultSearchCodeContextService( embeddingProvider, searchRepository, logger.child({ module: \"search-code-context\" })"
+        },
+        {
+          "rank": 8,
+          "score": 0.6880484924213318,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-client.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-client.ts:90-102",
+          "language": "typescript",
+          "startLine": 90,
+          "endLine": 102,
+          "metadata": {
+            "parentSymbol": "DefaultSurrealClient",
+            "symbolKind": "constructor",
+            "symbolName": "constructor",
+            "tags": ["constructor"]
+          },
+          "preview": "public constructor( config: SurrealConnectionConfig, driver = new Surreal(), logger: Logger = NOOP_LOGGER, ) { this.config = config; this.driver = driver; this.logger = logger.child({ package: \"infra\", module: \"surreal-c"
+        },
+        {
+          "rank": 9,
+          "score": 0.6878308352279496,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-client.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-client.ts:85-85",
+          "language": "typescript",
+          "startLine": 85,
+          "endLine": 85,
+          "metadata": {
+            "parentSymbol": "DefaultSurrealClient",
+            "symbolKind": "field",
+            "symbolName": "isConnected",
+            "tags": ["private"]
+          },
+          "preview": "private isConnected = false"
+        },
+        {
+          "rank": 10,
+          "score": 0.6878308352279496,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/adapters/tools/register-tools.ts",
+          "chunkId": "packages/mcp-server/src/adapters/tools/register-tools.ts:175-254",
+          "language": "typescript",
+          "startLine": 175,
+          "endLine": 254,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "registerAgentCodeIndexTools"
+          },
+          "preview": "server.registerTool( \"index_files\", { title: \"重建文件索引\", description: \"对指定文件列表执行覆盖式重建，刷新这些文件的索引数据。\", inputSchema: indexFilesInputSchema, annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, open"
+        }
+      ]
+    },
+    {
+      "id": "code-local-file-scanner-override-v4",
+      "query": "find includePatterns override logic in LocalFileScanner. need implementation + unit test for ignore/.gitignore override.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/infra/test/scanning/local-file-scanner.unit.test.ts",
+        "packages/infra/src/scanning/local-file-scanner.ts",
+        "test/template/main.py",
+        "packages/infra/test/parsing/python-tree-sitter-parser.unit.test.ts",
+        "packages/mcp-server/test/bootstrap/container.unit.test.ts",
+        "packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts",
+        "packages/mcp-server/src/bootstrap/container.ts",
+        "packages/infra/src/services/repository-chunk-preparation-service.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.786619852364753,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/scanning/local-file-scanner.unit.test.ts",
+          "chunkId": "packages/infra/test/scanning/local-file-scanner.unit.test.ts:61-140",
+          "language": "typescript",
+          "startLine": 61,
+          "endLine": 140,
+          "metadata": {},
+          "preview": "const scanner = new LocalFileScanner(); const scannedFiles = await scanner.scan(rootPath); expect( scannedFiles.map((filePath) => path.relative(rootPath, filePath)), ).toEqual([\"packages/demo/index.ts\"]); }); it(\"merges "
+        },
+        {
+          "rank": 2,
+          "score": 0.7805153279475973,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/scanning/local-file-scanner.ts",
+          "chunkId": "packages/infra/src/scanning/local-file-scanner.ts:28-28",
+          "language": "typescript",
+          "startLine": 28,
+          "endLine": 28,
+          "metadata": {
+            "parentSymbol": "LocalFileScanner",
+            "symbolKind": "field",
+            "symbolName": "includePatterns",
+            "tags": ["private", "readonly"]
+          },
+          "preview": "private readonly includePatterns: string[]"
+        },
+        {
+          "rank": 3,
+          "score": 0.7564210643824701,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/scanning/local-file-scanner.unit.test.ts",
+          "chunkId": "packages/infra/test/scanning/local-file-scanner.unit.test.ts:121-152",
+          "language": "typescript",
+          "startLine": 121,
+          "endLine": 152,
+          "metadata": {},
+          "preview": "await mkdir(path.join(rootPath, \"dist\"), { recursive: true }); await writeFile( path.join(rootPath, \".gitignore\"), [\"dist/\", \"*.generated.ts\"].join(\"\\n\"), ); await writeFile( path.join(rootPath, \"dist\", \"keep.ts\"), \"expo"
+        },
+        {
+          "rank": 4,
+          "score": 0.7536223336352972,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/scanning/local-file-scanner.unit.test.ts",
+          "chunkId": "packages/infra/test/scanning/local-file-scanner.unit.test.ts:1-80",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 80,
+          "metadata": {},
+          "preview": "import { mkdtemp, mkdir, rm, writeFile } from \"node:fs/promises\"; import os from \"node:os\"; import path from \"node:path\"; import { afterEach, describe, expect, it } from \"vitest\"; import { LocalFileScanner } from \"../../"
+        },
+        {
+          "rank": 5,
+          "score": 0.7229549112423491,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:564-643",
+          "language": "python",
+          "startLine": 564,
+          "endLine": 643,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "MemoryClient"
+          },
+          "preview": "\"\"\"Create a memory export with the provided schema. Args: schema: JSON schema defining the export structure **kwargs: Optional filters like user_id, run_id, etc. Returns: Dict containing export request ID and status mess"
+        },
+        {
+          "rank": 6,
+          "score": 0.703044398251484,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/parsing/python-tree-sitter-parser.unit.test.ts",
+          "chunkId": "packages/infra/test/parsing/python-tree-sitter-parser.unit.test.ts:1-80",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 80,
+          "metadata": {},
+          "preview": "import { describe, expect, it } from \"vitest\"; import { PythonTreeSitterParser } from \"../../src/parsing/tree-sitter/languages/python-parser.js\"; describe(\"PythonTreeSitterParser\", () => { it(\"extracts classes, methods, "
+        },
+        {
+          "rank": 7,
+          "score": 0.703044398251484,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/container.unit.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/container.unit.test.ts:1-58",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 58,
+          "metadata": {},
+          "preview": "import { describe, expect, it } from \"vitest\"; import { resolveScanGitignorePath } from \"../../src/bootstrap/container.js\"; describe(\"resolveScanGitignorePath\", () => { it(\"prefers explicit gitignore path from config\", ("
+        },
+        {
+          "rank": 8,
+          "score": 0.6943323473943115,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts:35-37",
+          "language": "typescript",
+          "startLine": 35,
+          "endLine": 37,
+          "metadata": {
+            "parentSymbol": "SurrealProjectMetadataSchema",
+            "symbolKind": "constructor",
+            "symbolName": "constructor",
+            "tags": ["constructor"]
+          },
+          "preview": "public constructor(client: SurrealClient) { this.client = client; }"
+        },
+        {
+          "rank": 9,
+          "score": 0.6943323473943115,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/container.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/container.ts:184-196",
+          "language": "typescript",
+          "startLine": 184,
+          "endLine": 196,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "resolveScanGitignorePath"
+          },
+          "preview": "function resolveScanGitignorePath( config: Pick<AppConfig, \"indexing\" | \"mcp\">, ): string | undefined { if (config.indexing.gitignorePath !== undefined) { return config.indexing.gitignorePath; } if (config.mcp.repository"
+        },
+        {
+          "rank": 10,
+          "score": 0.6924076213960404,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/services/repository-chunk-preparation-service.ts",
+          "chunkId": "packages/infra/src/services/repository-chunk-preparation-service.ts:28-28",
+          "language": "typescript",
+          "startLine": 28,
+          "endLine": 28,
+          "metadata": {
+            "parentSymbol": "RepositoryChunkPreparationService",
+            "symbolKind": "field",
+            "symbolName": "fileScanner",
+            "tags": ["private", "readonly"]
+          },
+          "preview": "private readonly fileScanner: FileScanner"
+        }
+      ]
+    },
+    {
+      "id": "code-context-packet-budget-v4",
+      "query": "trace search_code_context tokenBudget in code. find ContextPacket, context-builder, truncation logic, and related tests.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/mcp-server/test/bootstrap/app.real.integration.test.ts",
+        "test/template/main.py",
+        "packages/mcp-server/README.md",
+        "packages/mcp-server/test/bootstrap/config.unit.test.ts",
+        "packages/infra/src/storage/surreal/surreal-chunk-repository.ts",
+        "packages/infra/test/embedding/real-embedding-test-env.ts",
+        "packages/infra/test/embedding/openai-compatible-embedding-provider.unit.test.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7688069563738257,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts:212-222",
+          "language": "typescript",
+          "startLine": 212,
+          "endLine": 222,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "requireEnv"
+          },
+          "preview": "function requireEnv(key: string): string { const value = process.env[key]?.trim(); if (!value) { throw new Error( `Missing required environment variable for real integration test: ${key}`, ); } return value; }"
+        },
+        {
+          "rank": 2,
+          "score": 0.7550321252434462,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:384-463",
+          "language": "python",
+          "startLine": 384,
+          "endLine": 463,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "MemoryClient"
+          },
+          "preview": "return response.json() @api_error_handler def history(self, memory_id: str) -> List[Dict[str, Any]]: \"\"\"Retrieve the history of a specific memory. Args: memory_id: The ID of the memory to retrieve history for. Returns: A"
+        },
+        {
+          "rank": 3,
+          "score": 0.750508500203427,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:169-178",
+          "language": "markdown",
+          "startLine": 169,
+          "endLine": 178,
+          "metadata": {
+            "docType": "readme",
+            "heading": "4.2 search_code_context 的当前语义",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "当前已经实现的功能",
+              "4.2 search_code_context 的当前语义"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 4.2 search_code_context 的当前语义 当前 `search_code_context` 已不再只是“返回原始检索命中列表”，而是同时返回一个 richer `contextPacket`： 1. 原始 `results[]` 仍保留，便于调试向量检索得分与召回原因 2. `contextPacket.items[]` 会先做去重，再按文件内相邻 chunk 合并 3. 合并后的 item 会补充 `esti"
+        },
+        {
+          "rank": 4,
+          "score": 0.7417602752838325,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/config.unit.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/config.unit.test.ts:8-29",
+          "language": "typescript",
+          "startLine": 8,
+          "endLine": 29,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "createBaseEnv"
+          },
+          "preview": "function createBaseEnv(): Record<string, string> { return { PROJECT_SPACE: \"demo-project\", SURREAL_URL: \"ws://127.0.0.1:8000/rpc\", SURREAL_DATABASE: \"default\", SURREAL_USERNAME: \"root\", SURREAL_PASSWORD: \"root\", SURREAL_"
+        },
+        {
+          "rank": 5,
+          "score": 0.733041355594867,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-chunk-repository.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-chunk-repository.ts:69-76",
+          "language": "typescript",
+          "startLine": 69,
+          "endLine": 76,
+          "metadata": {
+            "parentSymbol": "SurrealChunkRepository",
+            "symbolKind": "constructor",
+            "symbolName": "constructor",
+            "tags": ["constructor"]
+          },
+          "preview": "public constructor(client: SurrealClient, logger: Logger = NOOP_LOGGER) { this.client = client; this.logger = logger.child({ package: \"infra\", module: \"surreal-chunk-repository\", component: \"SurrealChunkRepository\", }); "
+        },
+        {
+          "rank": 6,
+          "score": 0.7299044580112607,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:387-408",
+          "language": "python",
+          "startLine": 387,
+          "endLine": 408,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "history"
+          },
+          "preview": "def history(self, memory_id: str) -> List[Dict[str, Any]]: \"\"\"Retrieve the history of a specific memory. Args: memory_id: The ID of the memory to retrieve history for. Returns: A list of dictionaries containing the memor"
+        },
+        {
+          "rank": 7,
+          "score": 0.7254493570298002,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:358-384",
+          "language": "python",
+          "startLine": 358,
+          "endLine": 384,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "delete_all"
+          },
+          "preview": "def delete_all(self, **kwargs) -> Dict[str, str]: \"\"\"Delete all memories, with optional filtering. Args: **kwargs: Optional parameters for filtering (user_id, agent_id, app_id). Returns: A dictionary containing the API r"
+        },
+        {
+          "rank": 8,
+          "score": 0.7222229492524483,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts:107-109",
+          "language": "typescript",
+          "startLine": 107,
+          "endLine": 109,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "isRealSurrealIntegrationEnabled"
+          },
+          "preview": "function isRealSurrealIntegrationEnabled(): boolean { return process.env[REAL_TEST_FLAG] === \"true\"; }"
+        },
+        {
+          "rank": 9,
+          "score": 0.7211779978399767,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/embedding/real-embedding-test-env.ts",
+          "chunkId": "packages/infra/test/embedding/real-embedding-test-env.ts:3-5",
+          "language": "typescript",
+          "startLine": 3,
+          "endLine": 5,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "isRealEmbeddingIntegrationEnabled"
+          },
+          "preview": "function isRealEmbeddingIntegrationEnabled(): boolean { return process.env[REAL_EMBEDDING_TEST_FLAG] === \"true\"; }"
+        },
+        {
+          "rank": 10,
+          "score": 0.7171999186240575,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/embedding/openai-compatible-embedding-provider.unit.test.ts",
+          "chunkId": "packages/infra/test/embedding/openai-compatible-embedding-provider.unit.test.ts:121-200",
+          "language": "typescript",
+          "startLine": 121,
+          "endLine": 200,
+          "metadata": {},
+          "preview": "durationMs: expect.any(Number), failureStage: \"http\", totalInputLength: 5, minInputLength: 5, maxInputLength: 5, averageInputLength: 5, sampleInputLengths: [5], responseBodyPreview: JSON.stringify({ error: { message: \"in"
+        }
+      ]
+    },
+    {
+      "id": "code-provider-factory-wiring-v4",
+      "query": "trace embedding provider wiring in code. find provider-factory, openai-compatible provider, voyage provider, and config path.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/template/main.py",
+        "packages/infra/test/parsing/python-tree-sitter-parser.unit.test.ts",
+        "packages/infra/test/embedding/provider-factory.unit.test.ts",
+        "packages/infra/src/storage/surreal/surreal-project-metadata-repository.ts",
+        "packages/mcp-server/src/bootstrap/config.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.75740812170238,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:973-973",
+          "language": "python",
+          "startLine": 973,
+          "endLine": 973,
+          "metadata": {
+            "definedBy": "__init__",
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "field",
+            "symbolName": "async_client",
+            "tags": ["instance-field"]
+          },
+          "preview": "self.async_client = client"
+        },
+        {
+          "rank": 2,
+          "score": 0.7357209174480585,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/parsing/python-tree-sitter-parser.unit.test.ts",
+          "chunkId": "packages/infra/test/parsing/python-tree-sitter-parser.unit.test.ts:61-140",
+          "language": "typescript",
+          "startLine": 61,
+          "endLine": 140,
+          "metadata": {},
+          "preview": "]), ); }); it(\"extracts python decorator semantics, async tags, and instance fields\", async () => { const parser = new PythonTreeSitterParser(); const chunks = await parser.parse({ repositoryId: \"repo-a\", filePath: \"src/"
+        },
+        {
+          "rank": 3,
+          "score": 0.7310631492421658,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/embedding/provider-factory.unit.test.ts",
+          "chunkId": "packages/infra/test/embedding/provider-factory.unit.test.ts:1-39",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 39,
+          "metadata": {},
+          "preview": "import { describe, expect, it } from \"vitest\"; import { createEmbeddingProvider, OpenAICompatibleEmbeddingProvider, VoyageEmbeddingProvider, } from \"../../src/index.js\"; describe(\"createEmbeddingProvider\", () => { it(\"cr"
+        },
+        {
+          "rank": 4,
+          "score": 0.7193643160102723,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:537-560",
+          "language": "python",
+          "startLine": 537,
+          "endLine": 560,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "batch_delete"
+          },
+          "preview": "def batch_delete(self, memories: List[Dict[str, Any]]) -> Dict[str, Any]: \"\"\"Batch delete memories. Args: memories: List of memory dictionaries to delete. Each dictionary must contain: - memory_id (str): ID of the memory"
+        },
+        {
+          "rank": 5,
+          "score": 0.7089626738091951,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-project-metadata-repository.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-project-metadata-repository.ts:41-51",
+          "language": "typescript",
+          "startLine": 41,
+          "endLine": 51,
+          "metadata": {
+            "parentSymbol": "SurrealProjectMetadataRepository",
+            "symbolKind": "method",
+            "symbolName": "getByProjectSpace",
+            "tags": ["async"]
+          },
+          "preview": "public async getByProjectSpace( input: GetProjectMetadataInput, ): Promise<ProjectMetadata | null> { await this.client.connect(); const record = await this.client.driver.select<StoredProjectMetadata>( this.recordId(input"
+        },
+        {
+          "rank": 6,
+          "score": 0.7082355724329543,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:625-660",
+          "language": "python",
+          "startLine": 625,
+          "endLine": 660,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "get_project"
+          },
+          "preview": "def get_project(self, fields: Optional[List[str]] = None) -> Dict[str, Any]: \"\"\"Get instructions or categories for the current project. Args: fields: List of fields to retrieve Returns: Dictionary containing the requeste"
+        },
+        {
+          "rank": 7,
+          "score": 0.6988601356605271,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:391-398",
+          "language": "typescript",
+          "startLine": 391,
+          "endLine": 398,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "defaultEmbeddingModelForProvider"
+          },
+          "preview": "function defaultEmbeddingModelForProvider(provider: EmbeddingProvider): string { switch (provider) { case \"openai-compatible\": return \"text-embedding-3-large\"; case \"voyage\": return \"voyage-code-3\"; } }"
+        },
+        {
+          "rank": 8,
+          "score": 0.6988601356605271,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:391-398",
+          "language": "typescript",
+          "startLine": 391,
+          "endLine": 398,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "defaultEmbeddingModelForProvider"
+          },
+          "preview": "function defaultEmbeddingModelForProvider(provider: EmbeddingProvider): string { switch (provider) { case \"openai-compatible\": return \"text-embedding-3-large\"; case \"voyage\": return \"voyage-code-3\"; } }"
+        },
+        {
+          "rank": 9,
+          "score": 0.6966781619657858,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:801-832",
+          "language": "python",
+          "startLine": 801,
+          "endLine": 832,
+          "metadata": {
+            "decorators": ["api_error_handler"],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "update_webhook"
+          },
+          "preview": "def update_webhook( self, webhook_id: int, name: Optional[str] = None, url: Optional[str] = None, event_types: Optional[List[str]] = None, ) -> Dict[str, Any]: \"\"\"Update a webhook configuration. Args: webhook_id: ID of t"
+        },
+        {
+          "rank": 10,
+          "score": 0.6954271597364571,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-project-metadata-repository.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-project-metadata-repository.ts:76-87",
+          "language": "typescript",
+          "startLine": 76,
+          "endLine": 87,
+          "metadata": {
+            "parentSymbol": "SurrealProjectMetadataRepository",
+            "symbolKind": "method",
+            "symbolName": "toProjectMetadata",
+            "tags": ["private"]
+          },
+          "preview": "private toProjectMetadata(record: StoredProjectMetadata): ProjectMetadata { return { projectSpace: record.projectSpace, namespace: record.namespace, database: record.database, embeddingProvider: record.embeddingProvider,"
+        }
+      ]
+    },
+    {
+      "id": "code-quality-run-disconnect-v4",
+      "query": "find why quality run exits late. locate run-retrieval-quality cleanup and surrealClient.disconnect call in code.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/infra/test/parsing/python-tree-sitter-parser.unit.test.ts",
+        "packages/infra/test/parsing/typescript-tree-sitter-parser.unit.test.ts",
+        "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts",
+        "packages/infra/test/scanning/local-file-scanner.unit.test.ts",
+        "packages/infra/test/services/repository-chunk-preparation-service.unit.test.ts",
+        "packages/mcp-server/test/bootstrap/index-repository.real-voyage.integration.test.ts",
+        "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts",
+        "packages/mcp-server/test/bootstrap/app.real.integration.test.ts",
+        "packages/mcp-server/README.md",
+        "packages/infra/src/storage/surreal/surreal-client.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.6687109578214937,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/parsing/python-tree-sitter-parser.unit.test.ts",
+          "chunkId": "packages/infra/test/parsing/python-tree-sitter-parser.unit.test.ts:1-80",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 80,
+          "metadata": {},
+          "preview": "import { describe, expect, it } from \"vitest\"; import { PythonTreeSitterParser } from \"../../src/parsing/tree-sitter/languages/python-parser.js\"; describe(\"PythonTreeSitterParser\", () => { it(\"extracts classes, methods, "
+        },
+        {
+          "rank": 2,
+          "score": 0.6669607531497457,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/parsing/typescript-tree-sitter-parser.unit.test.ts",
+          "chunkId": "packages/infra/test/parsing/typescript-tree-sitter-parser.unit.test.ts:1-80",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 80,
+          "metadata": {},
+          "preview": "import { describe, expect, it } from \"vitest\"; import { TypeScriptTreeSitterParser } from \"../../src/parsing/tree-sitter/languages/typescript-parser.js\"; describe(\"TypeScriptTreeSitterParser\", () => { it(\"extracts classe"
+        },
+        {
+          "rank": 3,
+          "score": 0.6669607531497457,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts:167-200",
+          "language": "typescript",
+          "startLine": 167,
+          "endLine": 200,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "cleanupCreatedData",
+            "tags": ["async"]
+          },
+          "preview": "async function cleanupCreatedData(contexts: TestContext[]): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = createSurrealCli"
+        },
+        {
+          "rank": 4,
+          "score": 0.6668648381390085,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/scanning/local-file-scanner.unit.test.ts",
+          "chunkId": "packages/infra/test/scanning/local-file-scanner.unit.test.ts:1-80",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 80,
+          "metadata": {},
+          "preview": "import { mkdtemp, mkdir, rm, writeFile } from \"node:fs/promises\"; import os from \"node:os\"; import path from \"node:path\"; import { afterEach, describe, expect, it } from \"vitest\"; import { LocalFileScanner } from \"../../"
+        },
+        {
+          "rank": 5,
+          "score": 0.6668648381390085,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/services/repository-chunk-preparation-service.unit.test.ts",
+          "chunkId": "packages/infra/test/services/repository-chunk-preparation-service.unit.test.ts:61-138",
+          "language": "typescript",
+          "startLine": 61,
+          "endLine": 138,
+          "metadata": {},
+          "preview": "expect.objectContaining({ repositoryId: \"repo-a\", filePath: \"src/index.ts\", startLine: 1, endLine: 3, metadata: expect.objectContaining({ symbolName: \"alpha\", symbolKind: \"function\", }), }), expect.objectContaining({ rep"
+        },
+        {
+          "rank": 6,
+          "score": 0.6668648381390085,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real-voyage.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real-voyage.integration.test.ts:168-201",
+          "language": "typescript",
+          "startLine": 168,
+          "endLine": 201,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "cleanupCreatedData",
+            "tags": ["async"]
+          },
+          "preview": "async function cleanupCreatedData(contexts: TestContext[]): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = createSurrealCli"
+        },
+        {
+          "rank": 7,
+          "score": 0.6668648381390085,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts:185-218",
+          "language": "typescript",
+          "startLine": 185,
+          "endLine": 218,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "cleanupCreatedData",
+            "tags": ["async"]
+          },
+          "preview": "async function cleanupCreatedData(contexts: TestContext[]): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = createSurrealCli"
+        },
+        {
+          "rank": 8,
+          "score": 0.6667371003022,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts:166-197",
+          "language": "typescript",
+          "startLine": 166,
+          "endLine": 197,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "cleanupCreatedProjectMetadata",
+            "tags": ["async"]
+          },
+          "preview": "async function cleanupCreatedProjectMetadata( contexts: TestContext[], ): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = cr"
+        },
+        {
+          "rank": 9,
+          "score": 0.6642622037581978,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:358-377",
+          "language": "markdown",
+          "startLine": 358,
+          "endLine": 377,
+          "metadata": {
+            "docType": "readme",
+            "heading": "1.1 开发态直接运行 TypeScript 源码",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "本地启动与最小接入示例",
+              "1.1 开发态直接运行 TypeScript 源码"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 1.1 开发态直接运行 TypeScript 源码 为了本地联调和更容易定位启动时报错，当前仓库也支持直接运行 TypeScript 源码入口： ```bash corepack yarn mcp:dev ``` 这个命令实际会通过 `tsx` 运行： ```text ./packages/mcp-server/src/index.ts ``` 并且会额外开启 Node.js 的 `development` 条件导出解析，因此 "
+        },
+        {
+          "rank": 10,
+          "score": 0.6614200873057738,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-client.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-client.ts:85-85",
+          "language": "typescript",
+          "startLine": 85,
+          "endLine": 85,
+          "metadata": {
+            "parentSymbol": "DefaultSurrealClient",
+            "symbolKind": "field",
+            "symbolName": "isConnected",
+            "tags": ["private"]
+          },
+          "preview": "private isConnected = false"
+        }
+      ]
+    },
+    {
+      "id": "code-indexing-concurrency-flow-v4",
+      "query": "trace embeddingBatchSize and embeddingConcurrency in code. find index-repository batching, worker concurrency, and index-files path.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/template/audit-log.use-cases.ts",
+        "README.md",
+        "packages/infra/test/embedding/real-embedding-test-env.ts",
+        "packages/mcp-server/tsconfig.json",
+        "packages/infra/src/storage/surreal/surreal-log-utils.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7860288565462051,
+          "reason": "surreal vector search",
+          "filePath": "test/template/audit-log.use-cases.ts",
+          "chunkId": "test/template/audit-log.use-cases.ts:244-257",
+          "language": "typescript",
+          "startLine": 244,
+          "endLine": 257,
+          "metadata": {
+            "parentSymbol": "AuditLogUseCases",
+            "symbolKind": "method",
+            "symbolName": "normalizeDateTime",
+            "tags": ["private"]
+          },
+          "preview": "private normalizeDateTime(value?: string): string | undefined { if (!value) { return undefined; } const trimmed = value.trim(); if (!trimmed) { return undefined; } const timestamp = Date.parse(trimmed); if (Number.isNaN("
+        },
+        {
+          "rank": 2,
+          "score": 0.7701145159529005,
+          "reason": "surreal vector search",
+          "filePath": "test/template/audit-log.use-cases.ts",
+          "chunkId": "test/template/audit-log.use-cases.ts:215-291",
+          "language": "typescript",
+          "startLine": 215,
+          "endLine": 291,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "AuditLogUseCases"
+          },
+          "preview": "): string[] | undefined { if (!values || values.length === 0) { return undefined; } const sanitized = values .map((value) => value.trim()) .filter( (value, index, arr) => value.length > 0 && arr.indexOf(value) === index,"
+        },
+        {
+          "rank": 3,
+          "score": 0.7682951932180252,
+          "reason": "surreal vector search",
+          "filePath": "test/template/audit-log.use-cases.ts",
+          "chunkId": "test/template/audit-log.use-cases.ts:286-290",
+          "language": "typescript",
+          "startLine": 286,
+          "endLine": 290,
+          "metadata": {
+            "parentSymbol": "AuditLogUseCases",
+            "symbolKind": "method",
+            "symbolName": "validateTimeRange",
+            "tags": ["private"]
+          },
+          "preview": "private validateTimeRange(start?: string, end?: string): void { if (start && end && new Date(start).getTime() > new Date(end).getTime()) { throw new BadRequestException(\"开始时间不能晚于结束时间\"); } }"
+        },
+        {
+          "rank": 4,
+          "score": 0.7620476095415306,
+          "reason": "surreal vector search",
+          "filePath": "README.md",
+          "chunkId": "README.md:55-65",
+          "language": "markdown",
+          "startLine": 55,
+          "endLine": 65,
+          "metadata": {
+            "docType": "readme",
+            "heading": "文档入口",
+            "headingPath": ["agent-code-index", "文档入口"],
+            "sectionLevel": 2
+          },
+          "preview": "## 文档入口 建议阅读顺序： 1. [design/v1/README.md](design/v1/README.md)：看整体架构、边界和当前哪些设计已落地 2. [design/v1/surreal-native-vector-search-migration.md](design/v1/surreal-native-vector-search-migration.md)：看 Surreal 原生向量检索迁移结果与后续调优方向 3"
+        },
+        {
+          "rank": 5,
+          "score": 0.7606719871163031,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/embedding/real-embedding-test-env.ts",
+          "chunkId": "packages/infra/test/embedding/real-embedding-test-env.ts:19-22",
+          "language": "typescript",
+          "startLine": 19,
+          "endLine": 22,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "optionalEmbeddingEnv"
+          },
+          "preview": "function optionalEmbeddingEnv(key: string): string | undefined { const value = process.env[key]?.trim(); return value ? value : undefined; }"
+        },
+        {
+          "rank": 6,
+          "score": 0.7571113156984948,
+          "reason": "surreal vector search",
+          "filePath": "README.md",
+          "chunkId": "README.md:1-5",
+          "language": "markdown",
+          "startLine": 1,
+          "endLine": 5,
+          "metadata": {
+            "docType": "readme",
+            "heading": "agent-code-index",
+            "headingPath": ["agent-code-index"],
+            "sectionLevel": 1
+          },
+          "preview": "# agent-code-index 面向 Agent 的代码与工程文档索引工具。 当前项目的目标，是把“仓库扫描 -> 语义切块 -> embedding -> 向量检索 -> 通过 MCP 暴露能力”这条链路稳定落地，并保持核心能力与协议层解耦。"
+        },
+        {
+          "rank": 7,
+          "score": 0.7556924050262919,
+          "reason": "surreal vector search",
+          "filePath": "test/template/audit-log.use-cases.ts",
+          "chunkId": "test/template/audit-log.use-cases.ts:269-274",
+          "language": "typescript",
+          "startLine": 269,
+          "endLine": 274,
+          "metadata": {
+            "parentSymbol": "AuditLogUseCases",
+            "symbolKind": "method",
+            "symbolName": "normalizeExportLimit",
+            "tags": ["private"]
+          },
+          "preview": "private normalizeExportLimit(limit?: number): number { if (!limit || limit <= 0) { return DEFAULT_EXPORT_LIMIT; } return Math.min(limit, MAX_EXPORT_LIMIT); }"
+        },
+        {
+          "rank": 8,
+          "score": 0.7533170425787766,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/tsconfig.json",
+          "chunkId": "packages/mcp-server/tsconfig.json:1-12",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 12,
+          "metadata": {},
+          "preview": "{ \"extends\": \"../../tsconfig.base.json\", \"compilerOptions\": { \"composite\": true, \"incremental\": true, \"rootDir\": \"src\", \"outDir\": \"dist\" }, \"include\": [\"src/**/*.ts\"], \"references\": [{ \"path\": \"../core\" }, { \"path\": \"../"
+        },
+        {
+          "rank": 9,
+          "score": 0.7500542739579553,
+          "reason": "surreal vector search",
+          "filePath": "README.md",
+          "chunkId": "README.md:32-53",
+          "language": "markdown",
+          "startLine": 32,
+          "endLine": 53,
+          "metadata": {
+            "docType": "readme",
+            "heading": "仓库结构",
+            "headingPath": ["agent-code-index", "仓库结构"],
+            "sectionLevel": 2
+          },
+          "preview": "## 仓库结构 ```text packages/ core/ infra/ mcp-server/ design/ v1/ doc/ progress/ ``` 各目录职责： 1. `packages/core`：领域模型、contracts、核心 use case 2. `packages/infra`：Surreal、embedding、scanner、parser 等基础设施实现 3. `packages/mcp-server`"
+        },
+        {
+          "rank": 10,
+          "score": 0.7497422724063931,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-log-utils.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-log-utils.ts:58-73",
+          "language": "typescript",
+          "startLine": 58,
+          "endLine": 73,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "normalizeUnknownLogFields"
+          },
+          "preview": "function normalizeUnknownLogFields( fields?: Record<string, unknown>, ): LogFields { if (!fields) { return {}; } return redactLogFields( Object.fromEntries( Object.entries(fields).map(([key, value]) => [ key, normalizeUn"
+        }
+      ]
+    }
+  ]
+}

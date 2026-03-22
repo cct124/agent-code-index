@@ -1,0 +1,38 @@
+[
+  {
+    "id": "code-mcp-index-wiring-v4",
+    "query": "locate index_repository wiring in code. find register-tools/createApp/container path, prefer .ts implementation and tests, not README/design docs.",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "code-local-file-scanner-override-v4",
+    "query": "find includePatterns override logic in LocalFileScanner. need implementation + unit test for ignore/.gitignore override.",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "code-context-packet-budget-v4",
+    "query": "trace search_code_context tokenBudget in code. find ContextPacket, context-builder, truncation logic, and related tests.",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "code-provider-factory-wiring-v4",
+    "query": "trace embedding provider wiring in code. find provider-factory, openai-compatible provider, voyage provider, and config path.",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "code-quality-run-disconnect-v4",
+    "query": "find why quality run exits late. locate run-retrieval-quality cleanup and surrealClient.disconnect call in code.",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "code-indexing-concurrency-flow-v4",
+    "query": "trace embeddingBatchSize and embeddingConcurrency in code. find index-repository batching, worker concurrency, and index-files path.",
+    "topK": 10,
+    "tokenBudget": 4000
+  }
+]
