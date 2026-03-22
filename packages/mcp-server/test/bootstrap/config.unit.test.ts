@@ -45,6 +45,7 @@ describe("loadConfig", () => {
     const config = loadConfig({
       ...createBaseEnv(),
       PROJECT_SPACE: "Demo-Project",
+      MCP_DEFAULT_REPOSITORY_ID: "repo-a",
     });
 
     expect(config.projectSpace).toBe("demo-project");
@@ -57,10 +58,17 @@ describe("loadConfig", () => {
     ]);
     expect(config.indexing.nativeCandidateMultiplier).toBe(20);
     expect(config.indexing.nativeEfSearchMin).toBe(100);
+    expect(config.mcp.defaultRepositoryId).toBe("repo-a");
     expect(config.logging).toEqual({
       level: "info",
       pretty: true,
     });
+  });
+
+  it("leaves default repository id undefined when not configured", () => {
+    const config = loadConfig(createBaseEnv());
+
+    expect(config.mcp.defaultRepositoryId).toBeUndefined();
   });
 
   it("loads native search tuning configuration", () => {

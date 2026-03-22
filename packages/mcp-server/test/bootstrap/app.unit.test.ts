@@ -57,6 +57,9 @@ function createConfig(): AppConfig {
       nativeCandidateMultiplier: 20,
       nativeEfSearchMin: 100,
     },
+    mcp: {
+      defaultRepositoryId: "repo-a",
+    },
     logging: {
       level: "info",
       pretty: true,

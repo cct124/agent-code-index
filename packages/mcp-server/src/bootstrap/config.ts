@@ -64,6 +64,18 @@ export interface IndexingConfig {
 }
 
 /**
+ * MCP adapter 层默认行为配置。
+ */
+export interface McpConfig {
+  /**
+   * 单仓库部署时可使用的默认逻辑仓库标识。
+   *
+   * 该字段仅用于 adapter 回填 tool 输入，不改变 core 层 repositoryId 必填约束。
+   */
+  defaultRepositoryId?: string;
+}
+
+/**
  * 日志输出配置。
  */
 export interface LoggingConfig {
@@ -85,6 +97,8 @@ export interface AppConfig {
   embedding: EmbeddingConfig;
   /** 索引过程默认参数。 */
   indexing: IndexingConfig;
+  /** MCP adapter 默认行为配置。 */
+  mcp: McpConfig;
   /** 日志配置。 */
   logging: LoggingConfig;
 }
@@ -151,6 +165,9 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
         20,
       ),
       nativeEfSearchMin: integerEnv(env, "SEARCH_NATIVE_EF_SEARCH_MIN", 100),
+    },
+    mcp: {
+      defaultRepositoryId: optionalEnv(env, "MCP_DEFAULT_REPOSITORY_ID"),
     },
     logging: {
       level: logLevelEnv(env, "LOG_LEVEL", "info"),

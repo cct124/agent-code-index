@@ -14,6 +14,7 @@
 相关专项实施文档：
 
 1. [Surreal 原生向量检索迁移实施指南](surreal-native-vector-search-migration.md)
+2. [MCP Tool 接口设计](mcp-tool-interface-design.md)
 
 第一版优先解决以下问题：
 

@@ -61,6 +61,12 @@
         // 默认检索返回数量。
         "DEFAULT_TOP_K": "10",
 
+        // 单仓库部署时可选的默认 repositoryId。
+        // 当 MCP tool 调用未显式传 repositoryId 时，adapter 可回填此值。
+        // 该字段不会改变 core 层 repositoryId 仍然必填的约束。
+        // 如果这里留空，那么调用 MCP tool 时必须显式传 repositoryId，否则应返回校验错误。
+        "MCP_DEFAULT_REPOSITORY_ID": "repo-a",
+
         // 扫描仓库时默认忽略的路径模式，使用逗号分隔。
         "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next",
 
@@ -124,6 +130,12 @@
 
         // 默认检索返回数量。
         "DEFAULT_TOP_K": "10",
+
+        // 单仓库部署时可选的默认 repositoryId。
+        // 当 MCP tool 调用未显式传 repositoryId 时，adapter 可回填此值。
+        // 该字段不会改变 core 层 repositoryId 仍然必填的约束。
+        // 如果这里留空，那么调用 MCP tool 时必须显式传 repositoryId，否则应返回校验错误。
+        "MCP_DEFAULT_REPOSITORY_ID": "repo-b",
 
         // 扫描仓库时默认忽略的路径模式，使用逗号分隔。
         "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next",

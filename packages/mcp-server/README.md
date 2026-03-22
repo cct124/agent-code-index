@@ -41,7 +41,8 @@ src/
 3. 读取 Surreal 连接配置
 4. 读取 embedding 配置
 5. 读取索引链路默认参数
-6. 校验 embedding 必填配置
+6. 读取 MCP adapter 默认参数，例如 `MCP_DEFAULT_REPOSITORY_ID`
+7. 校验 embedding 必填配置
 
 当前直接支持从进程环境变量读取配置，因此天然适合由 MCP host 在 `mcp.json` 中按 server 注入 env。
 
@@ -152,11 +153,19 @@ src/
 3. `SURREAL_USE_TLS`
 4. `SURREAL_DEPLOYMENT_MODE`
 5. `DEFAULT_TOP_K`
-6. `DEFAULT_SCAN_IGNORE_PATTERNS`
-7. `SEARCH_NATIVE_CANDIDATE_MULTIPLIER`
-8. `SEARCH_NATIVE_EF_SEARCH_MIN`
-9. `LOG_LEVEL`
-10. `LOG_PRETTY`
+6. `MCP_DEFAULT_REPOSITORY_ID`
+7. `DEFAULT_SCAN_IGNORE_PATTERNS`
+8. `SEARCH_NATIVE_CANDIDATE_MULTIPLIER`
+9. `SEARCH_NATIVE_EF_SEARCH_MIN`
+10. `LOG_LEVEL`
+11. `LOG_PRETTY`
+
+其中：
+
+1. `MCP_DEFAULT_REPOSITORY_ID` 仅用于 MCP adapter 层在单仓库场景下回填缺省的 `repositoryId`
+2. 它不会改变 `core` 层 use case 仍要求显式 `repositoryId` 的事实
+3. 如果未来一个 server 要服务多个仓库，仍建议在每次 tool 调用时显式传入 `repositoryId`
+4. 如果没有配置 `MCP_DEFAULT_REPOSITORY_ID`，且调用 MCP tool 时也没有传 `repositoryId`，adapter 应直接返回校验错误，而不是猜测仓库身份
 
 ### 推荐的 mcp.json 形态
 
@@ -184,6 +193,7 @@ src/
         "EMBEDDING_API_KEY": "${input:agentCodeIndexApiKey}",
         "EMBEDDING_BASE_URL": "https://api.siliconflow.cn/v1",
         "DEFAULT_TOP_K": "10",
+        "MCP_DEFAULT_REPOSITORY_ID": "repo-a",
         "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next",
         "SEARCH_NATIVE_CANDIDATE_MULTIPLIER": "20",
         "SEARCH_NATIVE_EF_SEARCH_MIN": "100",
@@ -207,6 +217,7 @@ src/
         "EMBEDDING_VECTOR_DIMENSION": "1024",
         "EMBEDDING_API_KEY": "${input:voyageApiKey}",
         "DEFAULT_TOP_K": "10",
+        "MCP_DEFAULT_REPOSITORY_ID": "repo-b",
         "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next",
         "SEARCH_NATIVE_CANDIDATE_MULTIPLIER": "20",
         "SEARCH_NATIVE_EF_SEARCH_MIN": "100",
@@ -223,7 +234,9 @@ src/
 1. 当前 `loadConfig()` 直接读取进程环境变量，实现简单且可预测
 2. `PROJECT_SPACE` 会派生 Surreal namespace，避免每个项目重复维护两套标识
 3. 项目级 provider / model / vectorDimension 锁定已经在启动期校验，不容易混索引
-4. 这种方式比“一个进程动态切多个项目”更符合当前 v1 的稳定性目标
+4. 单仓库 server 可以通过 `MCP_DEFAULT_REPOSITORY_ID` 降低 tool 调用时的重复参数
+5. 未配置默认值时可以强制调用方显式传入 `repositoryId`，避免作用域歧义
+6. 这种方式比“一个进程动态切多个项目”更符合当前 v1 的稳定性目标
 
 ### 当前限制
 
