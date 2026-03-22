@@ -1,0 +1,1519 @@
+{
+  "generatedAt": "2026-03-22T15:04:45.607Z",
+  "label": "voyage-v2",
+  "environment": {
+    "envFile": "/home/janex/project/ai-agent/agent-code-index/.env.development.voyageai",
+    "projectSpace": "agent_code_index_voyageai",
+    "repositoryId": "agent-code-index",
+    "rootPath": "/home/janex/project/ai-agent/agent-code-index",
+    "provider": "voyage",
+    "model": "voyage-code-3",
+    "vectorDimension": 1024
+  },
+  "indexing": {
+    "embeddingBatchSize": 16,
+    "embeddingConcurrency": 8,
+    "scannedFileCount": 127,
+    "parsedFileCount": 127,
+    "skippedFileCount": 0,
+    "preparedChunkCount": 975,
+    "embeddedChunkCount": 975,
+    "storedChunkCount": 975,
+    "failedFileCount": 0
+  },
+  "queries": [
+    {
+      "id": "agent-find-mcp-index-entrypoint-v2",
+      "query": "我要排查仓库索引入口。请找出 MCP tool 是怎么把 index_repository 请求接到具体索引服务上的，优先返回真正执行注册和调用链的实现文件。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/mcp-server/test/adapters/register-tools.unit.test.ts",
+        "test/template/main.py",
+        "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts",
+        "packages/infra/tsconfig.json",
+        "packages/mcp-server/README.md",
+        "packages/mcp-server/src/adapters/tools/register-tools.ts",
+        "packages/mcp-server/src/bootstrap/config.ts",
+        "yarn.lock"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7614610494382754,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/adapters/register-tools.unit.test.ts",
+          "chunkId": "packages/mcp-server/test/adapters/register-tools.unit.test.ts:518-528",
+          "language": "typescript",
+          "startLine": 518,
+          "endLine": 528,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "createLogger"
+          },
+          "preview": "function createLogger(): Logger { return { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn(function (this: Logger) { return this; }), }; }"
+        },
+        {
+          "rank": 2,
+          "score": 0.7419840929022665,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:387-408",
+          "language": "python",
+          "startLine": 387,
+          "endLine": 408,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "history"
+          },
+          "preview": "def history(self, memory_id: str) -> List[Dict[str, Any]]: \"\"\"Retrieve the history of a specific memory. Args: memory_id: The ID of the memory to retrieve history for. Returns: A list of dictionaries containing the memor"
+        },
+        {
+          "rank": 3,
+          "score": 0.7395347414357671,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts:141-183",
+          "language": "typescript",
+          "startLine": 141,
+          "endLine": 183,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "applyTestEnv"
+          },
+          "preview": "function applyTestEnv( context: TestContext, overrides: Record<string, string> = {}, ): () => void { const previousEnv = { ...process.env }; process.env.PROJECT_SPACE = context.projectSpace; process.env.SURREAL_URL = req"
+        },
+        {
+          "rank": 4,
+          "score": 0.7370179419397157,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/tsconfig.json",
+          "chunkId": "packages/infra/tsconfig.json:1-12",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 12,
+          "metadata": {},
+          "preview": "{ \"extends\": \"../../tsconfig.base.json\", \"compilerOptions\": { \"composite\": true, \"incremental\": true, \"rootDir\": \"src\", \"outDir\": \"dist\" }, \"include\": [\"src/**/*.ts\"], \"references\": [{ \"path\": \"../core\" }] }"
+        },
+        {
+          "rank": 5,
+          "score": 0.7367023808478338,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:127-133",
+          "language": "markdown",
+          "startLine": 127,
+          "endLine": 133,
+          "metadata": {
+            "docType": "readme",
+            "heading": "2. 启动期元数据锁定",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "当前已经实现的功能",
+              "2. 启动期元数据锁定"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 2. 启动期元数据锁定 已实现： 1. 首次启动写入项目元数据 2. 二次启动校验 provider/model/vectorDimension 一致性 3. 不一致时拒绝继续启动"
+        },
+        {
+          "rank": 6,
+          "score": 0.7355551365187338,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:358-384",
+          "language": "python",
+          "startLine": 358,
+          "endLine": 384,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "delete_all"
+          },
+          "preview": "def delete_all(self, **kwargs) -> Dict[str, str]: \"\"\"Delete all memories, with optional filtering. Args: **kwargs: Optional parameters for filtering (user_id, agent_id, app_id). Returns: A dictionary containing the API r"
+        },
+        {
+          "rank": 7,
+          "score": 0.7335229354212235,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/adapters/tools/register-tools.ts",
+          "chunkId": "packages/mcp-server/src/adapters/tools/register-tools.ts:55-134",
+          "language": "typescript",
+          "startLine": 55,
+          "endLine": 134,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "registerAgentCodeIndexTools"
+          },
+          "preview": "function registerAgentCodeIndexTools(server: McpServer, app: App): void { const logger = app.container.logger.child({ module: \"mcp-tools\", component: \"registerAgentCodeIndexTools\", }); server.registerTool( \"index_reposit"
+        },
+        {
+          "rank": 8,
+          "score": 0.7330806072713818,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:299-310",
+          "language": "typescript",
+          "startLine": 299,
+          "endLine": 310,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "csvEnv"
+          },
+          "preview": "function csvEnv(env: EnvMap, key: string, fallback: string[]): string[] { const value = optionalEnv(env, key); if (value === undefined) { return fallback; } return value .split(\",\") .map((entry) => entry.trim()) .filter("
+        },
+        {
+          "rank": 9,
+          "score": 0.7281397944187475,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:128-197",
+          "language": "typescript",
+          "startLine": 128,
+          "endLine": 197,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "loadConfig"
+          },
+          "preview": "function loadConfig(env: EnvMap = process.env): AppConfig { const projectSpace = projectSpaceEnv(env, \"PROJECT_SPACE\"); const namespace = namespaceFromProjectSpace(projectSpace); const surreal: SurrealConfig = { url: req"
+        },
+        {
+          "rank": 10,
+          "score": 0.7211970089177601,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:1621-1700",
+          "language": "text",
+          "startLine": 1621,
+          "endLine": 1700,
+          "metadata": {},
+          "preview": "resolution: \"lightningcss-freebsd-x64@npm:1.32.0\" conditions: os=freebsd & cpu=x64 languageName: node linkType: hard \"lightningcss-linux-arm-gnueabihf@npm:1.32.0\": version: 1.32.0 resolution: \"lightningcss-linux-arm-gnue"
+        }
+      ]
+    },
+    {
+      "id": "agent-debug-whitelist-override-v2",
+      "query": "用户说 .gitignore 里忽略的文件仍然需要进入索引。请定位扫描阶段里 includePatterns 覆盖 ignore 和 .gitignore 的实现，以及对应测试。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/template/main.py",
+        "packages/infra/test/storage/surreal/surreal-client.real.integration.test.ts",
+        "packages/mcp-server/test/bootstrap/container.unit.test.ts",
+        "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts",
+        "packages/mcp-server/test/stdio-server-smoke.integration.test.ts",
+        "packages/mcp-server/test/adapters/register-tools.unit.test.ts",
+        "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.734404609639255,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:963-963",
+          "language": "python",
+          "startLine": 963,
+          "endLine": 963,
+          "metadata": {
+            "definedBy": "__init__",
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "field",
+            "symbolName": "project_id",
+            "tags": [
+              "instance-field"
+            ]
+          },
+          "preview": "self.project_id = project_id"
+        },
+        {
+          "rank": 2,
+          "score": 0.7331996660809718,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/storage/surreal/surreal-client.real.integration.test.ts",
+          "chunkId": "packages/infra/test/storage/surreal/surreal-client.real.integration.test.ts:1-41",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 41,
+          "metadata": {},
+          "preview": "import { afterAll, describe, expect, it } from \"vitest\"; import { DefaultSurrealClient } from \"../../../src/storage/surreal/surreal-client.js\"; import { createRealSurrealConnectionConfig, createTestProjectSpace, isRealSu"
+        },
+        {
+          "rank": 3,
+          "score": 0.7240175365604298,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/container.unit.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/container.unit.test.ts:1-58",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 58,
+          "metadata": {},
+          "preview": "import { describe, expect, it } from \"vitest\"; import { resolveScanGitignorePath } from \"../../src/bootstrap/container.js\"; describe(\"resolveScanGitignorePath\", () => { it(\"prefers explicit gitignore path from config\", ("
+        },
+        {
+          "rank": 4,
+          "score": 0.7056807554509847,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts:141-183",
+          "language": "typescript",
+          "startLine": 141,
+          "endLine": 183,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "applyTestEnv"
+          },
+          "preview": "function applyTestEnv( context: TestContext, overrides: Record<string, string> = {}, ): () => void { const previousEnv = { ...process.env }; process.env.PROJECT_SPACE = context.projectSpace; process.env.SURREAL_URL = req"
+        },
+        {
+          "rank": 5,
+          "score": 0.697740260551507,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:387-408",
+          "language": "python",
+          "startLine": 387,
+          "endLine": 408,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "history"
+          },
+          "preview": "def history(self, memory_id: str) -> List[Dict[str, Any]]: \"\"\"Retrieve the history of a specific memory. Args: memory_id: The ID of the memory to retrieve history for. Returns: A list of dictionaries containing the memor"
+        },
+        {
+          "rank": 6,
+          "score": 0.6850869339172548,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/stdio-server-smoke.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/stdio-server-smoke.integration.test.ts:1-74",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 74,
+          "metadata": {},
+          "preview": "import { execFile } from \"node:child_process\"; import { promisify } from \"node:util\"; import { Client } from \"@modelcontextprotocol/sdk/client/index.js\"; import { StdioClientTransport } from \"@modelcontextprotocol/sdk/cl"
+        },
+        {
+          "rank": 7,
+          "score": 0.6813292917872795,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/adapters/register-tools.unit.test.ts",
+          "chunkId": "packages/mcp-server/test/adapters/register-tools.unit.test.ts:518-528",
+          "language": "typescript",
+          "startLine": 518,
+          "endLine": 528,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "createLogger"
+          },
+          "preview": "function createLogger(): Logger { return { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn(), child: vi.fn(function (this: Logger) { return this; }), }; }"
+        },
+        {
+          "rank": 8,
+          "score": 0.6771931570829347,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts:202-213",
+          "language": "typescript",
+          "startLine": 202,
+          "endLine": 213,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "deduplicateContexts"
+          },
+          "preview": "function deduplicateContexts(contexts: TestContext[]): TestContext[] { const seen = new Set<string>(); return contexts.filter((context) => { if (seen.has(context.projectSpace)) { return false; } seen.add(context.projectS"
+        },
+        {
+          "rank": 9,
+          "score": 0.675758489587806,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1288-1367",
+          "language": "python",
+          "startLine": 1288,
+          "endLine": 1367,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "AsyncMemoryClient"
+          },
+          "preview": "capture_client_event(\"client.users\", self, {\"sync_type\": \"async\"}) return response.json() @api_error_handler async def delete_users( self, user_id: Optional[str] = None, agent_id: Optional[str] = None, app_id: Optional[s"
+        },
+        {
+          "rank": 10,
+          "score": 0.6757059822307362,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:411-417",
+          "language": "python",
+          "startLine": 411,
+          "endLine": 417,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "users"
+          },
+          "preview": "def users(self) -> Dict[str, Any]: \"\"\"Get all users, agents, and sessions for which memories exist.\"\"\" params = self._prepare_params() response = self.client.get(\"/v1/entities/\", params=params) response.raise_for_status("
+        }
+      ]
+    },
+    {
+      "id": "agent-trace-context-budget-v2",
+      "query": "我要调 search_code_context 返回结果的 tokenBudget 行为。请找到控制上下文截断、打包和返回结构的核心实现，而不是只看 README。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/mcp-server/README.md",
+        "test/template/main.py",
+        "packages/mcp-server/test/bootstrap/app.real.integration.test.ts",
+        "packages/mcp-server/src/bootstrap/config.ts",
+        "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7731669215438041,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:323-331",
+          "language": "markdown",
+          "startLine": 323,
+          "endLine": 331,
+          "metadata": {
+            "docType": "readme",
+            "heading": "为什么推荐这种方式",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "MCP JSON 配置约定",
+              "为什么推荐这种方式"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 为什么推荐这种方式 1. 当前 `loadConfig()` 直接读取进程环境变量，实现简单且可预测 2. `PROJECT_SPACE` 会派生 Surreal namespace，避免每个项目重复维护两套标识 3. 项目级 provider / model / vectorDimension 锁定已经在启动期校验，不容易混索引 4. 单仓库 server 可以通过 `MCP_DEFAULT_REPOSITORY_ID` 与 "
+        },
+        {
+          "rank": 2,
+          "score": 0.7714455964965224,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1517-1589",
+          "language": "python",
+          "startLine": 1517,
+          "endLine": 1589,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "update_project",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async def update_project( self, custom_instructions: Optional[str] = None, custom_categories: Optional[List[str]] = None, retrieval_criteria: Optional[List[Dict[str, Any]]] = None, enable_graph: Optional[bool] = None, ve"
+        },
+        {
+          "rank": 3,
+          "score": 0.7610220216806608,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1528-1607",
+          "language": "python",
+          "startLine": 1528,
+          "endLine": 1607,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "AsyncMemoryClient"
+          },
+          "preview": "custom_instructions: New instructions for the project custom_categories: New categories for the project retrieval_criteria: New retrieval criteria for the project enable_graph: Enable or disable the graph for the project"
+        },
+        {
+          "rank": 4,
+          "score": 0.7516910368360676,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1625-1650",
+          "language": "python",
+          "startLine": 1625,
+          "endLine": 1650,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "create_webhook",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async def create_webhook(self, url: str, name: str, project_id: str, event_types: List[str]) -> Dict[str, Any]: \"\"\"Create a webhook for the current project. Args: url: The URL to send the webhook to. name: The name of th"
+        },
+        {
+          "rank": 5,
+          "score": 0.7317709291997496,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:251-321",
+          "language": "markdown",
+          "startLine": 251,
+          "endLine": 321,
+          "metadata": {
+            "docType": "readme",
+            "heading": "推荐的 mcp.json 形态",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "MCP JSON 配置约定",
+              "推荐的 mcp.json 形态"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 推荐的 mcp.json 形态 下面的示例体现的是“一个 server 对应一个项目配置”的推荐做法： 仓库内也提供了一份可直接参考、可带注释的示例文件：[.vscode/mcp.example.jsonc](../../.vscode/mcp.example.jsonc)。 ```json { \"servers\": { \"agent-code-index-project-a\": { \"command\": \"node\", \"ar"
+        },
+        {
+          "rank": 6,
+          "score": 0.7315607381634935,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1434-1449",
+          "language": "python",
+          "startLine": 1434,
+          "endLine": 1449,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "create_memory_export",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async def create_memory_export(self, schema: str, **kwargs) -> Dict[str, Any]: \"\"\"Create a memory export with the provided schema. Args: schema: JSON schema defining the export structure **kwargs: Optional filters like u"
+        },
+        {
+          "rank": 7,
+          "score": 0.7251544223672668,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1653-1684",
+          "language": "python",
+          "startLine": 1653,
+          "endLine": 1684,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "update_webhook",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async def update_webhook( self, webhook_id: int, name: Optional[str] = None, url: Optional[str] = None, event_types: Optional[List[str]] = None, ) -> Dict[str, Any]: \"\"\"Update a webhook configuration. Args: webhook_id: I"
+        },
+        {
+          "rank": 8,
+          "score": 0.7233584647975971,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts:111-120",
+          "language": "typescript",
+          "startLine": 111,
+          "endLine": 120,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "createTestContext"
+          },
+          "preview": "function createTestContext(prefix: string): TestContext { const projectSpace = `${prefix}-${Date.now()}-${Math.random() .toString(36) .slice(2, 8)}`; return { projectSpace, namespace: projectSpace.replace(/-/g, \"_\"), }; "
+        },
+        {
+          "rank": 9,
+          "score": 0.7106223945788566,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:223-235",
+          "language": "typescript",
+          "startLine": 223,
+          "endLine": 235,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "absolutePathEnv"
+          },
+          "preview": "function absolutePathEnv(env: EnvMap, key: string): string | undefined { const value = optionalEnv(env, key); if (value === undefined) { return undefined; } if (!value.startsWith(\"/\")) { throw new Error(`Environment vari"
+        },
+        {
+          "rank": 10,
+          "score": 0.7094335818538893,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts:185-218",
+          "language": "typescript",
+          "startLine": 185,
+          "endLine": 218,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "cleanupCreatedData",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async function cleanupCreatedData(contexts: TestContext[]): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = createSurrealCli"
+        }
+      ]
+    },
+    {
+      "id": "agent-debug-surreal-search-v2",
+      "query": "搜索召回不稳定，我想看 SurrealDB 原生向量检索参数是在哪里构造的。请找出 HNSW 或 KnnScan 相关查询实现和测试。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/template/main.py",
+        "test/template/audit-log.use-cases.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7991775726701835,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:95-95",
+          "language": "python",
+          "startLine": 95,
+          "endLine": 95,
+          "metadata": {
+            "definedBy": "__init__",
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "field",
+            "symbolName": "user_email",
+            "tags": [
+              "instance-field"
+            ]
+          },
+          "preview": "self.user_email = self._validate_api_key()"
+        },
+        {
+          "rank": 2,
+          "score": 0.7911858401203632,
+          "reason": "surreal vector search",
+          "filePath": "test/template/audit-log.use-cases.ts",
+          "chunkId": "test/template/audit-log.use-cases.ts:110-140",
+          "language": "typescript",
+          "startLine": 110,
+          "endLine": 140,
+          "metadata": {
+            "parentSymbol": "AuditLogUseCases",
+            "symbolKind": "method",
+            "symbolName": "exportAuditLogs",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async exportAuditLogs( request: ExportAclAuditLogsRequest, ): Promise<ExportAclAuditLogsResponse> { const limit = this.normalizeExportLimit(request.limit); const actorId = this.normalizeActorId(request.actorId); const ac"
+        },
+        {
+          "rank": 3,
+          "score": 0.785311470965358,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:64-64",
+          "language": "python",
+          "startLine": 64,
+          "endLine": 64,
+          "metadata": {
+            "definedBy": "__init__",
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "field",
+            "symbolName": "api_key",
+            "tags": [
+              "instance-field"
+            ]
+          },
+          "preview": "self.api_key = api_key or os.getenv(\"MEM0_API_KEY\")"
+        },
+        {
+          "rank": 4,
+          "score": 0.7683462106872802,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:935-1002",
+          "language": "python",
+          "startLine": 935,
+          "endLine": 1002,
+          "metadata": {
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "__init__"
+          },
+          "preview": "def __init__( self, api_key: Optional[str] = None, host: Optional[str] = None, org_id: Optional[str] = None, project_id: Optional[str] = None, client: Optional[httpx.AsyncClient] = None, ): \"\"\"Initialize the AsyncMemoryC"
+        },
+        {
+          "rank": 5,
+          "score": 0.765774455341577,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:39-105",
+          "language": "python",
+          "startLine": 39,
+          "endLine": 105,
+          "metadata": {
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "__init__"
+          },
+          "preview": "def __init__( self, api_key: Optional[str] = None, host: Optional[str] = None, org_id: Optional[str] = None, project_id: Optional[str] = None, client: Optional[httpx.Client] = None, ): \"\"\"Initialize the MemoryClient. Arg"
+        },
+        {
+          "rank": 6,
+          "score": 0.7584648303014948,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:107-128",
+          "language": "python",
+          "startLine": 107,
+          "endLine": 128,
+          "metadata": {
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "_validate_api_key"
+          },
+          "preview": "def _validate_api_key(self): \"\"\"Validate the API key by making a test request.\"\"\" try: params = self._prepare_params() response = self.client.get(\"/v1/ping/\", params=params) data = response.json() response.raise_for_stat"
+        },
+        {
+          "rank": 7,
+          "score": 0.7558268694456879,
+          "reason": "surreal vector search",
+          "filePath": "test/template/audit-log.use-cases.ts",
+          "chunkId": "test/template/audit-log.use-cases.ts:57-92",
+          "language": "typescript",
+          "startLine": 57,
+          "endLine": 92,
+          "metadata": {
+            "parentSymbol": "AuditLogUseCases",
+            "symbolKind": "method",
+            "symbolName": "listAuditLogs",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async listAuditLogs( request: ListAclAuditLogsRequest, ): Promise<ListAclAuditLogsResponse> { const page = request.page > 0 ? request.page : 1; const pageSize = this.normalizePageSize(request.pageSize); const actorId = t"
+        },
+        {
+          "rank": 8,
+          "score": 0.747849709159452,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:77-77",
+          "language": "python",
+          "startLine": 77,
+          "endLine": 77,
+          "metadata": {
+            "definedBy": "__init__",
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "field",
+            "symbolName": "client",
+            "tags": [
+              "instance-field"
+            ]
+          },
+          "preview": "self.client = client"
+        },
+        {
+          "rank": 9,
+          "score": 0.7387328400497332,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:131-176",
+          "language": "python",
+          "startLine": 131,
+          "endLine": 176,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "add"
+          },
+          "preview": "def add(self, messages, **kwargs) -> Dict[str, Any]: \"\"\"Add a new memory. Args: messages: A list of message dictionaries, a single message dictionary, or a string. If a string is provided, it will be converted to a user "
+        },
+        {
+          "rank": 10,
+          "score": 0.737187032425968,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:66-66",
+          "language": "python",
+          "startLine": 66,
+          "endLine": 66,
+          "metadata": {
+            "definedBy": "__init__",
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "field",
+            "symbolName": "org_id",
+            "tags": [
+              "instance-field"
+            ]
+          },
+          "preview": "self.org_id = org_id"
+        }
+      ]
+    },
+    {
+      "id": "agent-switch-embedding-provider-v2",
+      "query": "我要切换 embedding provider 并确认配置是怎么落到具体 provider 实现上的。请定位 provider factory、Qwen openai-compatible provider、Voyage provider 的关键代码。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts",
+        "test/template/main.py",
+        "packages/mcp-server/src/server.ts",
+        "yarn.lock"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.8211558253083207,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts:116-125",
+          "language": "typescript",
+          "startLine": 116,
+          "endLine": 125,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "createTestContext"
+          },
+          "preview": "function createTestContext(prefix: string): TestContext { const projectSpace = `${prefix}-${Date.now()}-${Math.random() .toString(36) .slice(2, 8)}`; return { projectSpace, namespace: projectSpace.replace(/-/g, \"_\"), }; "
+        },
+        {
+          "rank": 2,
+          "score": 0.7904002204442664,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:863-884",
+          "language": "python",
+          "startLine": 863,
+          "endLine": 884,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "feedback"
+          },
+          "preview": "def feedback( self, memory_id: str, feedback: Optional[str] = None, feedback_reason: Optional[str] = None, ) -> Dict[str, str]: VALID_FEEDBACK_VALUES = {\"POSITIVE\", \"NEGATIVE\", \"VERY_NEGATIVE\"} feedback = feedback.upper("
+        },
+        {
+          "rank": 3,
+          "score": 0.7884507232088188,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:334-355",
+          "language": "python",
+          "startLine": 334,
+          "endLine": 355,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "delete"
+          },
+          "preview": "def delete(self, memory_id: str) -> Dict[str, Any]: \"\"\"Delete a specific memory by ID. Args: memory_id: The ID of the memory to delete. Returns: A dictionary containing the API response. Raises: ValidationError: If the i"
+        },
+        {
+          "rank": 4,
+          "score": 0.7708075167956446,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts:167-200",
+          "language": "typescript",
+          "startLine": 167,
+          "endLine": 200,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "cleanupCreatedData",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async function cleanupCreatedData(contexts: TestContext[]): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = createSurrealCli"
+        },
+        {
+          "rank": 5,
+          "score": 0.7596763540275683,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:960-960",
+          "language": "python",
+          "startLine": 960,
+          "endLine": 960,
+          "metadata": {
+            "definedBy": "__init__",
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "field",
+            "symbolName": "api_key",
+            "tags": [
+              "instance-field"
+            ]
+          },
+          "preview": "self.api_key = api_key or os.getenv(\"MEM0_API_KEY\")"
+        },
+        {
+          "rank": 6,
+          "score": 0.7423898488631789,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/server.ts",
+          "chunkId": "packages/mcp-server/src/server.ts:33-44",
+          "language": "typescript",
+          "startLine": 33,
+          "endLine": 44,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "startStdioServer",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async function startStdioServer(): Promise<void> { const app = await createApp(); const server = createMcpServer(app); const transport = new StdioServerTransport(); await server.connect(transport); app.container.logger.i"
+        },
+        {
+          "rank": 7,
+          "score": 0.7304902124616556,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:961-961",
+          "language": "python",
+          "startLine": 961,
+          "endLine": 961,
+          "metadata": {
+            "definedBy": "__init__",
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "field",
+            "symbolName": "host",
+            "tags": [
+              "instance-field"
+            ]
+          },
+          "preview": "self.host = host or \"https://api.mem0.ai\""
+        },
+        {
+          "rank": 8,
+          "score": 0.7085167597111847,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1283-1289",
+          "language": "python",
+          "startLine": 1283,
+          "endLine": 1289,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "users",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async def users(self) -> Dict[str, Any]: \"\"\"Get all users, agents, and sessions for which memories exist.\"\"\" params = self._prepare_params() response = await self.async_client.get(\"/v1/entities/\", params=params) response"
+        },
+        {
+          "rank": 9,
+          "score": 0.703759488225698,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:1741-1820",
+          "language": "text",
+          "startLine": 1741,
+          "endLine": 1820,
+          "metadata": {},
+          "preview": "\"make-fetch-happen@npm:^15.0.0\": version: 15.0.5 resolution: \"make-fetch-happen@npm:15.0.5\" dependencies: \"@gar/promise-retry\": \"npm:^1.0.0\" \"@npmcli/agent\": \"npm:^4.0.0\" \"@npmcli/redact\": \"npm:^4.0.0\" cacache: \"npm:^20."
+        },
+        {
+          "rank": 10,
+          "score": 0.7020173756818033,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:504-583",
+          "language": "python",
+          "startLine": 504,
+          "endLine": 583,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "MemoryClient"
+          },
+          "preview": "self.delete_users() capture_client_event(\"client.reset\", self, {\"sync_type\": \"sync\"}) return {\"message\": \"Client reset successful. All users and memories deleted.\"} @api_error_handler def batch_update(self, memories: Lis"
+        }
+      ]
+    },
+    {
+      "id": "agent-fix-quality-run-hang-v2",
+      "query": "评测脚本执行完索引和搜索后没有退出。请找出质量评测脚本里资源清理和 Surreal client disconnect 的实现位置。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/template/main.py",
+        "packages/mcp-server/test/bootstrap/index-repository.real-voyage.integration.test.ts",
+        "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts",
+        "packages/mcp-server/test/bootstrap/app.real.integration.test.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.6909554582712741,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:298-331",
+          "language": "python",
+          "startLine": 298,
+          "endLine": 331,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "update"
+          },
+          "preview": "def update( self, memory_id: str, text: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None, ) -> Dict[str, Any]: \"\"\" Update a memory by ID. Args: memory_id (str): Memory ID. text (str, optional): New content"
+        },
+        {
+          "rank": 2,
+          "score": 0.6892777705172943,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real-voyage.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real-voyage.integration.test.ts:168-201",
+          "language": "typescript",
+          "startLine": 168,
+          "endLine": 201,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "cleanupCreatedData",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async function cleanupCreatedData(contexts: TestContext[]): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = createSurrealCli"
+        },
+        {
+          "rank": 3,
+          "score": 0.6892439289129549,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts:167-200",
+          "language": "typescript",
+          "startLine": 167,
+          "endLine": 200,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "cleanupCreatedData",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async function cleanupCreatedData(contexts: TestContext[]): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = createSurrealCli"
+        },
+        {
+          "rank": 4,
+          "score": 0.6854679479118072,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts:166-197",
+          "language": "typescript",
+          "startLine": 166,
+          "endLine": 197,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "cleanupCreatedProjectMetadata",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async function cleanupCreatedProjectMetadata( contexts: TestContext[], ): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = cr"
+        },
+        {
+          "rank": 5,
+          "score": 0.6827647085228018,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:131-176",
+          "language": "python",
+          "startLine": 131,
+          "endLine": 176,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "add"
+          },
+          "preview": "def add(self, messages, **kwargs) -> Dict[str, Any]: \"\"\"Add a new memory. Args: messages: A list of message dictionaries, a single message dictionary, or a string. If a string is provided, it will be converted to a user "
+        },
+        {
+          "rank": 6,
+          "score": 0.682142965034127,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:107-128",
+          "language": "python",
+          "startLine": 107,
+          "endLine": 128,
+          "metadata": {
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "_validate_api_key"
+          },
+          "preview": "def _validate_api_key(self): \"\"\"Validate the API key by making a test request.\"\"\" try: params = self._prepare_params() response = self.client.get(\"/v1/ping/\", params=params) data = response.json() response.raise_for_stat"
+        },
+        {
+          "rank": 7,
+          "score": 0.6806421403070353,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:961-961",
+          "language": "python",
+          "startLine": 961,
+          "endLine": 961,
+          "metadata": {
+            "definedBy": "__init__",
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "field",
+            "symbolName": "host",
+            "tags": [
+              "instance-field"
+            ]
+          },
+          "preview": "self.host = host or \"https://api.mem0.ai\""
+        },
+        {
+          "rank": 8,
+          "score": 0.6806131678960642,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:1078-1079",
+          "language": "python",
+          "startLine": 1078,
+          "endLine": 1079,
+          "metadata": {
+            "isAsync": true,
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "method",
+            "symbolName": "__aexit__",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async def __aexit__(self, exc_type, exc_val, exc_tb): await self.async_client.aclose()"
+        },
+        {
+          "rank": 9,
+          "score": 0.6774143148722774,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:387-408",
+          "language": "python",
+          "startLine": 387,
+          "endLine": 408,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "history"
+          },
+          "preview": "def history(self, memory_id: str) -> List[Dict[str, Any]]: \"\"\"Retrieve the history of a specific memory. Args: memory_id: The ID of the memory to retrieve history for. Returns: A list of dictionaries containing the memor"
+        },
+        {
+          "rank": 10,
+          "score": 0.6744089711759701,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts:212-222",
+          "language": "typescript",
+          "startLine": 212,
+          "endLine": 222,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "requireEnv"
+          },
+          "preview": "function requireEnv(key: string): string { const value = process.env[key]?.trim(); if (!value) { throw new Error( `Missing required environment variable for real integration test: ${key}`, ); } return value; }"
+        }
+      ]
+    },
+    {
+      "id": "agent-trace-incremental-file-ops-v2",
+      "query": "我要确认 get_file_context、index_files、delete_files 这几个增量文件操作分别走到哪些服务和存储层实现。请优先返回核心代码路径。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/mcp-server/README.md",
+        "packages/mcp-server/src/bootstrap/config.ts",
+        "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+        "test/template/main.py",
+        "packages/mcp-server/test/bootstrap/app.real.integration.test.ts",
+        "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts",
+        "README.md",
+        "packages/infra/tsconfig.json"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7483385062609494,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:90-92",
+          "language": "markdown",
+          "startLine": 90,
+          "endLine": 92,
+          "metadata": {
+            "docType": "readme",
+            "heading": "index.ts",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "当前目录结构",
+              "index.ts"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### index.ts 当前导出 `createApp`、`createMcpServer`、`startStdioServer`、共享 resolver 和 tool 注册函数。"
+        },
+        {
+          "rank": 2,
+          "score": 0.7384266630528556,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:128-197",
+          "language": "typescript",
+          "startLine": 128,
+          "endLine": 197,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "loadConfig"
+          },
+          "preview": "function loadConfig(env: EnvMap = process.env): AppConfig { const projectSpace = projectSpaceEnv(env, \"PROJECT_SPACE\"); const namespace = namespaceFromProjectSpace(projectSpace); const surreal: SurrealConfig = { url: req"
+        },
+        {
+          "rank": 3,
+          "score": 0.7327041963756665,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:94-96",
+          "language": "markdown",
+          "startLine": 94,
+          "endLine": 96,
+          "metadata": {
+            "docType": "readme",
+            "heading": "adapters/shared",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "当前目录结构",
+              "adapters/shared"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### adapters/shared 负责 MCP adapter 层共用的输入回填、参数清洗与校验辅助。"
+        },
+        {
+          "rank": 4,
+          "score": 0.7319818377294328,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+          "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:121-200",
+          "language": "javascript",
+          "startLine": 121,
+          "endLine": 200,
+          "metadata": {},
+          "preview": "totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { execute: async () => ({ requestedFileCount: 1"
+        },
+        {
+          "rank": 5,
+          "score": 0.7296244727989918,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:962-962",
+          "language": "python",
+          "startLine": 962,
+          "endLine": 962,
+          "metadata": {
+            "definedBy": "__init__",
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "field",
+            "symbolName": "org_id",
+            "tags": [
+              "instance-field"
+            ]
+          },
+          "preview": "self.org_id = org_id"
+        },
+        {
+          "rank": 6,
+          "score": 0.7186867925536995,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/app.real.integration.test.ts:122-164",
+          "language": "typescript",
+          "startLine": 122,
+          "endLine": 164,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "applyTestEnv"
+          },
+          "preview": "function applyTestEnv( context: TestContext, overrides: Record<string, string> = {}, ): () => void { const previousEnv = { ...process.env }; process.env.PROJECT_SPACE = context.projectSpace; process.env.SURREAL_URL = req"
+        },
+        {
+          "rank": 7,
+          "score": 0.7164651249034246,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:358-377",
+          "language": "markdown",
+          "startLine": 358,
+          "endLine": 377,
+          "metadata": {
+            "docType": "readme",
+            "heading": "1.1 开发态直接运行 TypeScript 源码",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "本地启动与最小接入示例",
+              "1.1 开发态直接运行 TypeScript 源码"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 1.1 开发态直接运行 TypeScript 源码 为了本地联调和更容易定位启动时报错，当前仓库也支持直接运行 TypeScript 源码入口： ```bash corepack yarn mcp:dev ``` 这个命令实际会通过 `tsx` 运行： ```text ./packages/mcp-server/src/index.ts ``` 并且会额外开启 Node.js 的 `development` 条件导出解析，因此 "
+        },
+        {
+          "rank": 8,
+          "score": 0.7084624268015228,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts:220-231",
+          "language": "typescript",
+          "startLine": 220,
+          "endLine": 231,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "deduplicateContexts"
+          },
+          "preview": "function deduplicateContexts(contexts: TestContext[]): TestContext[] { const seen = new Set<string>(); return contexts.filter((context) => { if (seen.has(context.projectSpace)) { return false; } seen.add(context.projectS"
+        },
+        {
+          "rank": 9,
+          "score": 0.7076623836001594,
+          "reason": "surreal vector search",
+          "filePath": "README.md",
+          "chunkId": "README.md:1-5",
+          "language": "markdown",
+          "startLine": 1,
+          "endLine": 5,
+          "metadata": {
+            "docType": "readme",
+            "heading": "agent-code-index",
+            "headingPath": [
+              "agent-code-index"
+            ],
+            "sectionLevel": 1
+          },
+          "preview": "# agent-code-index 面向 Agent 的代码与工程文档索引工具。 当前项目的目标，是把“仓库扫描 -> 语义切块 -> embedding -> 向量检索 -> 通过 MCP 暴露能力”这条链路稳定落地，并保持核心能力与协议层解耦。"
+        },
+        {
+          "rank": 10,
+          "score": 0.705233283930781,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/tsconfig.json",
+          "chunkId": "packages/infra/tsconfig.json:1-12",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 12,
+          "metadata": {},
+          "preview": "{ \"extends\": \"../../tsconfig.base.json\", \"compilerOptions\": { \"composite\": true, \"incremental\": true, \"rootDir\": \"src\", \"outDir\": \"dist\" }, \"include\": [\"src/**/*.ts\"], \"references\": [{ \"path\": \"../core\" }] }"
+        }
+      ]
+    },
+    {
+      "id": "agent-find-indexing-concurrency-v2",
+      "query": "仓库索引太慢，我想调 embeddingBatchSize 和 embeddingConcurrency。请找出这些参数在索引流程里如何传递、分批和并发执行。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "yarn.lock",
+        "test/template/main.py",
+        "packages/mcp-server/src/bootstrap/config.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.790788826326495,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:2221-2300",
+          "language": "text",
+          "startLine": 2221,
+          "endLine": 2300,
+          "metadata": {},
+          "preview": "languageName: node linkType: hard \"negotiator@npm:^1.0.0\": version: 1.0.0 resolution: \"negotiator@npm:1.0.0\" checksum: 10c0/4c559dd52669ea48e1914f9d634227c561221dd54734070791f999c52ed0ff36e437b2e07d5c1f6e32909fc625fe4649"
+        },
+        {
+          "rank": 2,
+          "score": 0.788682354803845,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:2041-2120",
+          "language": "text",
+          "startLine": 2041,
+          "endLine": 2120,
+          "metadata": {},
+          "preview": "dependencies: micromark-util-character: \"npm:^2.0.0\" micromark-util-encode: \"npm:^2.0.0\" micromark-util-symbol: \"npm:^2.0.0\" checksum: 10c0/60e92166e1870fd4f1961468c2651013ff760617342918e0e0c3c4e872433aa2e60c1e5a672bfe5d"
+        },
+        {
+          "rank": 3,
+          "score": 0.7759669237063676,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:2161-2240",
+          "language": "text",
+          "startLine": 2161,
+          "endLine": 2240,
+          "metadata": {},
+          "preview": "checksum: 10c0/2a51b63feb799d2bb34669205eee7c0eaf9dce01883261a5b77410c9408aa447e478efd191b4de6fc1101e796ff5892f8443ef20d9544385819093dbb32d36bd languageName: node linkType: hard \"minipass-pipeline@npm:^1.2.4\": version: 1"
+        },
+        {
+          "rank": 4,
+          "score": 0.7679762468284252,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:2341-2420",
+          "language": "text",
+          "startLine": 2341,
+          "endLine": 2420,
+          "metadata": {},
+          "preview": "\"path-key@npm:^3.1.0\": version: 3.1.1 resolution: \"path-key@npm:3.1.1\" checksum: 10c0/748c43efd5a569c039d7a00a03b58eecd1d75f3999f5a28303d75f521288df4823bc057d8784eb72358b2895a05f29a070bc9f1f17d28226cc4e62494cc58c4c langu"
+        },
+        {
+          "rank": 5,
+          "score": 0.7662782601737362,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:835-860",
+          "language": "python",
+          "startLine": 835,
+          "endLine": 860,
+          "metadata": {
+            "decorators": [
+              "api_error_handler"
+            ],
+            "parentSymbol": "MemoryClient",
+            "symbolKind": "method",
+            "symbolName": "delete_webhook"
+          },
+          "preview": "def delete_webhook(self, webhook_id: int) -> Dict[str, str]: \"\"\"Delete a webhook configuration. Args: webhook_id: ID of the webhook to delete Returns: Dictionary containing success message. Raises: ValidationError: If th"
+        },
+        {
+          "rank": 6,
+          "score": 0.7658451956328807,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:215-218",
+          "language": "typescript",
+          "startLine": 215,
+          "endLine": 218,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "optionalEnv"
+          },
+          "preview": "function optionalEnv(env: EnvMap, key: string): string | undefined { const value = env[key]?.trim(); return value ? value : undefined; }"
+        },
+        {
+          "rank": 7,
+          "score": 0.7619703937624693,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:1201-1280",
+          "language": "text",
+          "startLine": 1201,
+          "endLine": 1280,
+          "metadata": {},
+          "preview": "ip-address: \"npm:10.1.0\" peerDependencies: express: \">= 4.11\" checksum: 10c0/e3229938457cec617460c54ef4e90c8c254facc884729325d20ea35e3838bd273e4c611fc1f4a76f6d14c411e30d31b15e88eb4be87408615ff0aacc142511a2 languageName: "
+        },
+        {
+          "rank": 8,
+          "score": 0.7576496014589755,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:963-963",
+          "language": "python",
+          "startLine": 963,
+          "endLine": 963,
+          "metadata": {
+            "definedBy": "__init__",
+            "parentSymbol": "AsyncMemoryClient",
+            "symbolKind": "field",
+            "symbolName": "project_id",
+            "tags": [
+              "instance-field"
+            ]
+          },
+          "preview": "self.project_id = project_id"
+        },
+        {
+          "rank": 9,
+          "score": 0.7570898933111248,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:1141-1220",
+          "language": "text",
+          "startLine": 1141,
+          "endLine": 1220,
+          "metadata": {},
+          "preview": "languageName: node linkType: hard \"escape-string-regexp@npm:^5.0.0\": version: 5.0.0 resolution: \"escape-string-regexp@npm:5.0.0\" checksum: 10c0/6366f474c6f37a802800a435232395e04e9885919873e382b157ab7e8f0feb8fed71497f84a6"
+        },
+        {
+          "rank": 10,
+          "score": 0.7567124613840067,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:1321-1400",
+          "language": "text",
+          "startLine": 1321,
+          "endLine": 1400,
+          "metadata": {},
+          "preview": "\"forwarded@npm:0.2.0\": version: 0.2.0 resolution: \"forwarded@npm:0.2.0\" checksum: 10c0/9b67c3fac86acdbc9ae47ba1ddd5f2f81526fa4c8226863ede5600a3f7c7416ef451f6f1e240a3cc32d0fd79fcfe6beb08fd0da454f360032bde70bf80afbb33 lang"
+        }
+      ]
+    }
+  ]
+}
