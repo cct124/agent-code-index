@@ -426,10 +426,16 @@ corepack yarn mcp:dev
   "name": "index_repository",
   "arguments": {
     "mode": "full",
-    "embeddingBatchSize": 16
+    "embeddingBatchSize": 16,
+    "embeddingConcurrency": 4
   }
 }
 ```
+
+参数含义：
+
+1. `embeddingBatchSize`：单次请求携带的 chunk 数量
+2. `embeddingConcurrency`：允许同时并发的批次数量，默认 `1`
 
 然后读取某个文件的已索引上下文：
 

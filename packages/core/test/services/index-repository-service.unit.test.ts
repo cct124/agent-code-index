@@ -302,4 +302,76 @@ describe("DefaultIndexRepositoryService", () => {
     expect(chunkRepository.deleteByRepository).not.toHaveBeenCalled();
     expect(chunkRepository.upsertMany).not.toHaveBeenCalled();
   });
+
+  it("runs multiple embedding batches concurrently when embeddingConcurrency is set", async () => {
+    const preparedChunks = [
+      createChunk({ id: "chunk-1", filePath: "src/a.ts", searchText: "alpha" }),
+      createChunk({ id: "chunk-2", filePath: "src/b.ts", searchText: "beta" }),
+      createChunk({ id: "chunk-3", filePath: "src/c.ts", searchText: "gamma" }),
+    ];
+    const chunkPreparationService: RepositoryChunkPreparationService = {
+      prepare: vi.fn(async () => ({
+        scannedFileCount: 3,
+        parsedFileCount: 3,
+        skippedFileCount: 0,
+        chunks: preparedChunks,
+        failedFiles: [],
+      })),
+    };
+    const pendingResolvers: Array<(value: number[][]) => void> = [];
+    const embeddingProvider: EmbeddingProvider = {
+      provider: "voyage",
+      model: "voyage-code-3",
+      vectorDimension: 3,
+      generateEmbeddings: vi.fn(
+        (input: { values: string[]; purpose: "document" | "query" }) =>
+          new Promise<number[][]>((resolve) => {
+            pendingResolvers.push(resolve);
+          }),
+      ),
+    };
+    const chunkRepository: ChunkRepository = {
+      upsertMany: vi.fn(async () => undefined),
+      deleteByRepository: vi.fn(async () => undefined),
+      deleteByFilePaths: vi.fn(async () => 0),
+      findByFilePath: vi.fn(async () => []),
+    };
+
+    const service = new DefaultIndexRepositoryService(
+      chunkPreparationService,
+      embeddingProvider,
+      chunkRepository,
+      createLogger(),
+    );
+
+    const resultPromise = service.execute({
+      repositoryId: "repo-a",
+      rootPath: "/tmp/repo-a",
+      embeddingBatchSize: 1,
+      embeddingConcurrency: 2,
+    });
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(embeddingProvider.generateEmbeddings).toHaveBeenCalledTimes(2);
+
+    pendingResolvers[0]?.([[1, 0, 0]]);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(embeddingProvider.generateEmbeddings).toHaveBeenCalledTimes(3);
+
+    pendingResolvers[1]?.([[0, 1, 0]]);
+    pendingResolvers[2]?.([[0, 0, 1]]);
+
+    const result = await resultPromise;
+
+    expect(chunkRepository.upsertMany).toHaveBeenCalledWith([
+      expect.objectContaining({ id: "chunk-1", embedding: [1, 0, 0] }),
+      expect.objectContaining({ id: "chunk-2", embedding: [0, 1, 0] }),
+      expect.objectContaining({ id: "chunk-3", embedding: [0, 0, 1] }),
+    ]);
+    expect(result.embeddedChunkCount).toBe(3);
+  });
 });

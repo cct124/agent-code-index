@@ -5,6 +5,8 @@ import type { Chunk, PreparedChunk } from "../domain/chunk.js";
 import type { IndexRepositoryFailure } from "./index-repository-service.js";
 
 const DEFAULT_EMBEDDING_BATCH_SIZE = 32;
+const DEFAULT_EMBEDDING_CONCURRENCY = 1;
+const INDEX_FILES_SOURCE_FINGERPRINT = "index-files-fingerprint-2026-03-22a";
 
 /**
  * 文件级 chunk 准备输入。
@@ -64,6 +66,8 @@ export interface IndexFilesInput {
   filePaths: string[];
   /** embedding 批量大小提示。 */
   embeddingBatchSize?: number;
+  /** embedding 批次并发度提示。 */
+  embeddingConcurrency?: number;
 }
 
 /**
@@ -127,12 +131,16 @@ export class DefaultIndexFilesService implements IndexFilesService {
 
   public async execute(input: IndexFilesInput): Promise<IndexFilesResult> {
     const batchSize = normalizeEmbeddingBatchSize(input.embeddingBatchSize);
+    const embeddingConcurrency = normalizeEmbeddingConcurrency(
+      input.embeddingConcurrency,
+    );
     const filePaths = dedupeFilePaths(input.filePaths);
     const logger = this.logger.child({
       operation: "index-files",
       repositoryId: input.repositoryId,
       fileCount: filePaths.length,
       batchSize,
+      embeddingConcurrency,
     });
     const startedAt = Date.now();
 
@@ -140,6 +148,7 @@ export class DefaultIndexFilesService implements IndexFilesService {
       rootPath: input.rootPath,
       provider: this.embeddingProvider.provider,
       embeddingModel: this.embeddingProvider.model,
+      sourceFingerprint: INDEX_FILES_SOURCE_FINGERPRINT,
     });
 
     try {
@@ -152,6 +161,7 @@ export class DefaultIndexFilesService implements IndexFilesService {
       const indexedChunks = await this.generateIndexedChunks(
         preparedChunks,
         batchSize,
+        embeddingConcurrency,
         logger,
       );
       const successfulFilePaths = prepared.files.map((file) => file.filePath);
@@ -199,85 +209,135 @@ export class DefaultIndexFilesService implements IndexFilesService {
   private async generateIndexedChunks(
     chunks: PreparedChunk[],
     batchSize: number,
+    embeddingConcurrency: number,
     logger: Logger,
   ): Promise<Chunk[]> {
-    const indexedChunks: Chunk[] = [];
+    const indexedChunksByBatch: Chunk[][] = [];
     const totalBatches = Math.ceil(chunks.length / batchSize);
+    const totalWorkers = Math.min(embeddingConcurrency, totalBatches);
 
-    for (let start = 0; start < chunks.length; start += batchSize) {
-      const batch = chunks.slice(start, start + batchSize);
-      const batchIndex = Math.floor(start / batchSize) + 1;
+    if (totalBatches === 0) {
+      return [];
+    }
 
-      if (batch.length === 0) {
-        continue;
-      }
+    logger.info("File embedding worker pool initialized", {
+      sourceFingerprint: INDEX_FILES_SOURCE_FINGERPRINT,
+      totalBatches,
+      batchSize,
+      requestedEmbeddingConcurrency: embeddingConcurrency,
+      totalWorkers,
+      chunkCount: chunks.length,
+    });
 
-      logger.info("File embedding batch started", {
-        batchIndex,
-        totalBatches,
-        chunkCount: batch.length,
-        batchStart: start,
-        batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
-        ...summarizeBatchFilePaths(batch),
-      });
-      const batchStartedAt = Date.now();
+    let nextBatchStart = 0;
+    let firstError: unknown;
 
-      let embeddings: number[][];
+    const runWorker = async (workerIndex: number): Promise<void> => {
+      while (true) {
+        if (firstError !== undefined) {
+          return;
+        }
 
-      try {
-        embeddings = await this.embeddingProvider.generateEmbeddings({
-          values: batch.map((chunk) => chunk.searchText),
-          purpose: "document",
+        const start = nextBatchStart;
+        nextBatchStart += batchSize;
+
+        if (start >= chunks.length) {
+          return;
+        }
+
+        const batch = chunks.slice(start, start + batchSize);
+        const batchIndex = Math.floor(start / batchSize) + 1;
+
+        if (batch.length === 0) {
+          continue;
+        }
+
+        logger.info("File embedding batch started", {
+          sourceFingerprint: INDEX_FILES_SOURCE_FINGERPRINT,
+          batchIndex,
+          totalBatches,
+          chunkCount: batch.length,
+          batchStart: start,
+          workerIndex,
+          batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
+          ...summarizeBatchFilePaths(batch),
         });
-      } catch (error) {
-        logger.error("File chunk batch embedding failed", {
+        const batchStartedAt = Date.now();
+
+        let embeddings: number[][];
+
+        try {
+          embeddings = await this.embeddingProvider.generateEmbeddings({
+            values: batch.map((chunk) => chunk.searchText),
+            purpose: "document",
+          });
+        } catch (error) {
+          logger.error("File chunk batch embedding failed", {
+            batchIndex,
+            totalBatches,
+            batchStart: start,
+            chunkCount: batch.length,
+            workerIndex,
+            batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
+            durationMs: Date.now() - batchStartedAt,
+            ...summarizeBatchFilePaths(batch),
+            batchEntries: batch.map((chunk) => ({
+              id: chunk.id,
+              filePath: chunk.filePath,
+              language: chunk.language,
+              startLine: chunk.startLine,
+              endLine: chunk.endLine,
+              searchTextLength: chunk.searchText.length,
+            })),
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
+          firstError = error;
+          return;
+        }
+
+        if (embeddings.length !== batch.length) {
+          firstError = new Error(
+            `Embedding result count mismatch: expected ${batch.length}, received ${embeddings.length}`,
+          );
+          return;
+        }
+
+        const indexedBatch = batch.map((chunk, index) => ({
+          ...chunk,
+          metadata: { ...chunk.metadata },
+          embedding: [...(embeddings[index] as number[])],
+        }));
+        indexedChunksByBatch[batchIndex - 1] = indexedBatch;
+
+        logger.info("File embedding batch completed", {
+          sourceFingerprint: INDEX_FILES_SOURCE_FINGERPRINT,
           batchIndex,
           totalBatches,
           batchStart: start,
           chunkCount: batch.length,
+          workerIndex,
           batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
           durationMs: Date.now() - batchStartedAt,
+          embeddedChunkCount: indexedChunksByBatch.reduce(
+            (sum, currentBatch) => sum + (currentBatch?.length ?? 0),
+            0,
+          ),
           ...summarizeBatchFilePaths(batch),
-          batchEntries: batch.map((chunk) => ({
-            id: chunk.id,
-            filePath: chunk.filePath,
-            language: chunk.language,
-            startLine: chunk.startLine,
-            endLine: chunk.endLine,
-            searchTextLength: chunk.searchText.length,
-          })),
-          error: error instanceof Error ? error : new Error(String(error)),
         });
-        throw error;
       }
+    };
 
-      if (embeddings.length !== batch.length) {
-        throw new Error(
-          `Embedding result count mismatch: expected ${batch.length}, received ${embeddings.length}`,
-        );
-      }
+    await Promise.allSettled(
+      Array.from({ length: totalWorkers }, (_, workerOffset) =>
+        runWorker(workerOffset + 1),
+      ),
+    );
 
-      logger.info("File embedding batch completed", {
-        batchIndex,
-        totalBatches,
-        batchStart: start,
-        chunkCount: batch.length,
-        batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
-        durationMs: Date.now() - batchStartedAt,
-        embeddedChunkCount: indexedChunks.length + batch.length,
-        ...summarizeBatchFilePaths(batch),
-      });
-
-      indexedChunks.push(
-        ...batch.map((chunk, index) => ({
-          ...chunk,
-          metadata: { ...chunk.metadata },
-          embedding: [...(embeddings[index] as number[])],
-        })),
-      );
+    if (firstError !== undefined) {
+      throw firstError;
     }
 
-    return indexedChunks;
+    return indexedChunksByBatch.flat();
   }
 }
 
@@ -288,6 +348,18 @@ function normalizeEmbeddingBatchSize(value?: number): number {
 
   if (!Number.isInteger(value) || value <= 0) {
     throw new Error("embeddingBatchSize must be a positive integer");
+  }
+
+  return value;
+}
+
+function normalizeEmbeddingConcurrency(value?: number): number {
+  if (value === undefined) {
+    return DEFAULT_EMBEDDING_CONCURRENCY;
+  }
+
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error("embeddingConcurrency must be a positive integer");
   }
 
   return value;

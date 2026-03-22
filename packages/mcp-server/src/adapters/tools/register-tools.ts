@@ -20,6 +20,7 @@ const indexRepositoryInputSchema = z.object({
   rootPath: z.string().optional(),
   mode: z.literal("full").optional(),
   embeddingBatchSize: z.number().int().positive().optional(),
+  embeddingConcurrency: z.number().int().positive().optional(),
 });
 
 const searchCodeContextInputSchema = z.object({
@@ -35,6 +36,7 @@ const indexFilesInputSchema = z.object({
   rootPath: z.string().optional(),
   filePaths: z.array(z.string()).min(1),
   embeddingBatchSize: z.number().int().positive().optional(),
+  embeddingConcurrency: z.number().int().positive().optional(),
 });
 
 const deleteFilesInputSchema = z.object({
@@ -77,11 +79,16 @@ export function registerAgentCodeIndexTools(server: McpServer, app: App): void {
           "embeddingBatchSize",
           args.embeddingBatchSize,
         );
+        const embeddingConcurrency = normalizeOptionalPositiveInteger(
+          "embeddingConcurrency",
+          args.embeddingConcurrency,
+        );
         const result = await app.container.indexRepositoryService.execute({
           repositoryId,
           rootPath,
           mode: args.mode ?? "full",
           embeddingBatchSize,
+          embeddingConcurrency,
         });
         const structuredContent = {
           repositoryId,
@@ -187,11 +194,16 @@ export function registerAgentCodeIndexTools(server: McpServer, app: App): void {
           "embeddingBatchSize",
           args.embeddingBatchSize,
         );
+        const embeddingConcurrency = normalizeOptionalPositiveInteger(
+          "embeddingConcurrency",
+          args.embeddingConcurrency,
+        );
         const result = await app.container.indexFilesService.execute({
           repositoryId,
           rootPath,
           filePaths,
           embeddingBatchSize,
+          embeddingConcurrency,
         });
         const structuredContent = {
           repositoryId,

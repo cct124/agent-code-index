@@ -49,6 +49,7 @@ describe("registerAgentCodeIndexTools", () => {
       name: "index_files",
       arguments: {
         filePaths: [" src/a.ts ", "src/b.ts", "src/a.ts"],
+        embeddingConcurrency: 3,
       },
     });
 
@@ -57,6 +58,7 @@ describe("registerAgentCodeIndexTools", () => {
       rootPath: "/workspace/repo-a",
       filePaths: ["src/a.ts", "src/b.ts"],
       embeddingBatchSize: undefined,
+      embeddingConcurrency: 3,
     });
     expect(indexFilesResult.isError).toBeUndefined();
     expect(indexFilesResult.structuredContent).toEqual(
@@ -163,6 +165,31 @@ describe("registerAgentCodeIndexTools", () => {
             strategy: "none",
             returnedItems: 1,
           }),
+        }),
+      }),
+    );
+
+    const indexRepositoryResult = await client.callTool({
+      name: "index_repository",
+      arguments: {
+        embeddingBatchSize: 8,
+        embeddingConcurrency: 4,
+      },
+    });
+
+    expect(app.container.indexRepositoryService.execute).toHaveBeenCalledWith({
+      repositoryId: "repo-a",
+      rootPath: "/workspace/repo-a",
+      mode: "full",
+      embeddingBatchSize: 8,
+      embeddingConcurrency: 4,
+    });
+    expect(indexRepositoryResult.structuredContent).toEqual(
+      expect.objectContaining({
+        repositoryId: "repo-a",
+        summary: expect.objectContaining({
+          preparedChunkCount: 16,
+          storedChunkCount: 16,
         }),
       }),
     );

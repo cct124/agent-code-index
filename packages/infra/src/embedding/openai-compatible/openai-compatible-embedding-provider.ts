@@ -6,6 +6,8 @@ import type {
 import { NOOP_LOGGER } from "@agent-code-index/core";
 
 const DEFAULT_OPENAI_COMPATIBLE_BASE_URL = "https://api.openai.com/v1";
+const OPENAI_COMPATIBLE_PROVIDER_FINGERPRINT =
+  "openai-compatible-provider-fingerprint-2026-03-22a";
 
 interface OpenAICompatibleEmbeddingResponseItem {
   embedding: number[];
@@ -90,6 +92,7 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
     const requestBodyLength = requestBody.length;
 
     this.logger.info("OpenAI-compatible embedding request started", {
+      sourceFingerprint: OPENAI_COMPATIBLE_PROVIDER_FINGERPRINT,
       valueCount: input.values.length,
       purpose: input.purpose,
       embeddingModel: this.model,
@@ -111,6 +114,7 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
       });
     } catch (error) {
       this.logger.error("OpenAI-compatible embedding request failed", {
+        sourceFingerprint: OPENAI_COMPATIBLE_PROVIDER_FINGERPRINT,
         valueCount: input.values.length,
         purpose: input.purpose,
         embeddingModel: this.model,
@@ -128,6 +132,7 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
       const responseBodyPreview = await readResponseBodyPreview(response);
 
       this.logger.error("OpenAI-compatible embedding request failed", {
+        sourceFingerprint: OPENAI_COMPATIBLE_PROVIDER_FINGERPRINT,
         status: response.status,
         statusText: response.statusText,
         valueCount: input.values.length,
@@ -154,6 +159,7 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
       assertEmbeddingDimensions(embeddings, this.vectorDimension);
     } catch (error) {
       this.logger.error("OpenAI-compatible embedding request failed", {
+        sourceFingerprint: OPENAI_COMPATIBLE_PROVIDER_FINGERPRINT,
         valueCount: input.values.length,
         purpose: input.purpose,
         embeddingModel: this.model,
@@ -168,6 +174,7 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
     }
 
     this.logger.info("OpenAI-compatible embeddings generated", {
+      sourceFingerprint: OPENAI_COMPATIBLE_PROVIDER_FINGERPRINT,
       valueCount: input.values.length,
       purpose: input.purpose,
       embeddingModel: this.model,

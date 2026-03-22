@@ -158,4 +158,123 @@ describe("DefaultIndexFilesService", () => {
     expect(result.failedFileCount).toBe(1);
     expect(result.indexedFileCount).toBe(0);
   });
+
+  it("runs file embedding batches concurrently when embeddingConcurrency is set", async () => {
+    const fileChunkPreparationService: FileChunkPreparationService = {
+      prepareFiles: vi.fn(async () => ({
+        requestedFileCount: 3,
+        skippedFileCount: 0,
+        files: [
+          {
+            filePath: "src/a.ts",
+            chunks: [
+              {
+                id: "src/a.ts:1-1",
+                repositoryId: "repo-a",
+                filePath: "src/a.ts",
+                language: "typescript",
+                content: "export const a = 1;",
+                searchText: "alpha",
+                startLine: 1,
+                endLine: 1,
+                hash: "hash-a",
+                metadata: {},
+              },
+            ],
+          },
+          {
+            filePath: "src/b.ts",
+            chunks: [
+              {
+                id: "src/b.ts:1-1",
+                repositoryId: "repo-a",
+                filePath: "src/b.ts",
+                language: "typescript",
+                content: "export const b = 2;",
+                searchText: "beta",
+                startLine: 1,
+                endLine: 1,
+                hash: "hash-b",
+                metadata: {},
+              },
+            ],
+          },
+          {
+            filePath: "src/c.ts",
+            chunks: [
+              {
+                id: "src/c.ts:1-1",
+                repositoryId: "repo-a",
+                filePath: "src/c.ts",
+                language: "typescript",
+                content: "export const c = 3;",
+                searchText: "gamma",
+                startLine: 1,
+                endLine: 1,
+                hash: "hash-c",
+                metadata: {},
+              },
+            ],
+          },
+        ],
+        failedFiles: [],
+      })),
+    };
+    const pendingResolvers: Array<(value: number[][]) => void> = [];
+    const embeddingProvider: EmbeddingProvider = {
+      provider: "voyage",
+      model: "voyage-code-3",
+      vectorDimension: 3,
+      generateEmbeddings: vi.fn(
+        () =>
+          new Promise<number[][]>((resolve) => {
+            pendingResolvers.push(resolve);
+          }),
+      ),
+    };
+    const chunkRepository: ChunkRepository = {
+      upsertMany: vi.fn(async () => undefined),
+      deleteByRepository: vi.fn(async () => undefined),
+      deleteByFilePaths: vi.fn(async () => 3),
+      findByFilePath: vi.fn(async () => []),
+    };
+
+    const service = new DefaultIndexFilesService(
+      fileChunkPreparationService,
+      embeddingProvider,
+      chunkRepository,
+      createLogger(),
+    );
+
+    const resultPromise = service.execute({
+      repositoryId: "repo-a",
+      rootPath: "/workspace/repo-a",
+      filePaths: ["src/a.ts", "src/b.ts", "src/c.ts"],
+      embeddingBatchSize: 1,
+      embeddingConcurrency: 2,
+    });
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(embeddingProvider.generateEmbeddings).toHaveBeenCalledTimes(2);
+
+    pendingResolvers[0]?.([[1, 0, 0]]);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(embeddingProvider.generateEmbeddings).toHaveBeenCalledTimes(3);
+
+    pendingResolvers[1]?.([[0, 1, 0]]);
+    pendingResolvers[2]?.([[0, 0, 1]]);
+
+    const result = await resultPromise;
+
+    expect(chunkRepository.upsertMany).toHaveBeenCalledWith([
+      expect.objectContaining({ id: "src/a.ts:1-1", embedding: [1, 0, 0] }),
+      expect.objectContaining({ id: "src/b.ts:1-1", embedding: [0, 1, 0] }),
+      expect.objectContaining({ id: "src/c.ts:1-1", embedding: [0, 0, 1] }),
+    ]);
+    expect(result.embeddedChunkCount).toBe(3);
+  });
 });

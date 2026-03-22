@@ -10,6 +10,9 @@ import { NOOP_LOGGER, type Logger } from "../contracts/logger.js";
  * 真实索引吞吐表现再调整。
  */
 const DEFAULT_EMBEDDING_BATCH_SIZE = 32;
+const DEFAULT_EMBEDDING_CONCURRENCY = 1;
+const INDEX_REPOSITORY_SOURCE_FINGERPRINT =
+  "index-repository-fingerprint-2026-03-22a";
 
 /**
  * 索引写入模式。
@@ -78,6 +81,8 @@ export interface IndexRepositoryInput {
   mode?: IndexRepositoryMode;
   /** embedding 批量大小提示。 */
   embeddingBatchSize?: number;
+  /** embedding 批次并发度提示。 */
+  embeddingConcurrency?: number;
 }
 
 /**
@@ -161,10 +166,14 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
   ): Promise<IndexRepositoryResult> {
     const mode = input.mode ?? "full";
     const batchSize = normalizeEmbeddingBatchSize(input.embeddingBatchSize);
+    const embeddingConcurrency = normalizeEmbeddingConcurrency(
+      input.embeddingConcurrency,
+    );
     const logger = this.logger.child({
       operation: "index-repository",
       repositoryId: input.repositoryId,
       batchSize,
+      embeddingConcurrency,
       mode,
     });
     const startedAt = Date.now();
@@ -173,6 +182,7 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
       rootPath: input.rootPath,
       provider: this.embeddingProvider.provider,
       embeddingModel: this.embeddingProvider.model,
+      sourceFingerprint: INDEX_REPOSITORY_SOURCE_FINGERPRINT,
     });
 
     try {
@@ -192,6 +202,7 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
       const indexedChunks = await this.generateIndexedChunks(
         prepared.chunks,
         batchSize,
+        embeddingConcurrency,
         logger,
       );
 
@@ -239,93 +250,143 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
   private async generateIndexedChunks(
     chunks: PreparedChunk[],
     batchSize: number,
+    embeddingConcurrency: number,
     logger: Logger,
   ): Promise<IndexedChunk[]> {
-    const indexedChunks: IndexedChunk[] = [];
+    const indexedChunksByBatch: IndexedChunk[][] = [];
     const totalBatches = Math.ceil(chunks.length / batchSize);
+    const totalWorkers = Math.min(embeddingConcurrency, totalBatches);
 
-    for (let start = 0; start < chunks.length; start += batchSize) {
-      const batch = chunks.slice(start, start + batchSize);
-      const batchIndex = Math.floor(start / batchSize) + 1;
+    if (totalBatches === 0) {
+      return [];
+    }
 
-      if (batch.length === 0) {
-        continue;
-      }
+    logger.info("Repository embedding worker pool initialized", {
+      sourceFingerprint: INDEX_REPOSITORY_SOURCE_FINGERPRINT,
+      totalBatches,
+      batchSize,
+      requestedEmbeddingConcurrency: embeddingConcurrency,
+      totalWorkers,
+      chunkCount: chunks.length,
+    });
 
-      logger.info("Repository embedding batch started", {
-        batchIndex,
-        totalBatches,
-        chunkCount: batch.length,
-        batchStart: start,
-        batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
-        batchSearchTextTotalLength: batch.reduce(
-          (sum, chunk) => sum + chunk.searchText.length,
-          0,
-        ),
-        ...summarizeBatchFilePaths(batch),
-      });
-      const batchStartedAt = Date.now();
+    let nextBatchStart = 0;
+    let firstError: unknown;
 
-      let embeddings: number[][];
+    const runWorker = async (workerIndex: number): Promise<void> => {
+      while (true) {
+        if (firstError !== undefined) {
+          return;
+        }
 
-      try {
-        embeddings = await this.embeddingProvider.generateEmbeddings({
-          values: batch.map((chunk) => chunk.searchText),
-          purpose: "document",
-        });
-      } catch (error) {
-        logger.error("Chunk batch embedding failed", {
+        const start = nextBatchStart;
+        nextBatchStart += batchSize;
+
+        if (start >= chunks.length) {
+          return;
+        }
+
+        const batch = chunks.slice(start, start + batchSize);
+        const batchIndex = Math.floor(start / batchSize) + 1;
+
+        if (batch.length === 0) {
+          continue;
+        }
+
+        logger.info("Repository embedding batch started", {
+          sourceFingerprint: INDEX_REPOSITORY_SOURCE_FINGERPRINT,
           batchIndex,
           totalBatches,
-          batchStart: start,
           chunkCount: batch.length,
+          batchStart: start,
+          workerIndex,
           batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
-          durationMs: Date.now() - batchStartedAt,
           batchSearchTextTotalLength: batch.reduce(
             (sum, chunk) => sum + chunk.searchText.length,
             0,
           ),
           ...summarizeBatchFilePaths(batch),
-          batchEntries: batch.map((chunk) => ({
-            id: chunk.id,
-            filePath: chunk.filePath,
-            language: chunk.language,
-            startLine: chunk.startLine,
-            endLine: chunk.endLine,
-            searchTextLength: chunk.searchText.length,
-          })),
-          error: error instanceof Error ? error : new Error(String(error)),
         });
-        throw error;
-      }
+        const batchStartedAt = Date.now();
 
-      if (embeddings.length !== batch.length) {
-        throw new Error(
-          `Embedding result count mismatch: expected ${batch.length}, received ${embeddings.length}`,
-        );
-      }
+        let embeddings: number[][];
 
-      logger.info("Repository embedding batch completed", {
-        batchIndex,
-        totalBatches,
-        batchStart: start,
-        chunkCount: batch.length,
-        batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
-        durationMs: Date.now() - batchStartedAt,
-        embeddedChunkCount: indexedChunks.length + batch.length,
-        ...summarizeBatchFilePaths(batch),
-      });
+        try {
+          embeddings = await this.embeddingProvider.generateEmbeddings({
+            values: batch.map((chunk) => chunk.searchText),
+            purpose: "document",
+          });
+        } catch (error) {
+          logger.error("Chunk batch embedding failed", {
+            batchIndex,
+            totalBatches,
+            batchStart: start,
+            chunkCount: batch.length,
+            workerIndex,
+            batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
+            durationMs: Date.now() - batchStartedAt,
+            batchSearchTextTotalLength: batch.reduce(
+              (sum, chunk) => sum + chunk.searchText.length,
+              0,
+            ),
+            ...summarizeBatchFilePaths(batch),
+            batchEntries: batch.map((chunk) => ({
+              id: chunk.id,
+              filePath: chunk.filePath,
+              language: chunk.language,
+              startLine: chunk.startLine,
+              endLine: chunk.endLine,
+              searchTextLength: chunk.searchText.length,
+            })),
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
+          firstError = error;
+          return;
+        }
 
-      indexedChunks.push(
-        ...batch.map((chunk, index) => ({
+        if (embeddings.length !== batch.length) {
+          firstError = new Error(
+            `Embedding result count mismatch: expected ${batch.length}, received ${embeddings.length}`,
+          );
+          return;
+        }
+
+        const indexedBatch = batch.map((chunk, index) => ({
           ...chunk,
           metadata: { ...chunk.metadata },
           embedding: [...(embeddings[index] as number[])],
-        })),
-      );
+        }));
+        indexedChunksByBatch[batchIndex - 1] = indexedBatch;
+
+        logger.info("Repository embedding batch completed", {
+          sourceFingerprint: INDEX_REPOSITORY_SOURCE_FINGERPRINT,
+          batchIndex,
+          totalBatches,
+          batchStart: start,
+          chunkCount: batch.length,
+          workerIndex,
+          batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
+          durationMs: Date.now() - batchStartedAt,
+          embeddedChunkCount: indexedChunksByBatch.reduce(
+            (sum, currentBatch) => sum + (currentBatch?.length ?? 0),
+            0,
+          ),
+          ...summarizeBatchFilePaths(batch),
+        });
+      }
+    };
+
+    await Promise.allSettled(
+      Array.from({ length: totalWorkers }, (_, workerOffset) =>
+        runWorker(workerOffset + 1),
+      ),
+    );
+
+    if (firstError !== undefined) {
+      throw firstError;
     }
 
-    return indexedChunks;
+    return indexedChunksByBatch.flat();
   }
 }
 
@@ -338,6 +399,14 @@ function normalizeEmbeddingBatchSize(batchSize?: number): number {
   }
 
   return Math.floor(batchSize);
+}
+
+function normalizeEmbeddingConcurrency(embeddingConcurrency?: number): number {
+  if (!embeddingConcurrency || embeddingConcurrency <= 0) {
+    return DEFAULT_EMBEDDING_CONCURRENCY;
+  }
+
+  return Math.floor(embeddingConcurrency);
 }
 
 function summarizeBatchFilePaths(chunks: PreparedChunk[]): {
