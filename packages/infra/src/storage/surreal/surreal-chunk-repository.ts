@@ -8,6 +8,7 @@ import type {
   Chunk,
   ChunkMetadata,
   ChunkRepository,
+  DeleteChunksByFilePathsInput,
   FindChunksByFilePathInput,
 } from "@agent-code-index/core";
 
@@ -142,6 +143,69 @@ export class SurrealChunkRepository implements ChunkRepository {
       logger.error(
         "Repository chunk deletion failed",
         createSurrealErrorLogFields(error, { repositoryId }),
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * 删除指定仓库下文件列表对应的全部 chunk。
+   */
+  public async deleteByFilePaths(
+    input: DeleteChunksByFilePathsInput,
+  ): Promise<number> {
+    const filePaths = Array.from(new Set(input.filePaths));
+    const logger = this.logger.child({
+      operation: "chunk-delete-by-file-paths",
+      repositoryId: input.repositoryId,
+      fileCount: filePaths.length,
+    });
+
+    if (filePaths.length === 0) {
+      logger.debug("Chunk deletion by file paths skipped because file list is empty");
+      return 0;
+    }
+
+    try {
+      await this.client.connect();
+
+      const [records] = await this.client.driver.query<[StoredChunk[]]>(
+        [
+          "SELECT * FROM chunk",
+          "WHERE repositoryId = $repositoryId AND filePath INSIDE $filePaths;",
+        ].join(" "),
+        {
+          repositoryId: input.repositoryId,
+          filePaths,
+        },
+      );
+      const deletedChunkCount = records?.length ?? 0;
+
+      if (deletedChunkCount > 0) {
+        await this.client.driver.query(
+          [
+            "DELETE chunk",
+            "WHERE repositoryId = $repositoryId AND filePath INSIDE $filePaths;",
+          ].join(" "),
+          {
+            repositoryId: input.repositoryId,
+            filePaths,
+          },
+        );
+      }
+
+      logger.info("File chunk deletion completed", {
+        deletedChunkCount,
+      });
+
+      return deletedChunkCount;
+    } catch (error) {
+      logger.error(
+        "File chunk deletion failed",
+        createSurrealErrorLogFields(error, {
+          repositoryId: input.repositoryId,
+          fileCount: filePaths.length,
+        }),
       );
       throw error;
     }

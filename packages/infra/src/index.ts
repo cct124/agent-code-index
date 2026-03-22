@@ -24,6 +24,7 @@ export { ParserFactory } from "./parsing/parser-factory.js";
 export { JavaScriptTreeSitterParser } from "./parsing/tree-sitter/languages/javascript-parser.js";
 export { PythonTreeSitterParser } from "./parsing/tree-sitter/languages/python-parser.js";
 export { RepositoryChunkPreparationService } from "./services/repository-chunk-preparation-service.js";
+export { RepositoryFileChunkPreparationService } from "./services/repository-file-chunk-preparation-service.js";
 export { TypeScriptTreeSitterParser } from "./parsing/tree-sitter/languages/typescript-parser.js";
 export { LocalFileScanner } from "./scanning/local-file-scanner.js";
 export { SurrealChunkRepository } from "./storage/surreal/surreal-chunk-repository.js";
@@ -43,6 +44,8 @@ export {
 } from "./storage/surreal/surreal-log-utils.js";
 export type { MarkdownParserOptions } from "./parsing/markdown/markdown-parser.js";
 export type {
+  PrepareFilesInput,
+  PrepareFilesResult,
   PrepareRepositoryChunksInput,
   PrepareRepositoryChunksResult,
 } from "@agent-code-index/core";

@@ -69,6 +69,7 @@ describe("DefaultIndexRepositoryService", () => {
     const chunkRepository: ChunkRepository = {
       upsertMany: vi.fn(async () => undefined),
       deleteByRepository: vi.fn(async () => undefined),
+      deleteByFilePaths: vi.fn(async () => 0),
       findByFilePath: vi.fn(async () => []),
     };
     const logger = createLogger();
@@ -150,6 +151,7 @@ describe("DefaultIndexRepositoryService", () => {
     const chunkRepository: ChunkRepository = {
       upsertMany: vi.fn(async () => undefined),
       deleteByRepository: vi.fn(async () => undefined),
+      deleteByFilePaths: vi.fn(async () => 0),
       findByFilePath: vi.fn(async () => []),
     };
     const logger = createLogger();

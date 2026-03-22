@@ -88,6 +88,43 @@ if (!isRealSurrealIntegrationEnabled()) {
 
       expect(afterDelete).toEqual([]);
     });
+
+    it("deletes chunks for selected file paths against a real SurrealDB instance", async () => {
+      const chunks = [
+        createChunk(repositoryId, {
+          id: "chunk-a",
+          filePath: "src/a.ts",
+          hash: "hash-a",
+        }),
+        createChunk(repositoryId, {
+          id: "chunk-b",
+          filePath: "src/b.ts",
+          hash: "hash-b",
+        }),
+      ];
+
+      await repository.upsertMany(chunks);
+
+      const deletedChunkCount = await repository.deleteByFilePaths({
+        repositoryId,
+        filePaths: ["src/a.ts"],
+      });
+
+      const fileAChunks = await repository.findByFilePath({
+        repositoryId,
+        filePath: "src/a.ts",
+      });
+      const fileBChunks = await repository.findByFilePath({
+        repositoryId,
+        filePath: "src/b.ts",
+      });
+
+      expect(deletedChunkCount).toBe(1);
+      expect(fileAChunks).toEqual([]);
+      expect(fileBChunks).toHaveLength(1);
+
+      await repository.deleteByRepository(repositoryId);
+    });
   });
 }
 

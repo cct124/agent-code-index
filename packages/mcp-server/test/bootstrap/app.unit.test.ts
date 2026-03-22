@@ -5,7 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
   ChunkRepository,
+  DeleteFilesService,
   EmbeddingProvider,
+  FileChunkPreparationService,
+  IndexFilesService,
   IndexRepositoryService,
   Logger,
   RepositoryChunkPreparationService,
@@ -59,6 +62,7 @@ function createConfig(): AppConfig {
     },
     mcp: {
       defaultRepositoryId: "repo-a",
+      repositoryRoot: "/workspace/repo-a",
     },
     logging: {
       level: "info",
@@ -137,8 +141,17 @@ function createTestContainer(events: string[]): AppContainer {
     chunkRepository: {
       upsertMany: vi.fn(async () => undefined),
       deleteByRepository: vi.fn(async () => undefined),
+      deleteByFilePaths: vi.fn(async () => 0),
       findByFilePath: vi.fn(async () => []),
     } as ChunkRepository,
+    fileChunkPreparationService: {
+      prepareFiles: vi.fn(async () => ({
+        requestedFileCount: 0,
+        skippedFileCount: 0,
+        files: [],
+        failedFiles: [],
+      })),
+    } as FileChunkPreparationService,
     searchRepository: {
       semanticSearch: vi.fn(async () => []),
     } as SearchRepository,
@@ -157,6 +170,25 @@ function createTestContainer(events: string[]): AppContainer {
         failedFiles: [],
       })),
     } as IndexRepositoryService,
+    indexFilesService: {
+      execute: vi.fn(async () => ({
+        requestedFileCount: 0,
+        indexedFileCount: 0,
+        deletedChunkCount: 0,
+        preparedChunkCount: 0,
+        embeddedChunkCount: 0,
+        storedChunkCount: 0,
+        failedFileCount: 0,
+        failedFiles: [],
+      })),
+    } as IndexFilesService,
+    deleteFilesService: {
+      execute: vi.fn(async () => ({
+        requestedFileCount: 0,
+        deletedFileCount: 0,
+        deletedChunkCount: 0,
+      })),
+    } as DeleteFilesService,
     projectMetadataRepository: {
       getByProjectSpace: vi.fn(async () => {
         events.push("getByProjectSpace");

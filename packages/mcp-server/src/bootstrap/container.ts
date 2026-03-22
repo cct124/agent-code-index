@@ -2,10 +2,15 @@
  * 应用依赖容器的最小骨架定义。
  */
 import {
+  DefaultDeleteFilesService,
+  DefaultIndexFilesService,
   DefaultIndexRepositoryService,
   DefaultSearchCodeContextService,
   type ChunkRepository,
+  type DeleteFilesService,
   type EmbeddingProvider,
+  type FileChunkPreparationService,
+  type IndexFilesService,
   type IndexRepositoryService,
   type Logger,
   type ProjectMetadataRepository,
@@ -18,6 +23,7 @@ import {
   createSurrealClient,
   LocalFileScanner,
   ParserFactory,
+  RepositoryFileChunkPreparationService,
   RepositoryChunkPreparationService as DefaultRepositoryChunkPreparationService,
   SurrealChunkRepository,
   SurrealChunkSchema,
@@ -52,12 +58,18 @@ export interface AppContainer {
   chunkPreparationService: RepositoryChunkPreparationService;
   /** chunk 仓储。 */
   chunkRepository: ChunkRepository;
+  /** 文件级 chunk 准备服务。 */
+  fileChunkPreparationService: FileChunkPreparationService;
   /** 语义搜索仓储。 */
   searchRepository: SearchRepository;
   /** 正式的 query-text 代码检索服务。 */
   searchCodeContextService: SearchCodeContextService;
   /** 仓库索引服务。 */
   indexRepositoryService: IndexRepositoryService;
+  /** 文件级索引服务。 */
+  indexFilesService: IndexFilesService;
+  /** 文件级删除服务。 */
+  deleteFilesService: DeleteFilesService;
   /** 项目元数据仓储。 */
   projectMetadataRepository: ProjectMetadataRepository;
 }
@@ -100,11 +112,25 @@ export function createContainer(config: AppConfig): AppContainer {
     new ParserFactory({}, logger.child({ module: "parsing" })),
     logger.child({ module: "chunk-preparation" }),
   );
+  const fileChunkPreparationService = new RepositoryFileChunkPreparationService(
+    new ParserFactory({}, logger.child({ module: "parsing" })),
+    logger.child({ module: "file-chunk-preparation" }),
+  );
   const indexRepositoryService = new DefaultIndexRepositoryService(
     chunkPreparationService,
     embeddingProvider,
     chunkRepository,
     logger.child({ module: "indexing" }),
+  );
+  const indexFilesService = new DefaultIndexFilesService(
+    fileChunkPreparationService,
+    embeddingProvider,
+    chunkRepository,
+    logger.child({ module: "index-files" }),
+  );
+  const deleteFilesService = new DefaultDeleteFilesService(
+    chunkRepository,
+    logger.child({ module: "delete-files" }),
   );
   const searchCodeContextService = new DefaultSearchCodeContextService(
     embeddingProvider,
@@ -128,9 +154,12 @@ export function createContainer(config: AppConfig): AppContainer {
     projectMetadataSchema: new SurrealProjectMetadataSchema(surrealClient),
     chunkPreparationService,
     chunkRepository,
+    fileChunkPreparationService,
     searchRepository,
     searchCodeContextService,
     indexRepositoryService,
+    indexFilesService,
+    deleteFilesService,
     projectMetadataRepository: new SurrealProjectMetadataRepository(
       surrealClient,
     ),

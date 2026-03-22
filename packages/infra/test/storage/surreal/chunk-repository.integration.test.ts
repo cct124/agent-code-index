@@ -94,6 +94,21 @@ describe("SurrealChunkRepository", () => {
         }
 
         if (sql.startsWith("DELETE chunk")) {
+          if (Array.isArray((bindings as { filePaths?: string[] }).filePaths)) {
+            for (const [key, value] of store.entries()) {
+              if (
+                value.repositoryId === bindings.repositoryId &&
+                (bindings as { filePaths: string[] }).filePaths.includes(
+                  value.filePath,
+                )
+              ) {
+                store.delete(key);
+              }
+            }
+
+            return [];
+          }
+
           for (const [key, value] of store.entries()) {
             if (value.repositoryId === bindings.repositoryId) {
               store.delete(key);
@@ -238,6 +253,100 @@ describe("SurrealChunkRepository", () => {
     expect(repoAChunks).toEqual([]);
     expect(repoBChunks).toHaveLength(1);
     expect(repoBChunks[0]?.repositoryId).toBe("repo-b");
+  });
+
+  it("deletes chunks only for the specified file paths", async () => {
+    const store = new Map<string, StoredChunkRecord>();
+    const connect = vi.fn(async () => undefined);
+    const upsert = vi.fn((recordId: { toString(): string }) => ({
+      content: async (data: Omit<StoredChunkRecord, "id">) => {
+        const stored: StoredChunkRecord = {
+          id: recordId.toString(),
+          chunkId: data.chunkId,
+          repositoryId: data.repositoryId,
+          filePath: data.filePath,
+          language: data.language,
+          content: data.content,
+          searchText: data.searchText,
+          startLine: data.startLine,
+          endLine: data.endLine,
+          hash: data.hash,
+          embedding: data.embedding,
+          metadata: data.metadata,
+        };
+
+        store.set(recordId.toString(), stored);
+
+        return store.get(recordId.toString());
+      },
+    }));
+    const query = vi.fn(async (sql: string, bindings: Record<string, unknown>) => {
+      if (sql.startsWith("SELECT * FROM chunk")) {
+        return [
+          Array.from(store.values()).filter((chunk) => {
+            if (chunk.repositoryId !== bindings.repositoryId) {
+              return false;
+            }
+
+            if (Array.isArray(bindings.filePaths)) {
+              return bindings.filePaths.includes(chunk.filePath);
+            }
+
+            return chunk.filePath === bindings.filePath;
+          }),
+        ];
+      }
+
+      if (sql.startsWith("DELETE chunk")) {
+        for (const [key, value] of store.entries()) {
+          if (
+            value.repositoryId === bindings.repositoryId &&
+            Array.isArray(bindings.filePaths) &&
+            bindings.filePaths.includes(value.filePath)
+          ) {
+            store.delete(key);
+          }
+        }
+
+        return [];
+      }
+
+      throw new Error(`Unexpected query: ${sql}`);
+    });
+
+    const repository = new SurrealChunkRepository({
+      config: {} as never,
+      connect,
+      disconnect: vi.fn(async () => undefined),
+      driver: {
+        query,
+        upsert,
+      } as never,
+      healthCheck: vi.fn(async () => ({}) as never),
+    });
+
+    await repository.upsertMany([
+      createChunk({ filePath: "src/a.ts", id: "chunk-a", hash: "hash-a" }),
+      createChunk({ filePath: "src/b.ts", id: "chunk-b", hash: "hash-b" }),
+    ]);
+
+    const deletedChunkCount = await repository.deleteByFilePaths({
+      repositoryId: "repo-a",
+      filePaths: ["src/a.ts"],
+    });
+
+    const fileAChunks = await repository.findByFilePath({
+      repositoryId: "repo-a",
+      filePath: "src/a.ts",
+    });
+    const fileBChunks = await repository.findByFilePath({
+      repositoryId: "repo-a",
+      filePath: "src/b.ts",
+    });
+
+    expect(deletedChunkCount).toBe(1);
+    expect(fileAChunks).toEqual([]);
+    expect(fileBChunks).toHaveLength(1);
   });
 
   it("logs classified error fields when repository deletion fails", async () => {

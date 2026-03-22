@@ -6,7 +6,14 @@ export type { ProjectMetadata } from "./domain/project-metadata.js";
 export type { SearchResult } from "./domain/search-result.js";
 export { NOOP_LOGGER, STANDARD_LOG_FIELDS } from "./contracts/logger.js";
 export { DefaultIndexRepositoryService } from "./services/index-repository-service.js";
+export { DefaultIndexFilesService } from "./services/index-files-service.js";
+export { DefaultDeleteFilesService } from "./services/delete-files-service.js";
 export { DefaultSearchCodeContextService } from "./services/search-code-context-service.js";
+export type {
+  DeleteFilesInput,
+  DeleteFilesResult,
+  DeleteFilesService,
+} from "./services/delete-files-service.js";
 export type {
   IndexRepositoryFailure,
   IndexedChunk,
@@ -19,11 +26,21 @@ export type {
   RepositoryChunkPreparationService,
 } from "./services/index-repository-service.js";
 export type {
+  FileChunkPreparationService,
+  FilePreparationEntry,
+  IndexFilesInput,
+  IndexFilesResult,
+  IndexFilesService,
+  PrepareFilesInput,
+  PrepareFilesResult,
+} from "./services/index-files-service.js";
+export type {
   SearchCodeContextInput,
   SearchCodeContextService,
 } from "./services/search-code-context-service.js";
 export type {
   ChunkRepository,
+  DeleteChunksByFilePathsInput,
   FindChunksByFilePathInput,
 } from "./contracts/chunk-repository.js";
 export type {
