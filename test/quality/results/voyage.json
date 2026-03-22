@@ -245,9 +245,7 @@
             "parentSymbol": "LocalFileScanner",
             "symbolKind": "constructor",
             "symbolName": "constructor",
-            "tags": [
-              "constructor"
-            ]
+            "tags": ["constructor"]
           },
           "preview": "public constructor( ignorePatterns = DEFAULT_IGNORE_PATTERNS, gitignorePath?: string, includePatterns: string[] = [], ) { this.ignorePatterns = ignorePatterns; this.gitignorePath = gitignorePath; this.includePatterns = i"
         },
@@ -276,10 +274,7 @@
             "parentSymbol": "LocalFileScanner",
             "symbolKind": "field",
             "symbolName": "ignorePatterns",
-            "tags": [
-              "private",
-              "readonly"
-            ]
+            "tags": ["private", "readonly"]
           },
           "preview": "private readonly ignorePatterns: string[]"
         },
@@ -296,10 +291,7 @@
             "parentSymbol": "LocalFileScanner",
             "symbolKind": "field",
             "symbolName": "gitignorePath",
-            "tags": [
-              "private",
-              "readonly"
-            ]
+            "tags": ["private", "readonly"]
           },
           "preview": "private readonly gitignorePath?: string"
         },
@@ -391,9 +383,7 @@
             "parentSymbol": "LocalFileScanner",
             "symbolKind": "method",
             "symbolName": "isIgnored",
-            "tags": [
-              "private"
-            ]
+            "tags": ["private"]
           },
           "preview": "private isIgnored( relativePath: string, gitignoreRules: GitignoreRule[], ): boolean { const normalizedPath = relativePath.split(path.sep).join(\"/\"); const segments = normalizedPath.split(\"/\"); if (this.matchesIncludePat"
         }
@@ -678,10 +668,7 @@
             "parentSymbol": "SurrealSearchRepository",
             "symbolKind": "method",
             "symbolName": "nativeVectorSearch",
-            "tags": [
-              "private",
-              "async"
-            ]
+            "tags": ["private", "async"]
           },
           "preview": "private async nativeVectorSearch( input: SemanticSearchInput, filterState: ReturnType<typeof buildFilterState>, logger: Logger, ): Promise<SearchResult[]> { const topK = normalizeTopK(input.topK); const candidateK = Math"
         },
@@ -845,9 +832,7 @@
             "parentSymbol": "OpenAICompatibleEmbeddingProvider",
             "symbolKind": "field",
             "symbolName": "provider",
-            "tags": [
-              "readonly"
-            ]
+            "tags": ["readonly"]
           },
           "preview": "public readonly provider = \"openai-compatible\""
         },
@@ -1018,9 +1003,7 @@
             "parentSymbol": "VoyageEmbeddingProvider",
             "symbolKind": "field",
             "symbolName": "provider",
-            "tags": [
-              "readonly"
-            ]
+            "tags": ["readonly"]
           },
           "preview": "public readonly provider = \"voyage\""
         },
@@ -1215,10 +1198,7 @@
             "parentSymbol": "DefaultIndexRepositoryService",
             "symbolKind": "method",
             "symbolName": "generateIndexedChunks",
-            "tags": [
-              "private",
-              "async"
-            ]
+            "tags": ["private", "async"]
           },
           "preview": "private async generateIndexedChunks( chunks: PreparedChunk[], batchSize: number, embeddingConcurrency: number, logger: Logger, ): Promise<IndexedChunk[]> { const indexedChunksByBatch: IndexedChunk[][] = []; const totalBa"
         },
@@ -1335,10 +1315,7 @@
             "parentSymbol": "DefaultIndexRepositoryService",
             "symbolKind": "method",
             "symbolName": "generateIndexedChunks",
-            "tags": [
-              "private",
-              "async"
-            ]
+            "tags": ["private", "async"]
           },
           "preview": "let embeddings: number[][]; try { embeddings = await this.embeddingProvider.generateEmbeddings({ values: batch.map((chunk) => chunk.searchText), purpose: \"document\", }); } catch (error) { logger.error(\"Chunk batch embedd"
         }

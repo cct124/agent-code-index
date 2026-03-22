@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { createApp } from "../../packages/mcp-server/src/index.ts";
@@ -19,6 +19,7 @@ interface ParsedArgs {
   rootPath: string;
   embeddingBatchSize?: number;
   embeddingConcurrency?: number;
+  allowOverwrite: boolean;
 }
 
 interface QualityRunReport {
@@ -92,9 +93,13 @@ async function main(): Promise<void> {
   const label =
     args.label ??
     `${envValues.EMBEDDING_PROVIDER ?? "unknown"}-${slugify(envValues.EMBEDDING_MODEL ?? "unknown")}`;
-  const outputFile = path.resolve(
+  const requestedOutputFile = path.resolve(
     args.outputFile ??
       path.join(rootPath, "test/quality/results", `${label}.json`),
+  );
+  const outputFile = await resolveOutputFile(
+    requestedOutputFile,
+    args.allowOverwrite,
   );
   const querySpecs = JSON.parse(
     await readFile(queriesFile, "utf8"),
@@ -178,7 +183,9 @@ async function main(): Promise<void> {
     console.log(
       JSON.stringify(
         {
+          requestedOutputFile,
           outputFile,
+          outputWasRenamed: outputFile !== requestedOutputFile,
           label,
           provider: report.environment.provider,
           model: report.environment.model,
@@ -201,6 +208,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     envFile: ".env.development",
     queriesFile: "test/quality/queries.json",
     rootPath: process.cwd(),
+    allowOverwrite: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -245,6 +253,9 @@ function parseArgs(argv: string[]): ParsedArgs {
           requireNextValue(token, nextValue),
         );
         index += 1;
+        break;
+      case "--allow-overwrite":
+        args.allowOverwrite = true;
         break;
       default:
         throw new Error(`Unknown argument: ${token}`);
@@ -335,6 +346,52 @@ function mergeCsvPatterns(
   ];
 
   return [...new Set(values)].join(",");
+}
+
+async function resolveOutputFile(
+  requestedPath: string,
+  allowOverwrite: boolean,
+): Promise<string> {
+  if (allowOverwrite || !(await pathExists(requestedPath))) {
+    return requestedPath;
+  }
+
+  const parsedPath = path.parse(requestedPath);
+  const timestamp = createTimestampSuffix(new Date());
+  let attempt = 1;
+
+  while (true) {
+    const candidate = path.join(
+      parsedPath.dir,
+      `${parsedPath.name}-${timestamp}${attempt === 1 ? "" : `-${attempt}`}${parsedPath.ext}`,
+    );
+
+    if (!(await pathExists(candidate))) {
+      return candidate;
+    }
+
+    attempt += 1;
+  }
+}
+
+async function pathExists(targetPath: string): Promise<boolean> {
+  try {
+    await access(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function createTimestampSuffix(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+
+  return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
 }
 
 void main().catch((error: unknown) => {

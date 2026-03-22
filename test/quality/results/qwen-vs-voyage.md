@@ -17,6 +17,7 @@ Left only files: packages/mcp-server/test/fixtures/stdio-smoke-server.mjs, desig
 Right only files: doc/progress/current-progress.md, packages/mcp-server/README.md, doc/progress/milestones.md
 
 Left top files:
+
 1. packages/mcp-server/test/fixtures/stdio-smoke-server.mjs (score=0.8971)
 2. design/v1/README.md (score=0.8480)
 3. packages/mcp-server/test/fixtures/stdio-smoke-server.mjs (score=0.8466)
@@ -29,6 +30,7 @@ Left top files:
 10. packages/mcp-server/test/adapters/register-tools.unit.test.ts (score=0.8005)
 
 Right top files:
+
 1. packages/mcp-server/src/adapters/tools/register-tools.ts (score=0.7764)
 2. design/v1/mcp-tool-interface-design.md (score=0.7696)
 3. packages/mcp-server/src/adapters/tools/register-tools.ts (score=0.7662)
@@ -52,6 +54,7 @@ Left only files: packages/infra/test/parsing/typescript-tree-sitter-parser.unit.
 Right only files: packages/infra/test/scanning/local-file-scanner.unit.test.ts, packages/infra/README.md
 
 Left top files:
+
 1. packages/infra/test/parsing/typescript-tree-sitter-parser.unit.test.ts (score=0.8471)
 2. packages/infra/src/scanning/local-file-scanner.ts (score=0.8330)
 3. packages/infra/src/scanning/local-file-scanner.ts (score=0.8330)
@@ -64,6 +67,7 @@ Left top files:
 10. packages/infra/src/scanning/local-file-scanner.ts (score=0.8050)
 
 Right top files:
+
 1. packages/infra/src/scanning/local-file-scanner.ts (score=0.8372)
 2. packages/infra/test/scanning/local-file-scanner.unit.test.ts (score=0.8017)
 3. packages/infra/src/scanning/local-file-scanner.ts (score=0.7856)
@@ -87,6 +91,7 @@ Left only files: packages/mcp-server/test/fixtures/stdio-smoke-server.mjs, desig
 Right only files: packages/mcp-server/README.md, packages/core/src/services/context-builder.ts, packages/core/test/services/search-code-context-service.unit.test.ts, packages/core/src/services/get-file-context-service.ts, packages/core/src/domain/context-packet.ts
 
 Left top files:
+
 1. packages/mcp-server/test/fixtures/stdio-smoke-server.mjs (score=0.8639)
 2. design/v1/mcp-tool-interface-design.md (score=0.8261)
 3. design/v1/mcp-tool-interface-design.md (score=0.8261)
@@ -99,6 +104,7 @@ Left top files:
 10. packages/mcp-server/test/fixtures/stdio-smoke-server.mjs (score=0.7834)
 
 Right top files:
+
 1. packages/mcp-server/README.md (score=0.8035)
 2. packages/core/src/services/context-builder.ts (score=0.7967)
 3. packages/core/src/services/context-builder.ts (score=0.7849)
@@ -122,6 +128,7 @@ Left only files: packages/infra/src/storage/surreal/surreal-project-metadata-sch
 Right only files: doc/progress/milestones.md, doc/progress/current-progress.md
 
 Left top files:
+
 1. packages/infra/src/storage/surreal/surreal-search-repository.ts (score=0.7767)
 2. packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts (score=0.7643)
 3. packages/infra/src/storage/surreal/surreal-search-repository.ts (score=0.7561)
@@ -134,6 +141,7 @@ Left top files:
 10. test/template/main.py (score=0.7363)
 
 Right top files:
+
 1. design/v1/surreal-native-vector-search-migration.md (score=0.7850)
 2. design/v1/surreal-native-vector-search-migration.md (score=0.7838)
 3. design/v1/surreal-native-vector-search-migration.md (score=0.7745)
@@ -157,6 +165,7 @@ Left only files: packages/infra/src/embedding/voyage-embedding-provider.ts, pack
 Right only files: doc/progress/current-progress.md, design/v1/README.md, doc/progress/milestones.md, packages/infra/test/embedding/openai-compatible-embedding-provider.unit.test.ts, packages/infra/test/embedding/openai-compatible-embedding-provider.real.integration.test.ts
 
 Left top files:
+
 1. packages/core/src/contracts/embedding-provider.ts (score=0.7804)
 2. packages/core/src/contracts/embedding-provider.ts (score=0.7804)
 3. packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts (score=0.7733)
@@ -169,6 +178,7 @@ Left top files:
 10. packages/infra/README.md (score=0.7605)
 
 Right top files:
+
 1. packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts (score=0.7707)
 2. doc/progress/current-progress.md (score=0.7653)
 3. packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts (score=0.7608)
@@ -192,6 +202,7 @@ Left only files: packages/infra/test/embedding/real-embedding-test-env.ts
 Right only files: packages/infra/README.md, packages/infra/test/embedding/provider-factory.unit.test.ts, packages/infra/test/embedding/voyage-embedding-provider.real.integration.test.ts, doc/progress/current-progress.md, packages/infra/src/embedding/provider-factory.ts, design/v1/README.md
 
 Left top files:
+
 1. packages/infra/src/embedding/voyage-embedding-provider.ts (score=0.8207)
 2. packages/infra/src/embedding/voyage-embedding-provider.ts (score=0.8207)
 3. packages/infra/src/embedding/voyage-embedding-provider.ts (score=0.7750)
@@ -204,6 +215,7 @@ Left top files:
 10. packages/infra/src/embedding/voyage-embedding-provider.ts (score=0.7487)
 
 Right top files:
+
 1. packages/infra/README.md (score=0.7639)
 2. packages/infra/src/embedding/voyage-embedding-provider.ts (score=0.7552)
 3. packages/infra/README.md (score=0.7367)
@@ -227,6 +239,7 @@ Left only files: design/v1/mcp-tool-interface-design.md
 Right only files: doc/progress/milestones.md
 
 Left top files:
+
 1. packages/core/src/services/index-repository-service.ts (score=0.8031)
 2. packages/core/src/services/index-repository-service.ts (score=0.7949)
 3. packages/core/src/services/index-repository-service.ts (score=0.7907)
@@ -239,6 +252,7 @@ Left top files:
 10. packages/core/src/services/index-repository-service.ts (score=0.7610)
 
 Right top files:
+
 1. packages/core/src/services/index-repository-service.ts (score=0.7880)
 2. packages/core/src/services/index-repository-service.ts (score=0.7829)
 3. packages/core/src/services/index-repository-service.ts (score=0.7599)
@@ -262,6 +276,7 @@ Left only files: test/template/main.py
 Right only files: packages/mcp-server/test/fixtures/stdio-smoke-server.mjs, packages/mcp-server/README.md, doc/progress/milestones.md, design/v1/README.md
 
 Left top files:
+
 1. packages/mcp-server/src/adapters/tools/register-tools.ts (score=0.8284)
 2. design/v1/mcp-tool-interface-design.md (score=0.7944)
 3. design/v1/mcp-tool-interface-design.md (score=0.7944)
@@ -274,6 +289,7 @@ Left top files:
 10. test/template/main.py (score=0.7745)
 
 Right top files:
+
 1. design/v1/mcp-tool-interface-design.md (score=0.7158)
 2. packages/mcp-server/src/adapters/tools/register-tools.ts (score=0.7154)
 3. design/v1/mcp-tool-interface-design.md (score=0.7073)
@@ -284,4 +300,3 @@ Right top files:
 8. packages/mcp-server/src/adapters/tools/register-tools.ts (score=0.6795)
 9. design/v1/README.md (score=0.6785)
 10. design/v1/mcp-tool-interface-design.md (score=0.6777)
-
