@@ -359,6 +359,8 @@ corepack yarn mcp:dev
 ./packages/mcp-server/src/index.ts
 ```
 
+并且会额外开启 Node.js 的 `development` 条件导出解析，因此 `mcp-server` 通过包名导入的 `@agent-code-index/core` 与 `@agent-code-index/infra` 在开发态也会优先落到各自的 `src/index.ts`，而不是旧的 `dist/index.js`。
+
 建议：
 
 1. 本地排查配置、启动和 stack trace 时，优先用源码入口
