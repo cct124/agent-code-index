@@ -1,0 +1,1176 @@
+{
+  "generatedAt": "2026-03-22T14:36:49.381Z",
+  "label": "qwen",
+  "environment": {
+    "envFile": "/home/janex/project/ai-agent/agent-code-index/.env.development",
+    "projectSpace": "agent_code_index_dev",
+    "repositoryId": "agent-code-index",
+    "rootPath": "/home/janex/project/ai-agent/agent-code-index",
+    "provider": "openai-compatible",
+    "model": "Qwen/Qwen3-Embedding-8B",
+    "vectorDimension": 4096
+  },
+  "indexing": {
+    "embeddingBatchSize": 16,
+    "embeddingConcurrency": 8,
+    "scannedFileCount": 132,
+    "parsedFileCount": 132,
+    "skippedFileCount": 0,
+    "preparedChunkCount": 1015,
+    "embeddedChunkCount": 1015,
+    "storedChunkCount": 1015,
+    "failedFileCount": 0
+  },
+  "queries": [
+    {
+      "id": "mcp-tools-index-search",
+      "query": "index_repository search_code_context index_files delete_files get_file_context MCP tools",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/quality/results/qwen.json",
+        "test/quality/queries.json",
+        "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+        "packages/mcp-server/src/adapters/tools/register-tools.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.9194501959198026,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1-80",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 80,
+          "metadata": {},
+          "preview": "{ \"generatedAt\": \"2026-03-22T14:33:01.617Z\", \"label\": \"qwen\", \"environment\": { \"envFile\": \"/home/janex/project/ai-agent/agent-code-index/.env.development\", \"projectSpace\": \"agent_code_index_dev\", \"repositoryId\": \"agent-c"
+        },
+        {
+          "rank": 2,
+          "score": 0.919219618460546,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/queries.json",
+          "chunkId": "test/quality/queries.json:1-51",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 51,
+          "metadata": {},
+          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
+        },
+        {
+          "rank": 3,
+          "score": 0.8943224541556923,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+          "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:121-200",
+          "language": "javascript",
+          "startLine": 121,
+          "endLine": 200,
+          "metadata": {},
+          "preview": "totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { execute: async () => ({ requestedFileCount: 1"
+        },
+        {
+          "rank": 4,
+          "score": 0.8916409927450579,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1321-1400",
+          "language": "json",
+          "startLine": 1321,
+          "endLine": 1400,
+          "metadata": {},
+          "preview": "\"endLine\": 200, \"metadata\": {}, \"preview\": \"totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { e"
+        },
+        {
+          "rank": 5,
+          "score": 0.865749992440211,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:541-620",
+          "language": "json",
+          "startLine": 541,
+          "endLine": 620,
+          "metadata": {},
+          "preview": "\"symbolKind\": \"method\", \"symbolName\": \"execute\", \"tags\": [ \"async\" ] }, \"preview\": \"public async execute( input: SearchCodeContextInput, ): Promise<SearchCodeContextResult> { const query = input.query.trim(); if (!query "
+        },
+        {
+          "rank": 6,
+          "score": 0.8572955914809711,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:421-500",
+          "language": "json",
+          "startLine": 421,
+          "endLine": 500,
+          "metadata": {},
+          "preview": "\"score\": 0.81951541091915, \"reason\": \"surreal vector search\", \"filePath\": \"design/v1/README.md\", \"chunkId\": \"design/v1/README.md:1088-1099\", \"language\": \"markdown\", \"startLine\": 1088, \"endLine\": 1099, \"metadata\": { \"docT"
+        },
+        {
+          "rank": 7,
+          "score": 0.8502766113812225,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:61-140",
+          "language": "json",
+          "startLine": 61,
+          "endLine": 140,
+          "metadata": {},
+          "preview": "\"endLine\": 200, \"metadata\": {}, \"preview\": \"totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { e"
+        },
+        {
+          "rank": 8,
+          "score": 0.8451517831006337,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+          "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:61-140",
+          "language": "javascript",
+          "startLine": 61,
+          "endLine": 140,
+          "metadata": {},
+          "preview": "reason: \"semantic_match\", chunk: { id: \"chunk-a\", repositoryId: \"repo-a\", filePath: \"src/index.ts\", language: \"typescript\", content: \"export const value = 1;\", searchText: \"value\", startLine: 1, endLine: 1, hash: \"hash-a"
+        },
+        {
+          "rank": 9,
+          "score": 0.844551473969477,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1201-1280",
+          "language": "json",
+          "startLine": 1201,
+          "endLine": 1280,
+          "metadata": {},
+          "preview": "\"language\": \"typescript\", \"startLine\": 130, \"endLine\": 209, \"metadata\": { \"symbolKind\": \"class\", \"symbolName\": \"DefaultIndexRepositoryService\" }, \"preview\": \"class DefaultIndexRepositoryService implements IndexRepository"
+        },
+        {
+          "rank": 10,
+          "score": 0.8279999403819983,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/adapters/tools/register-tools.ts",
+          "chunkId": "packages/mcp-server/src/adapters/tools/register-tools.ts:115-194",
+          "language": "typescript",
+          "startLine": 115,
+          "endLine": 194,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "registerAgentCodeIndexTools"
+          },
+          "preview": "return createToolErrorResult(logger, \"index_repository\", error); } }, ); server.registerTool( \"search_code_context\", { title: \"搜索代码上下文\", description: \"对自然语言查询执行语义代码检索，并返回按相关性排序的代码上下文结果。\", inputSchema: searchCodeContextIn"
+        }
+      ]
+    },
+    {
+      "id": "gitignore-include-patterns",
+      "query": "gitignore dynamic injection includePatterns DEFAULT_SCAN_INCLUDE_PATTERNS LocalFileScanner",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/quality/results/qwen.json",
+        "test/quality/queries.json",
+        "tsconfig.json",
+        "packages/mcp-server/README.md"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.8831096724714357,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:241-320",
+          "language": "json",
+          "startLine": 241,
+          "endLine": 320,
+          "metadata": {},
+          "preview": "\"filePath\": \"packages/infra/src/scanning/local-file-scanner.ts\", \"chunkId\": \"packages/infra/src/scanning/local-file-scanner.ts:26-26\", \"language\": \"typescript\", \"startLine\": 26, \"endLine\": 26, \"metadata\": { \"parentSymbol"
+        },
+        {
+          "rank": 2,
+          "score": 0.8802761650549291,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:181-260",
+          "language": "json",
+          "startLine": 181,
+          "endLine": 260,
+          "metadata": {},
+          "preview": "\"chunkId\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts:78-92\", \"language\": \"typescript\", \"startLine\": 78, \"endLine\": 92, \"metadata\": { \"symbolKind\": \"function\", \"symbolName\": \"createMetadata\" }, \"preview\": \"func"
+        },
+        {
+          "rank": 3,
+          "score": 0.875052268010487,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:121-200",
+          "language": "json",
+          "startLine": 121,
+          "endLine": 200,
+          "metadata": {},
+          "preview": "\"endLine\": 80, \"metadata\": {}, \"preview\": \"import { StdioServerTransport } from \\\"@modelcontextprotocol/sdk/server/stdio.js\\\"; import { createMcpServer } from \\\"../../dist/server.js\\\"; const app = { config: { projectSpac"
+        },
+        {
+          "rank": 4,
+          "score": 0.8421398398945976,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:301-380",
+          "language": "json",
+          "startLine": 301,
+          "endLine": 380,
+          "metadata": {},
+          "preview": "\"symbolName\": \"gitignorePath\", \"tags\": [ \"private\", \"readonly\" ] }, \"preview\": \"private readonly gitignorePath?: string\" }, { \"rank\": 7, \"score\": 0.8057055338584097, \"reason\": \"surreal vector search\", \"filePath\": \"packag"
+        },
+        {
+          "rank": 5,
+          "score": 0.7581211732927876,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:361-440",
+          "language": "json",
+          "startLine": 361,
+          "endLine": 440,
+          "metadata": {},
+          "preview": "\"language\": \"markdown\", \"startLine\": 480, \"endLine\": 496, \"metadata\": { \"docType\": \"readme\", \"heading\": \"7.4 FileScanner\", \"headingPath\": [ \"agent-code-index v1 设计文档\", \"7. 核心接口设计\", \"7.4 FileScanner\" ], \"sectionLevel\": 3 "
+        },
+        {
+          "rank": 6,
+          "score": 0.7471335794057974,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/queries.json",
+          "chunkId": "test/quality/queries.json:1-51",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 51,
+          "metadata": {},
+          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
+        },
+        {
+          "rank": 7,
+          "score": 0.7405721625821058,
+          "reason": "surreal vector search",
+          "filePath": "tsconfig.json",
+          "chunkId": "tsconfig.json:1-9",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 9,
+          "metadata": {},
+          "preview": "{ \"files\": [], \"references\": [ { \"path\": \"./packages/core\" }, { \"path\": \"./packages/infra\" }, { \"path\": \"./packages/mcp-server\" } ] }"
+        },
+        {
+          "rank": 8,
+          "score": 0.738188595540029,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:200-214",
+          "language": "markdown",
+          "startLine": 200,
+          "endLine": 214,
+          "metadata": {
+            "docType": "readme",
+            "heading": "必填环境变量",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "MCP JSON 配置约定",
+              "必填环境变量"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 必填环境变量 以下字段是当前配置模型要求的最小集合： 1. `PROJECT_SPACE` 2. `SURREAL_URL` 3. `SURREAL_DATABASE` 4. `EMBEDDING_PROVIDER` 5. `EMBEDDING_VECTOR_DIMENSION` 6. `EMBEDDING_API_KEY` 另外，Surreal 认证需要二选一： 1. `SURREAL_USERNAME` + `SURREAL"
+        },
+        {
+          "rank": 9,
+          "score": 0.726099738855031,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:216-249",
+          "language": "markdown",
+          "startLine": 216,
+          "endLine": 249,
+          "metadata": {
+            "docType": "readme",
+            "heading": "常用可选环境变量",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "MCP JSON 配置约定",
+              "常用可选环境变量"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 常用可选环境变量 1. `EMBEDDING_MODEL` 2. `EMBEDDING_BASE_URL` 3. `SURREAL_USE_TLS` 4. `SURREAL_DEPLOYMENT_MODE` 5. `DEFAULT_TOP_K` 6. `MCP_DEFAULT_REPOSITORY_ID` 7. `MCP_REPOSITORY_ROOT` 8. `DEFAULT_SCAN_IGNORE_PATTERNS` 9. "
+        },
+        {
+          "rank": 10,
+          "score": 0.726099738855031,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:216-249",
+          "language": "markdown",
+          "startLine": 216,
+          "endLine": 249,
+          "metadata": {
+            "docType": "readme",
+            "heading": "常用可选环境变量",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "MCP JSON 配置约定",
+              "常用可选环境变量"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 常用可选环境变量 1. `EMBEDDING_MODEL` 2. `EMBEDDING_BASE_URL` 3. `SURREAL_USE_TLS` 4. `SURREAL_DEPLOYMENT_MODE` 5. `DEFAULT_TOP_K` 6. `MCP_DEFAULT_REPOSITORY_ID` 7. `MCP_REPOSITORY_ROOT` 8. `DEFAULT_SCAN_IGNORE_PATTERNS` 9. "
+        }
+      ]
+    },
+    {
+      "id": "context-packet-budget",
+      "query": "ContextPacket tokenBudget max_items truncation search_code_context richer context",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/quality/queries.json",
+        "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+        "test/quality/results/qwen.json",
+        "packages/mcp-server/src/bootstrap/app.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.8839723897612568,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/queries.json",
+          "chunkId": "test/quality/queries.json:1-51",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 51,
+          "metadata": {},
+          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
+        },
+        {
+          "rank": 2,
+          "score": 0.8629008470335199,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+          "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:121-200",
+          "language": "javascript",
+          "startLine": 121,
+          "endLine": 200,
+          "metadata": {},
+          "preview": "totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { execute: async () => ({ requestedFileCount: 1"
+        },
+        {
+          "rank": 3,
+          "score": 0.855065356612483,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1-80",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 80,
+          "metadata": {},
+          "preview": "{ \"generatedAt\": \"2026-03-22T14:33:01.617Z\", \"label\": \"qwen\", \"environment\": { \"envFile\": \"/home/janex/project/ai-agent/agent-code-index/.env.development\", \"projectSpace\": \"agent_code_index_dev\", \"repositoryId\": \"agent-c"
+        },
+        {
+          "rank": 4,
+          "score": 0.8350274651780474,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:541-620",
+          "language": "json",
+          "startLine": 541,
+          "endLine": 620,
+          "metadata": {},
+          "preview": "\"symbolKind\": \"method\", \"symbolName\": \"execute\", \"tags\": [ \"async\" ] }, \"preview\": \"public async execute( input: SearchCodeContextInput, ): Promise<SearchCodeContextResult> { const query = input.query.trim(); if (!query "
+        },
+        {
+          "rank": 5,
+          "score": 0.8281697959633852,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:421-500",
+          "language": "json",
+          "startLine": 421,
+          "endLine": 500,
+          "metadata": {},
+          "preview": "\"score\": 0.81951541091915, \"reason\": \"surreal vector search\", \"filePath\": \"design/v1/README.md\", \"chunkId\": \"design/v1/README.md:1088-1099\", \"language\": \"markdown\", \"startLine\": 1088, \"endLine\": 1099, \"metadata\": { \"docT"
+        },
+        {
+          "rank": 6,
+          "score": 0.8249996311963486,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1321-1400",
+          "language": "json",
+          "startLine": 1321,
+          "endLine": 1400,
+          "metadata": {},
+          "preview": "\"endLine\": 200, \"metadata\": {}, \"preview\": \"totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { e"
+        },
+        {
+          "rank": 7,
+          "score": 0.8207236437397435,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:61-140",
+          "language": "json",
+          "startLine": 61,
+          "endLine": 140,
+          "metadata": {},
+          "preview": "\"endLine\": 200, \"metadata\": {}, \"preview\": \"totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { e"
+        },
+        {
+          "rank": 8,
+          "score": 0.8123923540083529,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+          "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:61-140",
+          "language": "javascript",
+          "startLine": 61,
+          "endLine": 140,
+          "metadata": {},
+          "preview": "reason: \"semantic_match\", chunk: { id: \"chunk-a\", repositoryId: \"repo-a\", filePath: \"src/index.ts\", language: \"typescript\", content: \"export const value = 1;\", searchText: \"value\", startLine: 1, endLine: 1, hash: \"hash-a"
+        },
+        {
+          "rank": 9,
+          "score": 0.8103595078223733,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:481-560",
+          "language": "json",
+          "startLine": 481,
+          "endLine": 560,
+          "metadata": {},
+          "preview": "\"endLine\": 194, \"metadata\": { \"symbolKind\": \"function\", \"symbolName\": \"registerAgentCodeIndexTools\" }, \"preview\": \"return createToolErrorResult(logger, \\\"index_repository\\\", error); } }, ); server.registerTool( \\\"search_"
+        },
+        {
+          "rank": 10,
+          "score": 0.8063240164502655,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/app.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/app.ts:22-66",
+          "language": "typescript",
+          "startLine": 22,
+          "endLine": 66,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "createApp",
+            "tags": [
+              "async"
+            ]
+          },
+          "preview": "async function createApp(): Promise<App> { const config = loadConfig(); const container = createContainer(config); const logger = container.logger.child({ module: \"app\", component: \"createApp\", projectSpace: config.proje"
+        }
+      ]
+    },
+    {
+      "id": "surreal-native-search",
+      "query": "Surreal native HNSW candidate multiplier efSearch explain full KnnScan",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/quality/results/qwen.json",
+        "test/quality/queries.json"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.8027990275428284,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:541-620",
+          "language": "json",
+          "startLine": 541,
+          "endLine": 620,
+          "metadata": {},
+          "preview": "\"symbolKind\": \"method\", \"symbolName\": \"execute\", \"tags\": [ \"async\" ] }, \"preview\": \"public async execute( input: SearchCodeContextInput, ): Promise<SearchCodeContextResult> { const query = input.query.trim(); if (!query "
+        },
+        {
+          "rank": 2,
+          "score": 0.792919386832583,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:601-680",
+          "language": "json",
+          "startLine": 601,
+          "endLine": 680,
+          "metadata": {},
+          "preview": "\"chunkId\": \"test/quality/queries.json:1-51\", \"language\": \"json\", \"startLine\": 1, \"endLine\": 51, \"metadata\": {}, \"preview\": \"[ { \\\"id\\\": \\\"mcp-tools-index-search\\\", \\\"query\\\": \\\"index_repository search_code_context index_"
+        },
+        {
+          "rank": 3,
+          "score": 0.7922108590190621,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:661-740",
+          "language": "json",
+          "startLine": 661,
+          "endLine": 740,
+          "metadata": {},
+          "preview": "\"headingPath\": [ \"agent-code-index MCP Tool Interface 设计\", \"13. 示例\", \"13.1 index_repository\" ], \"sectionLevel\": 3 }, \"preview\": \"### 13.1 index_repository 输入： ```json { \\\"mode\\\": \\\"full\\\", \\\"embeddingBatchSize\\\": 16 } ``"
+        },
+        {
+          "rank": 4,
+          "score": 0.7881338001538081,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:481-560",
+          "language": "json",
+          "startLine": 481,
+          "endLine": 560,
+          "metadata": {},
+          "preview": "\"endLine\": 194, \"metadata\": { \"symbolKind\": \"function\", \"symbolName\": \"registerAgentCodeIndexTools\" }, \"preview\": \"return createToolErrorResult(logger, \\\"index_repository\\\", error); } }, ); server.registerTool( \\\"search_"
+        },
+        {
+          "rank": 5,
+          "score": 0.7732199083070745,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:721-800",
+          "language": "json",
+          "startLine": 721,
+          "endLine": 800,
+          "metadata": {},
+          "preview": "\"rank\": 10, \"score\": 0.7332855729990148, \"reason\": \"surreal vector search\", \"filePath\": \"test/template/main.py\", \"chunkId\": \"test/template/main.py:1150-1175\", \"language\": \"python\", \"startLine\": 1150, \"endLine\": 1175, \"me"
+        },
+        {
+          "rank": 6,
+          "score": 0.7601250690251941,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/queries.json",
+          "chunkId": "test/quality/queries.json:1-51",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 51,
+          "metadata": {},
+          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
+        },
+        {
+          "rank": 7,
+          "score": 0.7505828720225368,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:901-980",
+          "language": "json",
+          "startLine": 901,
+          "endLine": 980,
+          "metadata": {},
+          "preview": "\"filePath\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts\", \"chunkId\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts:78-92\", \"language\": \"typescript\", \"startLine\": 78, \"endLine\": 92, \"metadata\": { \"symbolKi"
+        },
+        {
+          "rank": 8,
+          "score": 0.7457574779931693,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1081-1160",
+          "language": "json",
+          "startLine": 1081,
+          "endLine": 1160,
+          "metadata": {},
+          "preview": "\"endLine\": 48, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"field\", \"symbolName\": \"apiKey\", \"tags\": [ \"private\", \"readonly\" ] }, \"preview\": \"private readonly apiKey: string\" }, { \"rank\": 10, \"s"
+        },
+        {
+          "rank": 9,
+          "score": 0.744611004699689,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:961-1040",
+          "language": "json",
+          "startLine": 961,
+          "endLine": 1040,
+          "metadata": {},
+          "preview": "\"chunkId\": \"packages/infra/src/embedding/voyage-embedding-provider.ts:76-127\", \"language\": \"typescript\", \"startLine\": 76, \"endLine\": 127, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"method\", \""
+        },
+        {
+          "rank": 10,
+          "score": 0.7435399887519794,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1381-1460",
+          "language": "json",
+          "startLine": 1381,
+          "endLine": 1460,
+          "metadata": {},
+          "preview": "\"endLine\": 579, \"metadata\": { \"docType\": \"markdown\", \"heading\": \"10.1 Tool 名称\", \"headingPath\": [ \"agent-code-index MCP Tool Interface 设计\", \"10. get_file_context\", \"10.1 Tool 名称\" ], \"sectionLevel\": 3 }, \"preview\": \"### 10"
+        }
+      ]
+    },
+    {
+      "id": "openai-compatible-provider",
+      "query": "OpenAI-compatible embedding provider SiliconFlow Qwen3-Embedding-8B",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/quality/results/qwen.json",
+        "packages/mcp-server/src/bootstrap/config.ts",
+        "test/quality/queries.json",
+        "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.8589329686511207,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:721-800",
+          "language": "json",
+          "startLine": 721,
+          "endLine": 800,
+          "metadata": {},
+          "preview": "\"rank\": 10, \"score\": 0.7332855729990148, \"reason\": \"surreal vector search\", \"filePath\": \"test/template/main.py\", \"chunkId\": \"test/template/main.py:1150-1175\", \"language\": \"python\", \"startLine\": 1150, \"endLine\": 1175, \"me"
+        },
+        {
+          "rank": 2,
+          "score": 0.8257399881709641,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:901-980",
+          "language": "json",
+          "startLine": 901,
+          "endLine": 980,
+          "metadata": {},
+          "preview": "\"filePath\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts\", \"chunkId\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts:78-92\", \"language\": \"typescript\", \"startLine\": 78, \"endLine\": 92, \"metadata\": { \"symbolKi"
+        },
+        {
+          "rank": 3,
+          "score": 0.8134277518676413,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:961-1040",
+          "language": "json",
+          "startLine": 961,
+          "endLine": 1040,
+          "metadata": {},
+          "preview": "\"chunkId\": \"packages/infra/src/embedding/voyage-embedding-provider.ts:76-127\", \"language\": \"typescript\", \"startLine\": 76, \"endLine\": 127, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"method\", \""
+        },
+        {
+          "rank": 4,
+          "score": 0.7988362575689181,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:841-920",
+          "language": "json",
+          "startLine": 841,
+          "endLine": 920,
+          "metadata": {},
+          "preview": "\"rank\": 6, \"score\": 0.7605406282145881, \"reason\": \"surreal vector search\", \"filePath\": \"packages/infra/README.md\", \"chunkId\": \"packages/infra/README.md:35-46\", \"language\": \"markdown\", \"startLine\": 35, \"endLine\": 46, \"met"
+        },
+        {
+          "rank": 5,
+          "score": 0.7714289786867671,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:391-398",
+          "language": "typescript",
+          "startLine": 391,
+          "endLine": 398,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "defaultEmbeddingModelForProvider"
+          },
+          "preview": "function defaultEmbeddingModelForProvider(provider: EmbeddingProvider): string { switch (provider) { case \"openai-compatible\": return \"text-embedding-3-large\"; case \"voyage\": return \"voyage-code-3\"; } }"
+        },
+        {
+          "rank": 6,
+          "score": 0.7711427284182271,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:781-860",
+          "language": "json",
+          "startLine": 781,
+          "endLine": 860,
+          "metadata": {},
+          "preview": "\"language\": \"typescript\", \"startLine\": 39, \"endLine\": 39, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"field\", \"symbolName\": \"provider\", \"tags\": [ \"readonly\" ] }, \"preview\": \"public readonly pr"
+        },
+        {
+          "rank": 7,
+          "score": 0.7702138042670941,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1021-1100",
+          "language": "json",
+          "startLine": 1021,
+          "endLine": 1100,
+          "metadata": {},
+          "preview": "], \"sectionLevel\": 2 }, \"preview\": \"## 14. 里程碑十三：VoyageAI 真实 embedding 兼容性验证落地 已完成： 1. 新增 `.env.development.voyageai` 作为 Voyage 本地测试环境模板 2. 新增 `VoyageEmbeddingProvider` 的真实集成测试 3. 已验证 document/query 两类 embedding 调用均能正常返回"
+        },
+        {
+          "rank": 8,
+          "score": 0.7693389263197709,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/queries.json",
+          "chunkId": "test/quality/queries.json:1-51",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 51,
+          "metadata": {},
+          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
+        },
+        {
+          "rank": 9,
+          "score": 0.7623465216047152,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1081-1160",
+          "language": "json",
+          "startLine": 1081,
+          "endLine": 1160,
+          "metadata": {},
+          "preview": "\"endLine\": 48, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"field\", \"symbolName\": \"apiKey\", \"tags\": [ \"private\", \"readonly\" ] }, \"preview\": \"private readonly apiKey: string\" }, { \"rank\": 10, \"s"
+        },
+        {
+          "rank": 10,
+          "score": 0.758565618954894,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts:215-225",
+          "language": "typescript",
+          "startLine": 215,
+          "endLine": 225,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "requireEnv"
+          },
+          "preview": "function requireEnv(key: string): string { const value = process.env[key]?.trim(); if (!value) { throw new Error( `Missing required environment variable for real integration test: ${key}`, ); } return value; }"
+        }
+      ]
+    },
+    {
+      "id": "voyage-provider",
+      "query": "Voyage embedding provider voyage-code-3 provider factory real integration",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/quality/results/qwen.json",
+        "packages/mcp-server/test/bootstrap/app.unit.test.ts",
+        "test/quality/queries.json",
+        "packages/mcp-server/src/bootstrap/config.ts",
+        "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.8475109882774051,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:901-980",
+          "language": "json",
+          "startLine": 901,
+          "endLine": 980,
+          "metadata": {},
+          "preview": "\"filePath\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts\", \"chunkId\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts:78-92\", \"language\": \"typescript\", \"startLine\": 78, \"endLine\": 92, \"metadata\": { \"symbolKi"
+        },
+        {
+          "rank": 2,
+          "score": 0.8260170050837032,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:961-1040",
+          "language": "json",
+          "startLine": 961,
+          "endLine": 1040,
+          "metadata": {},
+          "preview": "\"chunkId\": \"packages/infra/src/embedding/voyage-embedding-provider.ts:76-127\", \"language\": \"typescript\", \"startLine\": 76, \"endLine\": 127, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"method\", \""
+        },
+        {
+          "rank": 3,
+          "score": 0.7873336423121535,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1021-1100",
+          "language": "json",
+          "startLine": 1021,
+          "endLine": 1100,
+          "metadata": {},
+          "preview": "], \"sectionLevel\": 2 }, \"preview\": \"## 14. 里程碑十三：VoyageAI 真实 embedding 兼容性验证落地 已完成： 1. 新增 `.env.development.voyageai` 作为 Voyage 本地测试环境模板 2. 新增 `VoyageEmbeddingProvider` 的真实集成测试 3. 已验证 document/query 两类 embedding 调用均能正常返回"
+        },
+        {
+          "rank": 4,
+          "score": 0.7679291538790752,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:721-800",
+          "language": "json",
+          "startLine": 721,
+          "endLine": 800,
+          "metadata": {},
+          "preview": "\"rank\": 10, \"score\": 0.7332855729990148, \"reason\": \"surreal vector search\", \"filePath\": \"test/template/main.py\", \"chunkId\": \"test/template/main.py:1150-1175\", \"language\": \"python\", \"startLine\": 1150, \"endLine\": 1175, \"me"
+        },
+        {
+          "rank": 5,
+          "score": 0.7470517171616661,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:781-860",
+          "language": "json",
+          "startLine": 781,
+          "endLine": 860,
+          "metadata": {},
+          "preview": "\"language\": \"typescript\", \"startLine\": 39, \"endLine\": 39, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"field\", \"symbolName\": \"provider\", \"tags\": [ \"readonly\" ] }, \"preview\": \"public readonly pr"
+        },
+        {
+          "rank": 6,
+          "score": 0.7457467166592412,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:841-920",
+          "language": "json",
+          "startLine": 841,
+          "endLine": 920,
+          "metadata": {},
+          "preview": "\"rank\": 6, \"score\": 0.7605406282145881, \"reason\": \"surreal vector search\", \"filePath\": \"packages/infra/README.md\", \"chunkId\": \"packages/infra/README.md:35-46\", \"language\": \"markdown\", \"startLine\": 35, \"endLine\": 46, \"met"
+        },
+        {
+          "rank": 7,
+          "score": 0.7351080884407137,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/bootstrap/app.unit.test.ts",
+          "chunkId": "packages/mcp-server/test/bootstrap/app.unit.test.ts:78-92",
+          "language": "typescript",
+          "startLine": 78,
+          "endLine": 92,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "createMetadata"
+          },
+          "preview": "function createMetadata( overrides: Partial<ProjectMetadata> = {}, ): ProjectMetadata { return { projectSpace: \"demo-project\", namespace: \"demo_project\", database: \"default\", embeddingProvider: \"voyage\", embeddingModel: "
+        },
+        {
+          "rank": 8,
+          "score": 0.7306120330242625,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/queries.json",
+          "chunkId": "test/quality/queries.json:1-51",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 51,
+          "metadata": {},
+          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
+        },
+        {
+          "rank": 9,
+          "score": 0.7305986669194774,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:391-398",
+          "language": "typescript",
+          "startLine": 391,
+          "endLine": 398,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "defaultEmbeddingModelForProvider"
+          },
+          "preview": "function defaultEmbeddingModelForProvider(provider: EmbeddingProvider): string { switch (provider) { case \"openai-compatible\": return \"text-embedding-3-large\"; case \"voyage\": return \"voyage-code-3\"; } }"
+        },
+        {
+          "rank": 10,
+          "score": 0.7261977737953925,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+          "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:121-200",
+          "language": "javascript",
+          "startLine": 121,
+          "endLine": 200,
+          "metadata": {},
+          "preview": "totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { execute: async () => ({ requestedFileCount: 1"
+        }
+      ]
+    },
+    {
+      "id": "repository-indexing-concurrency",
+      "query": "embeddingConcurrency worker pool repository indexing batches concurrency",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/quality/results/qwen.json",
+        "yarn.lock",
+        "packages/mcp-server/src/bootstrap/logger.ts",
+        "test/quality/queries.json"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.8598226933798503,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1081-1160",
+          "language": "json",
+          "startLine": 1081,
+          "endLine": 1160,
+          "metadata": {},
+          "preview": "\"endLine\": 48, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"field\", \"symbolName\": \"apiKey\", \"tags\": [ \"private\", \"readonly\" ] }, \"preview\": \"private readonly apiKey: string\" }, { \"rank\": 10, \"s"
+        },
+        {
+          "rank": 2,
+          "score": 0.8030868594564269,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:1201-1280",
+          "language": "text",
+          "startLine": 1201,
+          "endLine": 1280,
+          "metadata": {},
+          "preview": "ip-address: \"npm:10.1.0\" peerDependencies: express: \">= 4.11\" checksum: 10c0/e3229938457cec617460c54ef4e90c8c254facc884729325d20ea35e3838bd273e4c611fc1f4a76f6d14c411e30d31b15e88eb4be87408615ff0aacc142511a2 languageName: "
+        },
+        {
+          "rank": 3,
+          "score": 0.7949441459118955,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:1021-1100",
+          "language": "text",
+          "startLine": 1021,
+          "endLine": 1100,
+          "metadata": {},
+          "preview": "checksum: 10c0/3f54eb49c16c18707949ff25a1456728c883e81259f045003499efba399c08bad00deebf65cccde8c0e07908c1a225c9d472b7107e558f2a48e28d530e34527c languageName: node linkType: hard \"es-errors@npm:^1.3.0\": version: 1.3.0 res"
+        },
+        {
+          "rank": 4,
+          "score": 0.7906917717967336,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:1141-1220",
+          "language": "text",
+          "startLine": 1141,
+          "endLine": 1220,
+          "metadata": {},
+          "preview": "languageName: node linkType: hard \"escape-string-regexp@npm:^5.0.0\": version: 5.0.0 resolution: \"escape-string-regexp@npm:5.0.0\" checksum: 10c0/6366f474c6f37a802800a435232395e04e9885919873e382b157ab7e8f0feb8fed71497f84a6"
+        },
+        {
+          "rank": 5,
+          "score": 0.7903666911165117,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/logger.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/logger.ts:115-117",
+          "language": "typescript",
+          "startLine": 115,
+          "endLine": 117,
+          "metadata": {
+            "parentSymbol": "PinoLoggerAdapter",
+            "symbolKind": "method",
+            "symbolName": "warn"
+          },
+          "preview": "public warn(message: string, fields?: LogFields): void { write(this.logger.warn.bind(this.logger), message, fields); }"
+        },
+        {
+          "rank": 6,
+          "score": 0.7722375163627155,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:601-680",
+          "language": "text",
+          "startLine": 601,
+          "endLine": 680,
+          "metadata": {},
+          "preview": "vite: ^6.0.0 || ^7.0.0 || ^8.0.0-0 peerDependenciesMeta: msw: optional: true vite: optional: true checksum: 10c0/f61d3df6461008eb1e62ba465172207b29bd0d9866ff6bc88cd40fc99cd5d215ad89e2894ba6de87068e33f75de903b28a65ccc6074"
+        },
+        {
+          "rank": 7,
+          "score": 0.7689174417346446,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1141-1220",
+          "language": "json",
+          "startLine": 1141,
+          "endLine": 1220,
+          "metadata": {},
+          "preview": "\"score\": 0.7944756883748854, \"reason\": \"surreal vector search\", \"filePath\": \"packages/core/src/services/index-repository-service.ts\", \"chunkId\": \"packages/core/src/services/index-repository-service.ts:190-269\", \"language"
+        },
+        {
+          "rank": 8,
+          "score": 0.7679755225057634,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:961-1040",
+          "language": "text",
+          "startLine": 961,
+          "endLine": 1040,
+          "metadata": {},
+          "preview": "\"detect-libc@npm:^2.0.3\": version: 2.1.2 resolution: \"detect-libc@npm:2.1.2\" checksum: 10c0/acc675c29a5649fa1fb6e255f993b8ee829e510b6b56b0910666949c80c364738833417d0edb5f90e4e46be17228b0f2b66a010513984e18b15deeeac49369c4"
+        },
+        {
+          "rank": 9,
+          "score": 0.7665415050345888,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/queries.json",
+          "chunkId": "test/quality/queries.json:1-51",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 51,
+          "metadata": {},
+          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
+        },
+        {
+          "rank": 10,
+          "score": 0.7643013217409939,
+          "reason": "surreal vector search",
+          "filePath": "yarn.lock",
+          "chunkId": "yarn.lock:61-140",
+          "language": "text",
+          "startLine": 61,
+          "endLine": 140,
+          "metadata": {},
+          "preview": "tslib: \"npm:^2.4.0\" checksum: 10c0/750edca117e0363ab2de10622f8ee60e57d8690c2f29c49704813da5cd627c641798d7f3cb0d953c62fdc71688e02e333ddbf2c1204f38b47e3e40657332a6f5 languageName: node linkType: hard \"@emnapi/wasi-threads@"
+        }
+      ]
+    },
+    {
+      "id": "file-context-delete-flows",
+      "query": "get_file_context delete_files file-level incremental indexing",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "test/quality/results/qwen.json",
+        "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+        "test/quality/queries.json",
+        "packages/mcp-server/src/bootstrap/config.ts",
+        "packages/mcp-server/src/bootstrap/container.ts",
+        "packages/mcp-server/src/bootstrap/logger.ts",
+        "test/template/main.py"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.8459689095688728,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1321-1400",
+          "language": "json",
+          "startLine": 1321,
+          "endLine": 1400,
+          "metadata": {},
+          "preview": "\"endLine\": 200, \"metadata\": {}, \"preview\": \"totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { e"
+        },
+        {
+          "rank": 2,
+          "score": 0.8333455938598378,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+          "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:121-200",
+          "language": "javascript",
+          "startLine": 121,
+          "endLine": 200,
+          "metadata": {},
+          "preview": "totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { execute: async () => ({ requestedFileCount: 1"
+        },
+        {
+          "rank": 3,
+          "score": 0.8294561197320326,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/queries.json",
+          "chunkId": "test/quality/queries.json:1-51",
+          "language": "json",
+          "startLine": 1,
+          "endLine": 51,
+          "metadata": {},
+          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
+        },
+        {
+          "rank": 4,
+          "score": 0.8230067751374782,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1381-1460",
+          "language": "json",
+          "startLine": 1381,
+          "endLine": 1460,
+          "metadata": {},
+          "preview": "\"endLine\": 579, \"metadata\": { \"docType\": \"markdown\", \"heading\": \"10.1 Tool 名称\", \"headingPath\": [ \"agent-code-index MCP Tool Interface 设计\", \"10. get_file_context\", \"10.1 Tool 名称\" ], \"sectionLevel\": 3 }, \"preview\": \"### 10"
+        },
+        {
+          "rank": 5,
+          "score": 0.8193193353288738,
+          "reason": "surreal vector search",
+          "filePath": "test/quality/results/qwen.json",
+          "chunkId": "test/quality/results/qwen.json:1261-1340",
+          "language": "json",
+          "startLine": 1261,
+          "endLine": 1340,
+          "metadata": {},
+          "preview": "\"filePath\": \"packages/core/src/services/index-repository-service.ts\", \"chunkId\": \"packages/core/src/services/index-repository-service.ts:307-384\", \"language\": \"typescript\", \"startLine\": 307, \"endLine\": 384, \"metadata\": {"
+        },
+        {
+          "rank": 6,
+          "score": 0.7951918220996218,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:202-210",
+          "language": "typescript",
+          "startLine": 202,
+          "endLine": 210,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "requireEnv"
+          },
+          "preview": "function requireEnv(env: EnvMap, key: string): string { const value = env[key]?.trim(); if (!value) { throw new Error(`Missing required environment variable: ${key}`); } return value; }"
+        },
+        {
+          "rank": 7,
+          "score": 0.7850146938620053,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/container.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/container.ts:201-212",
+          "language": "typescript",
+          "startLine": 201,
+          "endLine": 212,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "toSurrealConnectionConfig"
+          },
+          "preview": "function toSurrealConnectionConfig(config: AppConfig): SurrealConnectionConfig { return { url: config.surreal.url, namespace: config.surreal.namespace, database: config.surreal.database, username: config.surreal.username"
+        },
+        {
+          "rank": 8,
+          "score": 0.7802322250306373,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/logger.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/logger.ts:115-117",
+          "language": "typescript",
+          "startLine": 115,
+          "endLine": 117,
+          "metadata": {
+            "parentSymbol": "PinoLoggerAdapter",
+            "symbolKind": "method",
+            "symbolName": "warn"
+          },
+          "preview": "public warn(message: string, fields?: LogFields): void { write(this.logger.warn.bind(this.logger), message, fields); }"
+        },
+        {
+          "rank": 9,
+          "score": 0.7780094288319256,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
+          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:363-386",
+          "language": "typescript",
+          "startLine": 363,
+          "endLine": 386,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "logLevelEnv"
+          },
+          "preview": "function logLevelEnv( env: EnvMap, key: string, fallback: LoggingConfig[\"level\"], ): LoggingConfig[\"level\"] { const value = optionalEnv(env, key); if (value === undefined) { return fallback; } if ( value === \"debug\" || v"
+        },
+        {
+          "rank": 10,
+          "score": 0.7737901780418568,
+          "reason": "surreal vector search",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:504-583",
+          "language": "python",
+          "startLine": 504,
+          "endLine": 583,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "MemoryClient"
+          },
+          "preview": "self.delete_users() capture_client_event(\"client.reset\", self, {\"sync_type\": \"sync\"}) return {\"message\": \"Client reset successful. All users and memories deleted.\"} @api_error_handler def batch_update(self, memories: Lis"
+        }
+      ]
+    }
+  ]
+}
