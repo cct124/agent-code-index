@@ -103,7 +103,10 @@ describe("DefaultSearchCodeContextService", () => {
             endLine: 1,
             score: 0.9,
             reason: "cosine similarity",
+            estimatedTokens: 21,
             metadata: {
+              mergedChunkIds: ["chunk-1"],
+              mergedFromCount: 1,
               symbolName: "ShippingQuoteService",
               symbolKind: "class",
             },
@@ -120,7 +123,8 @@ describe("DefaultSearchCodeContextService", () => {
         ],
         instructions: [
           "Treat this packet as semantic retrieval output ranked by relevance.",
-          "Use items for exact excerpts and files for a de-duplicated coverage summary.",
+          "Read merged items before falling back to raw results, because adjacent chunks may have been combined.",
+          "Use files for per-file coverage and truncation metadata to decide whether more context is needed.",
         ],
         deduplication: {
           strategy: "none",
@@ -133,7 +137,9 @@ describe("DefaultSearchCodeContextService", () => {
           totalItems: 1,
           returnedItems: 1,
           omittedItems: 0,
-          limit: 5,
+          budgetTokens: undefined,
+          estimatedTotalTokens: 21,
+          estimatedReturnedTokens: 21,
         },
       },
     });
@@ -195,6 +201,8 @@ describe("DefaultSearchCodeContextService", () => {
         contextPacket: expect.objectContaining({
           truncation: expect.objectContaining({
             strategy: "none",
+            estimatedTotalTokens: 0,
+            estimatedReturnedTokens: 0,
           }),
         }),
       }),
@@ -297,6 +305,121 @@ describe("DefaultSearchCodeContextService", () => {
       returnedItems: 1,
       omittedItems: 1,
       limit: 1,
+      budgetTokens: undefined,
+      estimatedTotalTokens: 34,
+      estimatedReturnedTokens: 17,
+    });
+  });
+
+  it("merges adjacent chunks within a file and applies token budget driven max_items truncation", async () => {
+    const embeddingProvider: EmbeddingProvider = {
+      provider: "openai-compatible",
+      model: "Qwen/Qwen3-Embedding-8B",
+      vectorDimension: 3,
+      generateEmbeddings: vi.fn(async () => [[0.1, 0.2, 0.3]]),
+    };
+    const searchRepository: SearchRepository = {
+      semanticSearch: vi.fn(async () => [
+        {
+          chunk: {
+            id: "chunk-1",
+            repositoryId: "repo-a",
+            filePath: "src/a.ts",
+            language: "typescript",
+            content: "export const a = 1;",
+            searchText: "a",
+            startLine: 1,
+            endLine: 1,
+            hash: "hash-1",
+            embedding: [1, 0, 0],
+            metadata: { symbolName: "a" },
+          },
+          score: 0.99,
+          reason: "semantic_match",
+        },
+        {
+          chunk: {
+            id: "chunk-2",
+            repositoryId: "repo-a",
+            filePath: "src/a.ts",
+            language: "typescript",
+            content: "export const b = 2;",
+            searchText: "b",
+            startLine: 3,
+            endLine: 3,
+            hash: "hash-2",
+            embedding: [1, 0, 0],
+            metadata: { symbolName: "b" },
+          },
+          score: 0.95,
+          reason: "adjacent_match",
+        },
+        {
+          chunk: {
+            id: "chunk-3",
+            repositoryId: "repo-a",
+            filePath: "src/other.ts",
+            language: "typescript",
+            content: "export const c = 3;",
+            searchText: "c",
+            startLine: 20,
+            endLine: 20,
+            hash: "hash-3",
+            embedding: [1, 0, 0],
+            metadata: { symbolName: "c" },
+          },
+          score: 0.7,
+          reason: "other_file",
+        },
+      ]),
+    };
+
+    const service = new DefaultSearchCodeContextService(
+      embeddingProvider,
+      searchRepository,
+    );
+
+    const result = await service.execute({
+      repositoryId: "repo-a",
+      query: "find constants",
+      topK: 5,
+      tokenBudget: 30,
+    });
+
+    expect(result.contextPacket.items).toHaveLength(1);
+    expect(result.contextPacket.items[0]).toEqual(
+      expect.objectContaining({
+        type: "search_match",
+        filePath: "src/a.ts",
+        startLine: 1,
+        endLine: 3,
+        content: "export const a = 1;\n\n...\n\nexport const b = 2;",
+        metadata: expect.objectContaining({
+          mergedChunkIds: ["chunk-1", "chunk-2"],
+          mergedFromCount: 2,
+          mergedSymbolNames: ["a", "b"],
+        }),
+      }),
+    );
+    expect(result.contextPacket.files).toEqual([
+      {
+        filePath: "src/a.ts",
+        language: "typescript",
+        chunkCount: 1,
+        startLine: 1,
+        endLine: 3,
+      },
+    ]);
+    expect(result.contextPacket.truncation).toEqual({
+      truncated: true,
+      strategy: "max_items",
+      totalItems: 2,
+      returnedItems: 1,
+      omittedItems: 1,
+      limit: 1,
+      budgetTokens: 30,
+      estimatedTotalTokens: 41,
+      estimatedReturnedTokens: 24,
     });
   });
 

@@ -15,6 +15,10 @@ export { DefaultIndexRepositoryService } from "./services/index-repository-servi
 export { DefaultIndexFilesService } from "./services/index-files-service.js";
 export { DefaultDeleteFilesService } from "./services/delete-files-service.js";
 export { DefaultGetFileContextService } from "./services/get-file-context-service.js";
+export {
+  DefaultContextBuilder,
+  estimateTextTokens,
+} from "./services/context-builder.js";
 export { DefaultSearchCodeContextService } from "./services/search-code-context-service.js";
 export type {
   DeleteFilesInput,
@@ -41,6 +45,10 @@ export type {
   PrepareFilesInput,
   PrepareFilesResult,
 } from "./services/index-files-service.js";
+export type {
+  BuildSearchContextPacketInput,
+  ContextBuilder,
+} from "./services/context-builder.js";
 export type {
   FileContextChunk,
   GetFileContextInput,

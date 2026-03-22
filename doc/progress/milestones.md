@@ -273,12 +273,16 @@
 8. `repositoryId` / `rootPath` 默认回填已收敛为共享 resolver
 9. MCP tool 注册与调用、文件级索引/删除、按文件删除仓储能力相关测试已补齐
 10. `get_file_context` 已升级返回最小 `ContextPacket`，并补齐子进程 stdio smoke test
+11. `search_code_context` 已升级返回 `results + richer ContextPacket` 双轨结果
+12. richer `ContextBuilder` 已支持相邻 chunk 合并、按文件聚合与 token budget 驱动的 `max_items` 截断
+13. `ContextPacket.truncation` 已补齐 `budgetTokens / estimatedTotalTokens / estimatedReturnedTokens` 预算元数据
 
 该里程碑的意义是：
 
 1. 项目已经从“索引与检索能力存在，但未对 Agent 暴露”推进到“核心能力已可通过 MCP 正式调用”
 2. 文件修改/删除场景已经具备增量索引能力，不再只支持全仓重建
-3. 下一阶段的主要缺口已经收敛为 richer 上下文包组装与检索后处理
+3. `ContextPacket` 已从最小可用版本推进到带预算与聚合语义的 richer 版本
+4. 下一阶段的主要缺口已经收敛为跨文件重排、query-aware summarization 与更高级的检索后处理
 
 ## 16. 当前里程碑结论
 

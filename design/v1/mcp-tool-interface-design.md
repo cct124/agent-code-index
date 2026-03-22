@@ -149,13 +149,13 @@ MCP `mcp.json` 中推荐通过不同 server 条目完成项目级隔离。
 
 ## 4. Tool 列表总览
 
-| Tool                  | 当前状态 | 核心依赖                          | v1 输出形态               |
-| --------------------- | -------- | --------------------------------- | ------------------------- |
-| `index_repository`    | 已实现   | `DefaultIndexRepositoryService`   | 索引摘要                  |
-| `search_code_context` | 已实现   | `DefaultSearchCodeContextService` | `results + contextPacket` |
-| `index_files`         | 已实现   | `IndexFilesService`               | 文件级重建摘要            |
-| `delete_files`        | 已实现   | `DeleteFilesService`              | 删除摘要                  |
-| `get_file_context`    | 已实现   | `GetFileContextService`           | 返回文件级连续上下文包    |
+| Tool                  | 当前状态 | 核心依赖                          | v1 输出形态                      |
+| --------------------- | -------- | --------------------------------- | -------------------------------- |
+| `index_repository`    | 已实现   | `DefaultIndexRepositoryService`   | 索引摘要                         |
+| `search_code_context` | 已实现   | `DefaultSearchCodeContextService` | `results + richer contextPacket` |
+| `index_files`         | 已实现   | `IndexFilesService`               | 文件级重建摘要                   |
+| `delete_files`        | 已实现   | `DeleteFilesService`              | 删除摘要                         |
+| `get_file_context`    | 已实现   | `GetFileContextService`           | 返回文件级连续上下文包           |
 
 ## 5. 通用输入约束
 
@@ -264,6 +264,7 @@ interface SearchCodeContextToolInput {
   repositoryId?: string;
   query: string;
   topK?: number;
+  tokenBudget?: number;
   filters?: {
     filePath?: string;
     language?: string;
@@ -286,7 +287,8 @@ interface SearchCodeContextToolInput {
 1. `repositoryId`：逻辑仓库标识，可选；未提供时由 adapter 尝试使用 `MCP_DEFAULT_REPOSITORY_ID`
 2. `query`：自然语言查询，必填
 3. `topK`：返回结果数，可选，默认使用 `DEFAULT_TOP_K`
-4. `filters`：精确过滤条件，可选
+4. `tokenBudget`：可选的上下文 token 预算，用于驱动 `contextPacket` 的 `max_items` 截断
+5. `filters`：精确过滤条件，可选
 
 当前支持的 filter 白名单：
 
@@ -308,8 +310,9 @@ interface SearchCodeContextToolInput {
 1. `query.trim()` 后不能为空
 2. `topK` 若未提供，adapter 从进程配置填默认值
 3. `topK` 必须为正整数
-4. 未在白名单中的 `filters` 字段直接报错
-5. `repositoryId` 在 adapter 回填后不能为空
+4. `tokenBudget` 若提供，必须为正整数
+5. 未在白名单中的 `filters` 字段直接报错
+6. `repositoryId` 在 adapter 回填后不能为空
 
 ### 7.4 Core 映射
 
@@ -359,6 +362,7 @@ interface SearchCodeContextToolResult {
       content: string;
       score?: number;
       reason?: string;
+      estimatedTokens?: number;
       metadata: Record<string, unknown>;
     }>;
     files: Array<{
@@ -381,6 +385,9 @@ interface SearchCodeContextToolResult {
       returnedItems: number;
       omittedItems: number;
       limit?: number;
+      budgetTokens?: number;
+      estimatedTotalTokens: number;
+      estimatedReturnedTokens: number;
     };
   };
 }
@@ -391,15 +398,18 @@ interface SearchCodeContextToolResult {
 1. `results` 保留原始检索结果，便于调试与策略对比
 2. `contextPacket` 提供统一的 Agent 消费出口
 3. `contextPacket.deduplication` 明确去重策略与去重数量
-4. `contextPacket.truncation` 明确截断策略、截断上限与省略数量
-5. `chunk.embedding` 不建议默认暴露给 Agent，除非调试模式显式开启
+4. `contextPacket.items` 已由 `ContextBuilder` 做去重、相邻 chunk 合并，并补充 `estimatedTokens`
+5. `contextPacket.truncation` 明确截断策略、截断上限、省略数量以及 token 预算统计
+6. `chunk.embedding` 不建议默认暴露给 Agent，除非调试模式显式开启
 
-### 7.6 后续演进方向
+### 7.6 当前 richer ContextBuilder 语义
 
-待 `ContextBuilder` 落地后，可演进为：
+当前 `search_code_context` 的 `contextPacket` 构建流程为：
 
-1. `results` 保留为调试字段或次级字段
-2. `contextPacket` 增加更复杂的预算控制、相邻 chunk 合并和重排说明
+1. 先对原始 `results` 按 `chunk_id` 或 `file_path_line_range` 去重
+2. 再按文件内相邻行范围合并 chunk，减少碎片化上下文
+3. 对合并后的 item 估算 token，并按 `topK` 与可选 `tokenBudget` 共同决定返回数量
+4. 输出文件级聚合摘要与显式的截断/去重元数据，便于 Agent 判断是否需要二次取数
 
 ## 8. index_files
 
@@ -693,13 +703,13 @@ interface ToolErrorPayload {
 
 ## 12. Tool 与 Core 映射总表
 
-| Tool                  | Core service                      | 当前状态 | 备注                                 |
-| --------------------- | --------------------------------- | -------- | ------------------------------------ |
-| `index_repository`    | `DefaultIndexRepositoryService`   | 已可接入 | 可直接落 adapter                     |
-| `search_code_context` | `DefaultSearchCodeContextService` | 已可接入 | 当前输出为 `results + contextPacket` |
-| `index_files`         | `IndexFilesService`               | 已实现   | 覆盖式重建                           |
-| `delete_files`        | `DeleteFilesService`              | 已实现   | 处理文件删除与旧路径清理             |
-| `get_file_context`    | `GetFileContextService`           | 已实现   | 当前为最小连续文本组装               |
+| Tool                  | Core service                      | 当前状态 | 备注                                        |
+| --------------------- | --------------------------------- | -------- | ------------------------------------------- |
+| `index_repository`    | `DefaultIndexRepositoryService`   | 已可接入 | 可直接落 adapter                            |
+| `search_code_context` | `DefaultSearchCodeContextService` | 已可接入 | 当前输出为 `results + richer contextPacket` |
+| `index_files`         | `IndexFilesService`               | 已实现   | 覆盖式重建                                  |
+| `delete_files`        | `DeleteFilesService`              | 已实现   | 处理文件删除与旧路径清理                    |
+| `get_file_context`    | `GetFileContextService`           | 已实现   | 当前为最小连续文本组装                      |
 
 ## 13. 示例
 
@@ -722,6 +732,7 @@ interface ToolErrorPayload {
 {
   "query": "shipping quote service factory create method",
   "topK": 5,
+  "tokenBudget": 800,
   "filters": {
     "language": "typescript",
     "tags": ["static"]
@@ -767,8 +778,7 @@ interface ToolErrorPayload {
 
 因此，下一阶段最合理的推进顺序是：
 
-1. 在现有 `get_file_context` 之上补更完整的 `ContextPacket` 组装
+1. 继续增强 richer `ContextBuilder`，补跨文件重排与 query-aware summarization
 2. 进一步统一多 tool 的错误码与错误详情模型
 3. 继续补充更多上下文提取与检索后处理能力
-4. 再补 `get_file_context` service 与 tool
-5. 最后继续把 `search_code_context` 的 `contextPacket` 升级到 richer ContextBuilder 产物
+4. 视需要把 `results` 收敛为调试字段，把 `contextPacket` 作为主输出契约

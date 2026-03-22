@@ -115,6 +115,7 @@ describe("DefaultGetFileContextService", () => {
             startLine: 1,
             endLine: 1,
             content: "export class ShippingService {}",
+            estimatedTokens: 20,
             metadata: {
               symbolName: "ShippingService",
               symbolKind: "class",
@@ -128,6 +129,7 @@ describe("DefaultGetFileContextService", () => {
             startLine: 3,
             endLine: 3,
             content: "export function createShippingService() {}",
+            estimatedTokens: 23,
             metadata: {
               symbolName: "createShippingService",
               symbolKind: "function",
@@ -158,6 +160,8 @@ describe("DefaultGetFileContextService", () => {
           totalItems: 2,
           returnedItems: 2,
           omittedItems: 0,
+          estimatedTotalTokens: 43,
+          estimatedReturnedTokens: 43,
         },
       },
     });

@@ -121,6 +121,8 @@ describe("registerAgentCodeIndexTools", () => {
             totalItems: 2,
             returnedItems: 2,
             omittedItems: 0,
+            estimatedTotalTokens: 44,
+            estimatedReturnedTokens: 44,
           },
         }),
       }),
@@ -130,6 +132,7 @@ describe("registerAgentCodeIndexTools", () => {
       name: "search_code_context",
       arguments: {
         query: "find exported value",
+        tokenBudget: 128,
       },
     });
 
@@ -138,6 +141,7 @@ describe("registerAgentCodeIndexTools", () => {
         repositoryId: "repo-a",
         query: "find exported value",
         topK: 10,
+        tokenBudget: 128,
         filters: undefined,
       },
     );
@@ -146,6 +150,7 @@ describe("registerAgentCodeIndexTools", () => {
         repositoryId: "repo-a",
         query: "find exported value",
         topK: 10,
+        tokenBudget: 128,
         resultCount: 1,
         contextPacket: expect.objectContaining({
           kind: "search",
@@ -304,6 +309,7 @@ function createTestApp(): App {
                 content: "export const value = 1;",
                 startLine: 1,
                 endLine: 1,
+                estimatedTokens: 18,
                 metadata: {
                   symbolName: "value",
                 },
@@ -316,6 +322,7 @@ function createTestApp(): App {
                 content: "export function readValue() { return value; }",
                 startLine: 3,
                 endLine: 3,
+                estimatedTokens: 26,
                 metadata: {
                   symbolName: "readValue",
                   symbolKind: "function",
@@ -346,6 +353,8 @@ function createTestApp(): App {
               totalItems: 2,
               returnedItems: 2,
               omittedItems: 0,
+              estimatedTotalTokens: 44,
+              estimatedReturnedTokens: 44,
             },
           },
         })),
@@ -436,7 +445,10 @@ function createSearchCodeContextResult() {
           endLine: 1,
           score: 0.95,
           reason: "semantic_match",
+          estimatedTokens: 18,
           metadata: {
+            mergedChunkIds: ["chunk-a"],
+            mergedFromCount: 1,
             symbolName: "value",
           },
         },
@@ -452,7 +464,8 @@ function createSearchCodeContextResult() {
       ],
       instructions: [
         "Treat this packet as semantic retrieval output ranked by relevance.",
-        "Use items for exact excerpts and files for a de-duplicated coverage summary.",
+        "Read merged items before falling back to raw results, because adjacent chunks may have been combined.",
+        "Use files for per-file coverage and truncation metadata to decide whether more context is needed.",
       ],
       deduplication: {
         strategy: "none",
@@ -465,7 +478,9 @@ function createSearchCodeContextResult() {
         totalItems: 1,
         returnedItems: 1,
         omittedItems: 0,
-        limit: 10,
+        budgetTokens: undefined,
+        estimatedTotalTokens: 18,
+        estimatedReturnedTokens: 18,
       },
     },
   };

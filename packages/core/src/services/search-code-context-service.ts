@@ -1,8 +1,12 @@
 import type { EmbeddingProvider } from "../contracts/embedding-provider.js";
 import { NOOP_LOGGER, type Logger } from "../contracts/logger.js";
-import type { ContextPacket } from "../domain/context-packet.js";
-import type { SearchResult } from "../domain/search-result.js";
 import type { SearchRepository } from "../contracts/search-repository.js";
+import {
+  DefaultContextBuilder,
+  type ContextBuilder,
+} from "./context-builder.js";
+import type { SearchResult } from "../domain/search-result.js";
+import type { ContextPacket } from "../domain/context-packet.js";
 
 /**
  * 查询代码上下文输入。
@@ -16,6 +20,8 @@ export interface SearchCodeContextInput {
   topK: number;
   /** 附加过滤条件。 */
   filters?: Record<string, unknown>;
+  /** 可选的 ContextPacket token 预算。 */
+  tokenBudget?: number;
 }
 
 /**
@@ -56,6 +62,8 @@ export class DefaultSearchCodeContextService implements SearchCodeContextService
   private readonly embeddingProvider: EmbeddingProvider;
   /** 语义检索仓储。 */
   private readonly searchRepository: SearchRepository;
+  /** 统一上下文构建器。 */
+  private readonly contextBuilder: ContextBuilder;
   /** 结构化日志接口。 */
   private readonly logger: Logger;
 
@@ -66,9 +74,11 @@ export class DefaultSearchCodeContextService implements SearchCodeContextService
     embeddingProvider: EmbeddingProvider,
     searchRepository: SearchRepository,
     logger: Logger = NOOP_LOGGER,
+    contextBuilder: ContextBuilder = new DefaultContextBuilder(),
   ) {
     this.embeddingProvider = embeddingProvider;
     this.searchRepository = searchRepository;
+    this.contextBuilder = contextBuilder;
     this.logger = logger.child({
       package: "core",
       module: "search-code-context-service",
@@ -99,10 +109,11 @@ export class DefaultSearchCodeContextService implements SearchCodeContextService
         topK: input.topK,
         resultCount: 0,
         results: [],
-        contextPacket: buildSearchContextPacket({
+        contextPacket: this.contextBuilder.buildSearchContextPacket({
           repositoryId: input.repositoryId,
           query,
           topK: input.topK,
+          tokenBudget: input.tokenBudget,
           results: [],
         }),
       };
@@ -145,10 +156,11 @@ export class DefaultSearchCodeContextService implements SearchCodeContextService
         topK: input.topK,
         resultCount: results.length,
         results,
-        contextPacket: buildSearchContextPacket({
+        contextPacket: this.contextBuilder.buildSearchContextPacket({
           repositoryId: input.repositoryId,
           query,
           topK: input.topK,
+          tokenBudget: input.tokenBudget,
           results,
         }),
       };
@@ -168,135 +180,4 @@ export class DefaultSearchCodeContextService implements SearchCodeContextService
       throw error;
     }
   }
-}
-
-function buildSearchContextPacket(input: {
-  repositoryId: string;
-  query: string;
-  topK: number;
-  results: SearchResult[];
-}): ContextPacket {
-  const deduplicated = dedupeSearchResults(input.results);
-  const limited = deduplicated.items.slice(0, input.topK);
-
-  return {
-    kind: "search",
-    repositoryId: input.repositoryId,
-    query: input.query,
-    items: limited.map((result) => ({
-      type: "search_match",
-      id: result.chunk.id,
-      filePath: result.chunk.filePath,
-      language: result.chunk.language,
-      startLine: result.chunk.startLine,
-      endLine: result.chunk.endLine,
-      content: result.chunk.content,
-      score: result.score,
-      reason: result.reason,
-      metadata: { ...result.chunk.metadata },
-    })),
-    files: summarizeSearchFiles(limited),
-    instructions: [
-      "Treat this packet as semantic retrieval output ranked by relevance.",
-      "Use items for exact excerpts and files for a de-duplicated coverage summary.",
-    ],
-    deduplication: {
-      strategy: deduplicated.strategy,
-      inputItems: input.results.length,
-      removedItems: input.results.length - deduplicated.items.length,
-    },
-    truncation: {
-      truncated: deduplicated.items.length > limited.length,
-      strategy: deduplicated.items.length > limited.length ? "top_k" : "none",
-      totalItems: deduplicated.items.length,
-      returnedItems: limited.length,
-      omittedItems: deduplicated.items.length - limited.length,
-      limit: input.topK,
-    },
-  };
-}
-
-function dedupeSearchResults(results: SearchResult[]): {
-  items: SearchResult[];
-  strategy: "none" | "chunk_id" | "file_path_line_range";
-} {
-  const uniqueResults: SearchResult[] = [];
-  const seenChunkIds = new Set<string>();
-  const seenRanges = new Set<string>();
-  let fallbackUsed = false;
-
-  for (const result of results) {
-    const chunkId = result.chunk.id.trim();
-
-    if (chunkId) {
-      if (seenChunkIds.has(chunkId)) {
-        continue;
-      }
-
-      seenChunkIds.add(chunkId);
-      uniqueResults.push(result);
-      continue;
-    }
-
-    fallbackUsed = true;
-    const rangeKey = [
-      result.chunk.filePath,
-      result.chunk.startLine,
-      result.chunk.endLine,
-      result.chunk.hash,
-    ].join(":");
-
-    if (seenRanges.has(rangeKey)) {
-      continue;
-    }
-
-    seenRanges.add(rangeKey);
-    uniqueResults.push(result);
-  }
-
-  if (results.length === uniqueResults.length) {
-    return {
-      items: uniqueResults,
-      strategy: "none",
-    };
-  }
-
-  return {
-    items: uniqueResults,
-    strategy: fallbackUsed ? "file_path_line_range" : "chunk_id",
-  };
-}
-
-function summarizeSearchFiles(results: SearchResult[]): ContextPacket["files"] {
-  const files = new Map<
-    string,
-    {
-      filePath: string;
-      language: string;
-      chunkCount: number;
-      startLine: number;
-      endLine: number;
-    }
-  >();
-
-  for (const result of results) {
-    const existing = files.get(result.chunk.filePath);
-
-    if (!existing) {
-      files.set(result.chunk.filePath, {
-        filePath: result.chunk.filePath,
-        language: result.chunk.language,
-        chunkCount: 1,
-        startLine: result.chunk.startLine,
-        endLine: result.chunk.endLine,
-      });
-      continue;
-    }
-
-    existing.chunkCount += 1;
-    existing.startLine = Math.min(existing.startLine, result.chunk.startLine);
-    existing.endLine = Math.max(existing.endLine, result.chunk.endLine);
-  }
-
-  return Array.from(files.values());
 }

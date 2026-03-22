@@ -165,6 +165,17 @@ src/
 5. 同时返回最小可用的 `contextPacket`
 6. `assembledContext` 只是已索引 chunk 的连续文本视图，不等价于直接重读磁盘原文件
 
+### 4.2 search_code_context 的当前语义
+
+当前 `search_code_context` 已不再只是“返回原始检索命中列表”，而是同时返回一个 richer `contextPacket`：
+
+1. 原始 `results[]` 仍保留，便于调试向量检索得分与召回原因
+2. `contextPacket.items[]` 会先做去重，再按文件内相邻 chunk 合并
+3. 合并后的 item 会补充 `estimatedTokens`、`mergedChunkIds`、`mergedFromCount`
+4. `contextPacket.files[]` 会按最终返回 item 做文件级聚合摘要
+5. `tokenBudget` 若传入，将驱动 `max_items` 截断，而不是只按 `topK` 生硬裁剪
+6. `contextPacket.truncation` 会显式返回 `budgetTokens`、`estimatedTotalTokens` 与 `estimatedReturnedTokens`
+
 ### 5. 启动与索引链验证
 
 已实现：
@@ -303,7 +314,7 @@ src/
 ### 当前限制
 
 1. 当前已实现的 tools 包括 `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context`
-2. 更完整的 `ContextBuilder` 和更复杂的上下文重排仍未落地
+2. `search_code_context` 已具备 richer `ContextBuilder`、相邻 chunk 合并和 token budget 驱动的 `max_items` 截断，但跨文件重排与更复杂的 query-aware summarization 仍未落地
 3. 当前更适合每个项目起一个独立 server 进程，而不是共享一个进程做多项目动态路由
 4. `mcp.json` 中不建议直接提交明文 API key、token 或数据库密码
 

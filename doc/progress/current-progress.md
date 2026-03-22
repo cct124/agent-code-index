@@ -20,7 +20,8 @@
 10. `query text -> query embedding -> search` 的 core service 已落地，检索已升级为正式用例
 11. VoyageAI 真实 embedding 兼容性已补齐验证
 12. OpenAI-compatible 与 Voyage 两条 provider 路径都已具备本地 SurrealDB 端到端索引与检索验证
-13. `index_repository`、`search_code_context`、`index_files`、`delete_files` 已通过 MCP tool server 对外暴露
+13. `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context` 已通过 MCP tool server 对外暴露
+14. `search_code_context` 已升级为 `results + richer ContextPacket` 双轨输出，并具备相邻 chunk 合并、文件聚合和 token budget 驱动的 `max_items` 截断
 
 ## 2. 当前项目结构
 
@@ -111,7 +112,9 @@
 5. `index_files` 已完成 adapter 注册与调用映射
 6. `delete_files` 已完成 adapter 注册与调用映射
 7. `repositoryId` / `rootPath` 默认回填已收敛为共享 resolver
-8. tool 输入校验、参数清洗和错误结果映射已形成第一版实现
+8. `get_file_context` 已完成 adapter 注册与调用映射，并返回最小 `ContextPacket`
+9. `search_code_context` 已接入 `ContextBuilder`，统一产出 richer `ContextPacket`
+10. tool 输入校验、参数清洗和错误结果映射已形成第一版实现
 
 ### 3.6 可观测性能力
 
@@ -153,6 +156,8 @@
 12. 真实 SurrealDB 环境下的 `prepare -> embed -> upsert -> search` 基线链路测试
 13. 真实 SurrealDB + OpenAI-compatible provider 的 `prepare -> real embed -> upsert -> query embed -> search` 集成测试
 14. 真实 SurrealDB + Voyage provider 的 `prepare -> real embed -> upsert -> query embed -> search` 集成测试
+15. 子进程 stdio MCP smoke test 已验证真实 transport 接入与 `get_file_context` 调用
+16. `search_code_context` 与 `get_file_context` 的 `ContextPacket` 相关单元测试已通过
 
 截至最近一次回归，以下验证已通过：
 
@@ -177,7 +182,7 @@
 
 1. 更多语言的 tree-sitter 语义解析支持，例如 Go / Java / Rust
 2. 原生向量检索路径的进一步调优，例如更复杂过滤组合验证、`EF` 参数调优与候选窗口默认值调优
-3. 检索结果到 `ContextPacket` 的更完整上下文组装服务
+3. richer `ContextBuilder` 的下一阶段能力，例如跨文件重排、query-aware summarization 与更细粒度预算分配
 4. parser metadata 的进一步增强，例如 imports、继承/implements、调用点与更完整的可见性/修饰信息
 5. provider 级重试、超时、限流与并发控制仍未形成正式能力
 6. provider / MCP / storage 跨模块统一错误码文档仍未形成
@@ -228,14 +233,14 @@
 
 建议先完成：
 
-1. 在现有 search/file 双 ContextPacket 输出之上继续补 richer context builder
-2. 收敛 get_file_context 与 search_code_context 的统一上下文包策略
-3. 继续增强检索后的重排、预算控制与上下文说明字段
+1. 在现有 richer ContextBuilder 之上继续补跨文件重排与 query-aware summarization
+2. 继续收敛 get_file_context 与 search_code_context 的统一上下文包策略
+3. 继续增强检索后的预算分配、上下文说明字段与主输出契约稳定性
 
 原因：
 
-1. 当前索引写入主流程、provider、存储、parser、5 个 MCP tools 和最小 `ContextPacket` 都已经落地
-2. 项目当前最大的缺口已经收敛为“更完整的上下文包组装与检索后处理仍未对外暴露”
+1. 当前索引写入主流程、provider、存储、parser、5 个 MCP tools 和 search/file 双 `ContextPacket` 都已经落地
+2. 项目当前最大的缺口已经收敛为“更高级的上下文重排与检索后处理质量仍需继续增强”
 
 建议交付物：
 

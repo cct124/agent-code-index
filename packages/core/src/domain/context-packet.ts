@@ -42,6 +42,8 @@ export interface ContextPacketItem {
   score?: number;
   /** 检索命中原因。 */
   reason?: string;
+  /** 粗略估算的 token 数。 */
+  estimatedTokens?: number;
   /** 结构化元数据。 */
   metadata: Record<string, unknown>;
 }
@@ -90,4 +92,10 @@ export interface ContextPacketTruncation {
   omittedItems: number;
   /** 当前截断上限。 */
   limit?: number;
+  /** 触发截断时使用的 token 预算。 */
+  budgetTokens?: number;
+  /** 截断前的粗略 token 总量。 */
+  estimatedTotalTokens: number;
+  /** 截断后的粗略 token 总量。 */
+  estimatedReturnedTokens: number;
 }

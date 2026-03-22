@@ -1,6 +1,7 @@
 import type { ChunkRepository } from "../contracts/chunk-repository.js";
 import { NOOP_LOGGER, type Logger } from "../contracts/logger.js";
 import type { ContextPacket } from "../domain/context-packet.js";
+import { estimateTextTokens } from "./context-builder.js";
 
 /**
  * 文件上下文读取输入。
@@ -148,6 +149,7 @@ function buildContextPacket(
       startLine: chunk.startLine,
       endLine: chunk.endLine,
       content: chunk.content,
+      estimatedTokens: estimateTextTokens(chunk.content),
       metadata: { ...chunk.metadata },
     })),
     files: fileSummary ? [fileSummary] : [],
@@ -166,6 +168,14 @@ function buildContextPacket(
       totalItems: chunks.length,
       returnedItems: chunks.length,
       omittedItems: 0,
+      estimatedTotalTokens: chunks.reduce(
+        (sum, chunk) => sum + estimateTextTokens(chunk.content),
+        0,
+      ),
+      estimatedReturnedTokens: chunks.reduce(
+        (sum, chunk) => sum + estimateTextTokens(chunk.content),
+        0,
+      ),
     },
   };
 }

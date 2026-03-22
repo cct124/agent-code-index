@@ -26,6 +26,7 @@ const searchCodeContextInputSchema = z.object({
   repositoryId: z.string().optional(),
   query: z.string(),
   topK: z.number().int().positive().optional(),
+  tokenBudget: z.number().int().positive().optional(),
   filters: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -130,17 +131,23 @@ export function registerAgentCodeIndexTools(server: McpServer, app: App): void {
         const topK =
           normalizeOptionalPositiveInteger("topK", args.topK) ??
           app.config.indexing.defaultTopK;
+        const tokenBudget = normalizeOptionalPositiveInteger(
+          "tokenBudget",
+          args.tokenBudget,
+        );
         const filters = normalizeSearchFilters(args.filters);
         const results = await app.container.searchCodeContextService.execute({
           repositoryId,
           query,
           topK,
+          tokenBudget,
           filters,
         });
         const structuredContent = {
           repositoryId,
           query,
           topK,
+          tokenBudget,
           resultCount: results.resultCount,
           results: results.results.map(toSearchToolResultItem),
           contextPacket: results.contextPacket,
