@@ -137,7 +137,9 @@ describe("registerAgentCodeIndexTools", () => {
     });
 
     expect(result.isError).toBe(true);
-    expect(result.content[0]).toEqual(
+    const content = result.content as Array<{ type: string; text?: string }>;
+
+    expect(content[0]).toEqual(
       expect.objectContaining({
         type: "text",
         text: expect.stringContaining("Unsupported search filters"),
