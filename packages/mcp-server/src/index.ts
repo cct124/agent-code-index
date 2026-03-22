@@ -3,8 +3,8 @@
  */
 import { createApp } from "./bootstrap/app.js";
 import {
-	resolveRepositoryId,
-	resolveRootPath,
+  resolveRepositoryId,
+  resolveRootPath,
 } from "./adapters/shared/input-resolver.js";
 
 /**

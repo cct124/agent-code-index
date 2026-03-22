@@ -121,7 +121,10 @@ describe("DefaultIndexFilesService", () => {
   it("skips delete and upsert when no files are prepared successfully", async () => {
     const fileChunkPreparationService: FileChunkPreparationService = {
       prepareFiles: vi.fn(async () =>
-        createPreparedResult({ files: [], failedFiles: [{ filePath: "src/a.ts", reason: "boom" }] }),
+        createPreparedResult({
+          files: [],
+          failedFiles: [{ filePath: "src/a.ts", reason: "boom" }],
+        }),
       ),
     };
     const embeddingProvider: EmbeddingProvider = {

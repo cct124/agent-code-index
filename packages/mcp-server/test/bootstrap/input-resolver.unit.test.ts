@@ -62,7 +62,9 @@ describe("input resolver", () => {
     const config = createConfig();
     config.mcp = {};
 
-    expect(() => resolveRepositoryId(config)).toThrow(/MCP_DEFAULT_REPOSITORY_ID/);
+    expect(() => resolveRepositoryId(config)).toThrow(
+      /MCP_DEFAULT_REPOSITORY_ID/,
+    );
     expect(() => resolveRootPath(config)).toThrow(/MCP_REPOSITORY_ROOT/);
   });
 });

@@ -150,6 +150,9 @@ export class SurrealChunkRepository implements ChunkRepository {
 
   /**
    * 删除指定仓库下文件列表对应的全部 chunk。
+   *
+   * 当前实现先查询再删除，用于返回稳定的删除数量；后续如数据库侧可直接返回影响行数，
+   * 可以再收敛为单条语句。
    */
   public async deleteByFilePaths(
     input: DeleteChunksByFilePathsInput,
@@ -162,7 +165,9 @@ export class SurrealChunkRepository implements ChunkRepository {
     });
 
     if (filePaths.length === 0) {
-      logger.debug("Chunk deletion by file paths skipped because file list is empty");
+      logger.debug(
+        "Chunk deletion by file paths skipped because file list is empty",
+      );
       return 0;
     }
 

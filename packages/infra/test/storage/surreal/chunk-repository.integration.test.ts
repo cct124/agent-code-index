@@ -280,39 +280,41 @@ describe("SurrealChunkRepository", () => {
         return store.get(recordId.toString());
       },
     }));
-    const query = vi.fn(async (sql: string, bindings: Record<string, unknown>) => {
-      if (sql.startsWith("SELECT * FROM chunk")) {
-        return [
-          Array.from(store.values()).filter((chunk) => {
-            if (chunk.repositoryId !== bindings.repositoryId) {
-              return false;
-            }
+    const query = vi.fn(
+      async (sql: string, bindings: Record<string, unknown>) => {
+        if (sql.startsWith("SELECT * FROM chunk")) {
+          return [
+            Array.from(store.values()).filter((chunk) => {
+              if (chunk.repositoryId !== bindings.repositoryId) {
+                return false;
+              }
 
-            if (Array.isArray(bindings.filePaths)) {
-              return bindings.filePaths.includes(chunk.filePath);
-            }
+              if (Array.isArray(bindings.filePaths)) {
+                return bindings.filePaths.includes(chunk.filePath);
+              }
 
-            return chunk.filePath === bindings.filePath;
-          }),
-        ];
-      }
-
-      if (sql.startsWith("DELETE chunk")) {
-        for (const [key, value] of store.entries()) {
-          if (
-            value.repositoryId === bindings.repositoryId &&
-            Array.isArray(bindings.filePaths) &&
-            bindings.filePaths.includes(value.filePath)
-          ) {
-            store.delete(key);
-          }
+              return chunk.filePath === bindings.filePath;
+            }),
+          ];
         }
 
-        return [];
-      }
+        if (sql.startsWith("DELETE chunk")) {
+          for (const [key, value] of store.entries()) {
+            if (
+              value.repositoryId === bindings.repositoryId &&
+              Array.isArray(bindings.filePaths) &&
+              bindings.filePaths.includes(value.filePath)
+            ) {
+              store.delete(key);
+            }
+          }
 
-      throw new Error(`Unexpected query: ${sql}`);
-    });
+          return [];
+        }
+
+        throw new Error(`Unexpected query: ${sql}`);
+      },
+    );
 
     const repository = new SurrealChunkRepository({
       config: {} as never,

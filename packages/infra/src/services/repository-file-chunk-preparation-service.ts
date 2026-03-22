@@ -11,9 +11,12 @@ import { NOOP_LOGGER } from "@agent-code-index/core";
 
 import { ParserFactory } from "../parsing/parser-factory.js";
 
-export class RepositoryFileChunkPreparationService
-  implements FileChunkPreparationServiceContract
-{
+/**
+ * 基于文件列表的 chunk 准备服务。
+ *
+ * 与全仓扫描版本不同，这里只读取调用方明确指定的文件，适用于 MCP 的增量更新。
+ */
+export class RepositoryFileChunkPreparationService implements FileChunkPreparationServiceContract {
   private readonly parserFactory: ParserFactory;
   private readonly logger: Logger;
 
@@ -48,6 +51,7 @@ export class RepositoryFileChunkPreparationService
         const absolutePath = path.resolve(input.rootPath, normalizedPath);
         const content = await readFile(absolutePath, "utf8");
 
+        // 先用最小代价过滤明显的二进制文件，避免后续 parser 进入无意义处理。
         if (content.includes("\u0000")) {
           skippedFileCount += 1;
           files.push({ filePath: normalizedPath, chunks: [] });
@@ -100,12 +104,18 @@ export class RepositoryFileChunkPreparationService
   }
 }
 
+/**
+ * 去重并清理空文件路径，保证统计和结果集合稳定。
+ */
 function dedupeFilePaths(filePaths: string[]): string[] {
-  return Array.from(new Set(filePaths.map((filePath) => filePath.trim()))).filter(
-    (filePath) => filePath.length > 0,
-  );
+  return Array.from(
+    new Set(filePaths.map((filePath) => filePath.trim())),
+  ).filter((filePath) => filePath.length > 0);
 }
 
+/**
+ * 统一将路径标准化为 `/` 分隔，确保跨平台行为一致。
+ */
 function normalizeRelativePath(filePath: string): string {
   return filePath.split(path.sep).join("/");
 }

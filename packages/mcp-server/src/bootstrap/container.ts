@@ -182,6 +182,9 @@ function toSurrealConnectionConfig(config: AppConfig): SurrealConnectionConfig {
   };
 }
 
+/**
+ * 将应用配置映射为搜索仓储的运行参数。
+ */
 function toSurrealSearchRepositoryOptions(
   config: AppConfig,
 ): SurrealSearchRepositoryOptions {
