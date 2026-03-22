@@ -1,32 +1,37 @@
 # @agent-code-index/mcp-server
 
-`packages/mcp-server` 是当前项目的运行时装配与协议接入模块，负责把 `core` 与 `infra` 组合成一个可启动的应用。
+`packages/mcp-server` 是当前项目的运行时装配与 MCP 协议接入模块，负责把 `core` 与 `infra` 组合成一个可启动、可通过 stdio 暴露 tools 的应用。
 
 这一层的目标是：
 
 1. 读取运行时配置
 2. 创建并装配依赖容器
 3. 在启动阶段执行必要校验
-4. 为后续 MCP tool/server 接入提供运行时入口
+4. 注册并暴露当前可用的 MCP tools
 
-当前阶段，`mcp-server` 已经具备完整的启动装配能力，但还没有真正对外暴露 MCP tools。
+当前阶段，`mcp-server` 已经具备完整的启动装配能力，并已真正对外暴露 MCP tools。
 
 ## 模块职责
 
-当前 `mcp-server` 主要承担三类职责：
+当前 `mcp-server` 主要承担四类职责：
 
 1. 配置加载与校验
 2. 应用依赖装配
 3. 启动阶段健康检查与元数据校验
+4. MCP tool 注册与请求映射
 
 ## 当前目录结构
 
 ```text
 src/
+  adapters/
+    shared/
+    tools/
   bootstrap/
     app.ts
     config.ts
     container.ts
+  server.ts
   index.ts
 ```
 
@@ -58,9 +63,13 @@ src/
 4. `projectMetadataSchema`
 5. `chunkPreparationService`
 6. `chunkRepository`
-7. `searchRepository`
-8. `indexRepositoryService`
-9. `projectMetadataRepository`
+7. `fileChunkPreparationService`
+8. `searchRepository`
+9. `indexRepositoryService`
+10. `searchCodeContextService`
+11. `indexFilesService`
+12. `deleteFilesService`
+13. `projectMetadataRepository`
 
 也就是说，当前运行时已经能拿到完整的最小索引链依赖图。
 
@@ -79,7 +88,26 @@ src/
 
 ### index.ts
 
-当前只导出 `createApp`，作为后续 server 启动逻辑的复用入口。
+当前导出 `createApp`、`createMcpServer`、`startStdioServer`、共享 resolver 和 tool 注册函数。
+
+### adapters/shared
+
+负责 MCP adapter 层共用的输入回填、参数清洗与校验辅助。
+
+### adapters/tools
+
+负责把 `core` use case 映射为真正的 MCP tools。
+
+当前已实现并注册：
+
+1. `index_repository`
+2. `search_code_context`
+3. `index_files`
+4. `delete_files`
+
+### server.ts
+
+负责创建 `McpServer`、注册 tools，并提供 stdio 启动入口。
 
 ## 当前已经实现的功能
 
@@ -110,8 +138,21 @@ src/
 2. Surreal client 与 repository 装配
 3. chunk preparation 服务装配
 4. 默认索引服务装配
+5. 文件级索引与删除服务装配
 
-### 4. 启动与索引链验证
+### 4. MCP tools 暴露
+
+已实现：
+
+1. 通过官方 MCP TypeScript SDK 创建真实 `McpServer`
+2. 通过 stdio transport 暴露当前 server
+3. `index_repository` tool 注册
+4. `search_code_context` tool 注册
+5. `index_files` tool 注册
+6. `delete_files` tool 注册
+7. tool 输入参数清洗、默认值回填与错误映射
+
+### 5. 启动与索引链验证
 
 已实现：
 
@@ -121,7 +162,7 @@ src/
 
 ## MCP JSON 配置约定
 
-当前 `mcp-server` 还没有真正的 MCP adapters 和 tools，但配置模型已经适合按 MCP server 进程做项目级隔离。
+当前 `mcp-server` 已经具备真实 MCP adapters 和 tools，配置模型也适合按 MCP server 进程做项目级隔离。
 
 推荐约定是：
 
@@ -247,20 +288,18 @@ src/
 
 ### 当前限制
 
-1. 现在还没有真正的 MCP tool registration，所以这份约定描述的是“配置模型如何接入 MCP host”，不是“当前已经可直接启动的完整协议层”
-2. 当前更适合每个项目起一个独立 server 进程，而不是共享一个进程做多项目动态路由
-3. `mcp.json` 中不建议直接提交明文 API key、token 或数据库密码
-4. [.vscode/mcp.example.jsonc](../../.vscode/mcp.example.jsonc) 当前提供的是配置字段和项目隔离方式示例；真正可运行的 server entry 仍要等 MCP adapters / tools 落地后再收口
+1. 当前已实现的 tools 仅覆盖 `index_repository`、`search_code_context`、`index_files`、`delete_files`
+2. `get_file_context` 与 `ContextPacket` 组装仍未落地
+3. 当前更适合每个项目起一个独立 server 进程，而不是共享一个进程做多项目动态路由
+4. `mcp.json` 中不建议直接提交明文 API key、token 或数据库密码
 
 ## 当前边界
 
 `mcp-server` 当前明确还不负责：
 
-1. 真正初始化并启动 MCP server
-2. 注册 MCP tools
-3. 处理 MCP 请求和响应映射
-4. 定义核心业务语义
-5. 实现具体存储和 embedding 技术细节
+1. `get_file_context` 等尚未落地 use case 的 tool 实现
+2. 定义核心业务语义
+3. 实现具体存储和 embedding 技术细节
 
 这些职责分别属于未来的协议适配层，以及 `core` / `infra`。
 
@@ -272,5 +311,6 @@ src/
 2. 可运行的应用容器装配能力
 3. 启动阶段的真实数据库健康检查与元数据锁定能力
 4. 对完整最小索引链的运行时装配能力
+5. 可通过 stdio 对外暴露的 MCP tool server
 
-也就是说，当前 `mcp-server` 已经承担起“把系统真正启动起来并装配完成”的职责；下一阶段再继续补协议入口和 MCP tools 即可。
+也就是说，当前 `mcp-server` 已经承担起“把系统真正启动起来、装配完成并暴露当前可用 tools”的职责；下一阶段主要补齐剩余 tools 与上下文组装即可。

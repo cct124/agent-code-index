@@ -4,7 +4,7 @@
 
 ## 1. 里程碑概览
 
-截至 2026-03-21，当前已完成的主要里程碑包括：
+截至 2026-03-22，当前已完成的主要里程碑包括：
 
 1. v1 架构设计与工程骨架完成
 2. 配置模型与项目级元数据锁定落地
@@ -20,6 +20,7 @@
 12. Surreal 原生向量检索迁移与 3.0.4 基线验证落地
 13. VoyageAI 真实 embedding 兼容性验证落地
 14. 真实 embedding provider 与 Surreal 端到端索引闭环验证落地
+15. MCP tool server 与文件级增量索引能力落地
 
 ## 2. 里程碑一：架构设计与工程骨架完成
 
@@ -258,6 +259,26 @@
 1. 项目当前不只验证了 provider API 兼容性，也验证了 provider、索引服务、Surreal 存储和检索之间的真实闭环
 2. 后续工作重点可以从“补链路是否能跑通”转向“MCP 暴露、稳定性和检索质量增强”
 
+## 16. 里程碑十五：MCP tool server 与文件级增量索引能力落地
+
+已完成：
+
+1. `IndexFilesService` 已在 `core` 中落地
+2. `DeleteFilesService` 已在 `core` 中落地
+3. `ChunkRepository.deleteByFilePaths(...)` 已落地
+4. `RepositoryFileChunkPreparationService` 已在 `infra` 中落地
+5. `packages/mcp-server` 已接入官方 MCP TypeScript SDK
+6. 已实现真实 `McpServer` 创建与 stdio transport 启动入口
+7. `index_repository`、`search_code_context`、`index_files`、`delete_files` 四个 tools 已注册并可调用
+8. `repositoryId` / `rootPath` 默认回填已收敛为共享 resolver
+9. MCP tool 注册与调用、文件级索引/删除、按文件删除仓储能力相关测试已补齐
+
+该里程碑的意义是：
+
+1. 项目已经从“索引与检索能力存在，但未对 Agent 暴露”推进到“核心能力已可通过 MCP 正式调用”
+2. 文件修改/删除场景已经具备增量索引能力，不再只支持全仓重建
+3. 下一阶段的主要缺口已经收敛为 `get_file_context` 与更完整的上下文包组装
+
 ## 16. 当前里程碑结论
 
 截至当前，可以将阶段成果概括为：
@@ -277,8 +298,9 @@
 13. Surreal 原生向量检索迁移与 `3.0.4` 基线验证已落地
 14. VoyageAI 真实 embedding 兼容性验证已落地
 15. 真实 embedding provider 与 Surreal 端到端索引闭环验证已落地
+16. MCP tool server 与文件级增量索引能力已落地
 
 下一阶段不再是补工程骨架，而是先将现有检索能力收敛为正式 use case：
 
-1. 将该检索用例通过 MCP tool 与上下文服务对外暴露
+1. 将剩余的文件上下文与上下文包能力通过 MCP tool 与上下文服务对外暴露
 2. 再增强 provider 稳定性、排序、更复杂过滤组合验证与候选窗口调优

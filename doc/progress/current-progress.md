@@ -4,7 +4,7 @@
 
 ## 1. 当前结论
 
-截至 2026-03-21，当前项目已经从“可验证启动骨架”推进到“索引与检索主链路可运行、真实存储与真实 embedding provider 端到端可验证、代码与 Markdown 智能 chunk 已落地”的阶段。
+截至 2026-03-22，当前项目已经从“可验证启动骨架”推进到“索引与检索主链路可运行、真实存储与真实 embedding provider 端到端可验证、代码与 Markdown 智能 chunk 已落地，并已通过 MCP stdio 暴露核心工具”的阶段。
 
 当前状态可以概括为：
 
@@ -20,7 +20,7 @@
 10. `query text -> query embedding -> search` 的 core service 已落地，检索已升级为正式用例
 11. VoyageAI 真实 embedding 兼容性已补齐验证
 12. OpenAI-compatible 与 Voyage 两条 provider 路径都已具备本地 SurrealDB 端到端索引与检索验证
-13. MCP tool server 与具体工具实现仍未落地
+13. `index_repository`、`search_code_context`、`index_files`、`delete_files` 已通过 MCP tool server 对外暴露
 
 ## 2. 当前项目结构
 
@@ -62,13 +62,14 @@
 1. `DefaultSurrealClient` 连接、鉴权、健康检查
 2. `SurrealProjectMetadataRepository` 真实读写
 3. `SurrealChunkRepository` 批量写入、按仓库删除、按文件读取
-4. `SurrealSearchRepository` 已收敛为单一的 native HNSW 检索路径
-5. 当前 native 检索已采用“全部精确过滤条件数据库下推 + HNSW KNN”的正式基线
-6. native HNSW 候选窗口参数已支持通过配置注入
-7. 已具备 `EXPLAIN FULL` 级别的真实环境验证，可校验 KnnScan 的 index、k、ef，以及多精确过滤条件已进入执行计划
-8. Surreal client、chunk repository、search repository 已接入统一结构化日志
-9. Surreal 存储主链路已具备 `errCode / retryable / httpStatus` 错误分类与日志脱敏策略
-10. 当前已支持通过 `metadata -> searchText` 的轻量语义头增强，让代码结构语义真正进入向量化输入
+4. `SurrealChunkRepository` 按文件列表删除
+5. `SurrealSearchRepository` 已收敛为单一的 native HNSW 检索路径
+6. 当前 native 检索已采用“全部精确过滤条件数据库下推 + HNSW KNN”的正式基线
+7. native HNSW 候选窗口参数已支持通过配置注入
+8. 已具备 `EXPLAIN FULL` 级别的真实环境验证，可校验 KnnScan 的 index、k、ef，以及多精确过滤条件已进入执行计划
+9. Surreal client、chunk repository、search repository 已接入统一结构化日志
+10. Surreal 存储主链路已具备 `errCode / retryable / httpStatus` 错误分类与日志脱敏策略
+11. 当前已支持通过 `metadata -> searchText` 的轻量语义头增强，让代码结构语义真正进入向量化输入
 
 ### 3.3 parser 与 chunking 能力
 
@@ -99,7 +100,20 @@
 8. 已补齐基于 `.env.development.voyageai` 的 VoyageAI 真实兼容性测试
 9. `DefaultSearchCodeContextService` 已在 `core` 中落地，负责 `query text -> query embedding -> semantic search`
 
-### 3.5 可观测性能力
+### 3.5 MCP tool 能力
+
+当前已经可验证：
+
+1. `packages/mcp-server` 已接入官方 MCP TypeScript SDK
+2. 已可创建真实 `McpServer` 并通过 stdio transport 启动
+3. `index_repository` 已完成 adapter 注册与调用映射
+4. `search_code_context` 已完成 adapter 注册与调用映射
+5. `index_files` 已完成 adapter 注册与调用映射
+6. `delete_files` 已完成 adapter 注册与调用映射
+7. `repositoryId` / `rootPath` 默认回填已收敛为共享 resolver
+8. tool 输入校验、参数清洗和错误结果映射已形成第一版实现
+
+### 3.6 可观测性能力
 
 当前已经可验证：
 
@@ -109,35 +123,36 @@
 4. 启动、索引、embedding、parser、Surreal client、chunk repository、search repository 已使用统一 child logger 模式
 5. 日志默认避免输出 token、password、apiKey 等敏感字段
 
-### 3.6 索引主链路能力
+### 3.7 索引主链路能力
 
 当前已经可验证：
 
 1. `DefaultIndexRepositoryService` 已在 `core` 中落地
 2. 已支持“prepare -> batch embed -> full replace -> upsert”主流程
-3. `mcp-server` 的 container 已装配 `chunkPreparationService / embeddingProvider / chunkRepository / searchRepository / indexRepositoryService`
-4. `mcp-server` 的 container 已装配 `searchCodeContextService`
+3. `mcp-server` 的 container 已装配 `chunkPreparationService / fileChunkPreparationService / embeddingProvider / chunkRepository / searchRepository`
+4. `mcp-server` 的 container 已装配 `indexRepositoryService / searchCodeContextService / indexFilesService / deleteFilesService`
 5. 已具备真实 SurrealDB 环境下的 `prepare -> embed -> upsert -> search` 链路集成测试
 6. 已具备真实 SurrealDB + OpenAI-compatible provider 的 `query text -> query embedding -> search` 正式用例验证
 7. 已具备真实 SurrealDB + Voyage provider 的 `prepare -> real embed -> upsert -> query embed -> search` 端到端验证
 
-### 3.7 当前测试覆盖
+### 3.8 当前测试覆盖
 
 当前已经落地的测试覆盖可以归纳为：
 
 1. `mcp-server` 启动层的配置加载、应用装配与真实启动链路测试
-2. `core` 层的 `DefaultIndexRepositoryService` 与 `DefaultSearchCodeContextService` 单元测试
-3. `infra` 层的 provider factory、Voyage provider、OpenAI-compatible provider 单元测试
-4. OpenAI-compatible provider 与 Voyage provider 的 opt-in 真实 embedding 集成测试
-5. `FallbackParser`、`ParserFactory`、`MarkdownParser`、TypeScript / JavaScript / Python tree-sitter parser 单元测试
-6. `LocalFileScanner` 与 `RepositoryChunkPreparationService` 的单元测试
-7. `RepositoryChunkPreparationService` 基于真实模板文件的集成测试
-8. `SurrealChunkSchema`、`project_metadata` schema 与 repository 的轻量集成测试
-9. `DefaultSurrealClient`、`SurrealChunkRepository`、`SurrealSearchRepository` 的轻量集成测试与真实 SurrealDB 集成测试
-10. `surreal-log-utils`、`chunk-utils` 与 Surreal client 错误分类/日志相关单元测试
-11. 真实 SurrealDB 环境下的 `prepare -> embed -> upsert -> search` 基线链路测试
-12. 真实 SurrealDB + OpenAI-compatible provider 的 `prepare -> real embed -> upsert -> query embed -> search` 集成测试
-13. 真实 SurrealDB + Voyage provider 的 `prepare -> real embed -> upsert -> query embed -> search` 集成测试
+2. `mcp-server` 的 MCP tool 注册、`listTools` 与 `callTool` 适配测试
+3. `core` 层的 `DefaultIndexRepositoryService`、`DefaultSearchCodeContextService`、`DefaultIndexFilesService`、`DefaultDeleteFilesService` 单元测试
+4. `infra` 层的 provider factory、Voyage provider、OpenAI-compatible provider 单元测试
+5. OpenAI-compatible provider 与 Voyage provider 的 opt-in 真实 embedding 集成测试
+6. `FallbackParser`、`ParserFactory`、`MarkdownParser`、TypeScript / JavaScript / Python tree-sitter parser 单元测试
+7. `LocalFileScanner`、`RepositoryChunkPreparationService`、`RepositoryFileChunkPreparationService` 的单元测试
+8. `RepositoryChunkPreparationService` 基于真实模板文件的集成测试
+9. `SurrealChunkSchema`、`project_metadata` schema 与 repository 的轻量集成测试
+10. `DefaultSurrealClient`、`SurrealChunkRepository`、`SurrealSearchRepository` 的轻量集成测试与真实 SurrealDB 集成测试
+11. `surreal-log-utils`、`chunk-utils` 与 Surreal client 错误分类/日志相关单元测试
+12. 真实 SurrealDB 环境下的 `prepare -> embed -> upsert -> search` 基线链路测试
+13. 真实 SurrealDB + OpenAI-compatible provider 的 `prepare -> real embed -> upsert -> query embed -> search` 集成测试
+14. 真实 SurrealDB + Voyage provider 的 `prepare -> real embed -> upsert -> query embed -> search` 集成测试
 
 截至最近一次回归，以下验证已通过：
 
@@ -162,12 +177,11 @@
 
 1. 更多语言的 tree-sitter 语义解析支持，例如 Go / Java / Rust
 2. 原生向量检索路径的进一步调优，例如更复杂过滤组合验证、`EF` 参数调优与候选窗口默认值调优
-3. MCP tool server 与具体工具实现
-4. 检索结果到 `ContextPacket` 的完整上下文组装服务
-5. parser metadata 的进一步增强，例如 imports、继承/implements、调用点与更完整的可见性/修饰信息
-6. provider 级重试、超时、限流与并发控制仍未形成正式能力
-7. provider / MCP / storage 跨模块统一错误码文档仍未形成
-8. requestId / indexingRunId 等跨请求链路追踪字段尚未贯穿到全部模块
+3. `get_file_context` 与检索结果到 `ContextPacket` 的完整上下文组装服务
+4. parser metadata 的进一步增强，例如 imports、继承/implements、调用点与更完整的可见性/修饰信息
+5. provider 级重试、超时、限流与并发控制仍未形成正式能力
+6. provider / MCP / storage 跨模块统一错误码文档仍未形成
+7. requestId / indexingRunId 等跨请求链路追踪字段尚未贯穿到全部模块
 
 ## 5. 当前风险与注意点
 
@@ -178,7 +192,7 @@
 3. native 路径虽然已支持候选窗口参数配置化，并有 `EXPLAIN FULL` 真实测试兜底，但当前默认值仍属于经验值，不是基于真实数据集调优后的最优值
 4. 当前 parser 已具备 TypeScript、TSX、JavaScript、JSX、Python 和 Markdown 的第一版结构感知能力，但更多语言尚未覆盖
 5. 当前已接入 Voyage 与 OpenAI-compatible provider，两条 provider 路径的真实 embedding 兼容性与本地 SurrealDB 端到端索引验证都已补齐，但 provider 级可靠性治理仍较薄
-6. `createApp()` 已经是异步启动流程，后续接入真实 MCP server 时必须正确 await
+6. `createApp()` 已经是异步启动流程，当前 stdio MCP server 已正确 await；后续新增 transport 时仍需保持这一约束
 7. 当前 embedding provider 已支持 `voyage` 与 `openai-compatible`，但 provider 级重试、超时、限流和并发控制仍未形成正式策略
 8. 当前错误分类已覆盖第一版日志诊断需求，但尚未形成跨 provider / MCP / storage 的统一错误码文档
 
@@ -215,21 +229,20 @@
 建议先完成：
 
 1. `get-file-context-service`
-2. MCP server 与 tool registration
-3. `search-code-context-service` 的 MCP tool 暴露
-4. index/search/file-context 三个 MCP tool 的输入输出适配
-5. 最小可用的 ContextPacket 组装逻辑
+2. `get_file_context` 的 MCP tool 暴露
+3. 最小可用的 ContextPacket 组装逻辑
+4. 将 `search_code_context` 结果逐步升级为更稳定的上下文包输出
 
 原因：
 
-1. 当前索引写入主流程、provider、存储与 parser 都已经落地
-2. 项目当前最大的缺口已经变成“能力已存在，但还没有真正通过 MCP 对外暴露”
+1. 当前索引写入主流程、provider、存储、parser 和 4 个 MCP tools 都已经落地
+2. 项目当前最大的缺口已经收敛为“文件上下文与上下文包仍未对外暴露”
 
 建议交付物：
 
-1. 一个可启动的 MCP server 进程
-2. 至少 3 个已注册并可调用的工具：index、search、get-file-context
-3. 一条从 query 到上下文返回的最小演示链路
+1. 一个补齐 `get_file_context` 的 MCP server
+2. 至少 5 个已注册并可调用的工具：index repository、search、index files、delete files、get-file-context
+3. 一条从 query 到上下文包返回的最小演示链路
 
 ### 6.2 第二优先级：provider 稳定性与工程化收口
 
@@ -272,7 +285,7 @@
 
 ## 7. 当前进度结论
 
-当前项目已经越过“纯骨架”和“只有 fallback parser”的阶段，进入“索引与检索主链路可运行、语义切块与文档结构化切块已落地、真实 provider 端到端验证已补齐”的阶段。
+当前项目已经越过“纯骨架”和“只有 fallback parser”的阶段，进入“索引与检索主链路可运行、语义切块与文档结构化切块已落地、真实 provider 端到端验证已补齐、核心 MCP tools 已可调用”的阶段。
 
 同时，Surreal 原生向量检索的 v1 基线也已经稳定：
 
@@ -285,7 +298,7 @@
 
 当前最合理的开发重点是：
 
-1. 先把 MCP tool 层和上下文服务补齐
+1. 先把剩余的 `get_file_context` 和上下文服务补齐
 2. 再优先补齐 provider 稳定性、错误分类与本地测试手册
 3. 然后增强检索排序、过滤能力与 native 参数调优
 4. 最后扩展更多语言 parser 与 metadata 深度

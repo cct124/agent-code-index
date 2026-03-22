@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-截至 2026-03-21，仓库已经进入“索引与检索主链路可运行、真实存储与真实 embedding provider 端到端可验证”的阶段。
+截至 2026-03-22，仓库已经进入“索引与检索主链路可运行、真实存储与真实 embedding provider 端到端可验证，并可通过 MCP stdio 暴露核心工具”的阶段。
 
 已经落地并验证的能力包括：
 
@@ -20,13 +20,13 @@
 8. SurrealDB `3.0.4` 基线下的原生 HNSW 检索
 9. `voyage` 与 `openai-compatible` 两条 provider 路径
 10. OpenAI-compatible / Voyage + Surreal 的真实端到端索引与检索验证
+11. 基于官方 MCP SDK 的 `index_repository` / `search_code_context` / `index_files` / `delete_files` tools
 
 当前仍未落地的主要能力包括：
 
-1. MCP adapters 与 tools
-2. `get-file-context-service`
-3. `ContextPacket` 组装
-4. provider 级重试、超时、限流与统一错误码
+1. `get-file-context-service`
+2. `ContextPacket` 组装
+3. provider 级重试、超时、限流与统一错误码
 
 也就是说，当前最大的缺口已经不是底层索引与检索能力，而是对外暴露层和运行稳定性收口。
 
@@ -49,7 +49,7 @@ doc/
 
 1. `packages/core`：领域模型、contracts、核心 use case
 2. `packages/infra`：Surreal、embedding、scanner、parser 等基础设施实现
-3. `packages/mcp-server`：配置加载、容器装配、启动校验
+3. `packages/mcp-server`：配置加载、容器装配、启动校验与 MCP tool 暴露
 4. `design/v1`：架构设计与专项实施文档
 5. `doc/progress`：当前进度、阶段里程碑与开发优先级
 
@@ -71,7 +71,7 @@ doc/
 
 1. `core` 不感知 Surreal 与 MCP 细节
 2. `infra` 负责 parser、embedding、storage 与 scanner 实现
-3. `mcp-server` 当前只负责 bootstrap，不负责真实 MCP tool 注册
+3. `mcp-server` 当前已负责可用 tools 的真实 MCP 注册与 stdio 暴露
 4. 当前正式检索基线为 Surreal 原生 HNSW 单一路径，不再维护应用侧 cosine fallback
 5. 同一 `PROJECT_SPACE` 下只允许一个 provider / model / vector dimension 组合
 

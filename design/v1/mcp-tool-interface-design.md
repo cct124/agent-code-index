@@ -28,15 +28,16 @@
 截至 2026-03-22，MCP 暴露层的状态是：
 
 1. `packages/mcp-server` 已完成配置加载、容器装配与启动期校验
-2. `DefaultIndexRepositoryService` 已落地，可作为 `index_repository` 的核心 use case
-3. `DefaultSearchCodeContextService` 已落地，可作为 `search_code_context` 的核心 use case
-4. `get-file-context-service` 尚未落地
-5. MCP server、tool registration、协议输入输出映射尚未落地
+2. `DefaultIndexRepositoryService` 已通过 `index_repository` tool 对外暴露
+3. `DefaultSearchCodeContextService` 已通过 `search_code_context` tool 对外暴露
+4. `IndexFilesService` 已落地，并已通过 `index_files` tool 对外暴露
+5. `DeleteFilesService` 已落地，并已通过 `delete_files` tool 对外暴露
+6. `get-file-context-service` 尚未落地
 
 因此，本文档中的接口分为两类：
 
-1. `index_repository` / `search_code_context`：可立即进入 adapter 实现
-2. `index_files` / `delete_files` / `get_file_context`：先冻结契约，待对应 `core` service 与 repository 扩展落地后再实现
+1. `index_repository` / `search_code_context` / `index_files` / `delete_files`：已实现并已通过 MCP adapter 暴露
+2. `get_file_context`：先冻结契约，待对应 `core` service 落地后再实现
 
 ## 3. 设计原则
 
@@ -150,10 +151,10 @@ MCP `mcp.json` 中推荐通过不同 server 条目完成项目级隔离。
 
 | Tool                  | 当前状态 | 核心依赖                          | v1 输出形态             |
 | --------------------- | -------- | --------------------------------- | ----------------------- |
-| `index_repository`    | 可实现   | `DefaultIndexRepositoryService`   | 索引摘要                |
-| `search_code_context` | 可实现   | `DefaultSearchCodeContextService` | `SearchResult[]` + 摘要 |
-| `index_files`         | 待实现   | `IndexFilesService`               | 文件级重建摘要          |
-| `delete_files`        | 待实现   | `DeleteFilesService`              | 删除摘要                |
+| `index_repository`    | 已实现   | `DefaultIndexRepositoryService`   | 索引摘要                |
+| `search_code_context` | 已实现   | `DefaultSearchCodeContextService` | `SearchResult[]` + 摘要 |
+| `index_files`         | 已实现   | `IndexFilesService`               | 文件级重建摘要          |
+| `delete_files`        | 已实现   | `DeleteFilesService`              | 删除摘要                |
 | `get_file_context`    | 待实现   | `GetFileContextService`           | 文件上下文包            |
 
 ## 5. 通用输入约束
@@ -375,7 +376,7 @@ interface SearchCodeContextToolResult {
 
 ### 8.3 当前状态
 
-当前只有契约设计，`core` 层尚未落地文件级索引 use case，`ChunkRepository` 也尚未提供按文件删除 chunk 的接口，因此该 tool 仍处于预留状态。
+当前已落地 `IndexFilesService`、`ChunkRepository.deleteByFilePaths(...)`、`RepositoryFileChunkPreparationService` 和 MCP adapter，并已通过 MCP tool 对外暴露。
 
 ### 8.4 输入 schema
 
@@ -418,11 +419,11 @@ interface IndexFilesToolInput {
 
 ### 8.6 Core 映射
 
-建议新增：
+当前映射为：
 
 1. `IndexFilesService.execute(input)`
 2. `ChunkRepository.deleteByFilePaths(input)`
-3. `RepositoryFileChunkPreparationService.prepare(input)` 或等价抽象
+3. `RepositoryFileChunkPreparationService.prepareFiles(input)`
 
 ### 8.7 输出 schema
 
@@ -468,7 +469,7 @@ interface IndexFilesToolResult {
 
 ### 9.3 当前状态
 
-当前只有契约设计，`core` 层尚未落地删除文件索引 use case，`ChunkRepository` 也尚未提供按文件列表删除 chunk 的接口，因此该 tool 仍处于预留状态。
+当前已落地 `DeleteFilesService` 与 `ChunkRepository.deleteByFilePaths(...)`，并已通过 MCP tool 对外暴露。
 
 ### 9.4 输入 schema
 
@@ -493,7 +494,7 @@ interface DeleteFilesToolInput {
 
 ### 9.5 Core 映射
 
-建议新增：
+当前映射为：
 
 1. `DeleteFilesService.execute(input)`
 2. `ChunkRepository.deleteByFilePaths(input)`
