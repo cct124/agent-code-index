@@ -2,8 +2,9 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { Logger } from "@agent-code-index/core";
 import { ParserFactory } from "../../src/parsing/parser-factory.js";
 import { LocalFileScanner } from "../../src/scanning/local-file-scanner.js";
 import { RepositoryChunkPreparationService } from "../../src/services/repository-chunk-preparation-service.js";
@@ -79,4 +80,58 @@ describe("RepositoryChunkPreparationService", () => {
       }),
     ]);
   });
+
+  it("logs per-file preparation progress", async () => {
+    const rootPath = await mkdtemp(path.join(os.tmpdir(), "prepare-chunks-"));
+    tempDirectories.push(rootPath);
+
+    await mkdir(path.join(rootPath, "src"), { recursive: true });
+    await writeFile(
+      path.join(rootPath, "src", "index.ts"),
+      ["export function alpha() {", "  return 1;", "}"].join("\n"),
+    );
+
+    const logger = createLogger();
+    const service = new RepositoryChunkPreparationService(
+      new LocalFileScanner(["node_modules", ".git"]),
+      new ParserFactory({ maxLinesPerChunk: 4, overlapLines: 1 }),
+      logger,
+    );
+
+    await service.prepare({
+      repositoryId: "repo-a",
+      rootPath,
+    });
+
+    expect(logger.info).toHaveBeenCalledWith(
+      "Repository file preparation started",
+      expect.objectContaining({
+        filePath: "src/index.ts",
+        fileIndex: 1,
+        totalFiles: 1,
+      }),
+    );
+    expect(logger.info).toHaveBeenCalledWith(
+      "Repository file preparation completed",
+      expect.objectContaining({
+        filePath: "src/index.ts",
+        fileIndex: 1,
+        totalFiles: 1,
+        chunkCount: 1,
+        durationMs: expect.any(Number),
+      }),
+    );
+  });
+
+  function createLogger(): Logger {
+    return {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      child: vi.fn(function (this: Logger) {
+        return this;
+      }),
+    };
+  }
 });

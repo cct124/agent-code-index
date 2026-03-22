@@ -81,45 +81,98 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
     }
 
     const startedAt = Date.now();
+    const inputStats = summarizeInputValues(input.values);
+    const requestBody = JSON.stringify({
+      input: input.values,
+      model: this.model,
+      dimensions: this.vectorDimension,
+    });
+    const requestBodyLength = requestBody.length;
 
-    this.logger.debug("Requesting openai-compatible embeddings", {
+    this.logger.info("OpenAI-compatible embedding request started", {
       valueCount: input.values.length,
       purpose: input.purpose,
       embeddingModel: this.model,
+      baseUrl: this.baseUrl,
+      requestBodyLength,
+      ...inputStats,
     });
 
-    const response = await fetch(`${this.baseUrl}/embeddings`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        input: input.values,
-        model: this.model,
-        dimensions: this.vectorDimension,
-      }),
-    });
+    let response: Response;
 
-    if (!response.ok) {
+    try {
+      response = await fetch(`${this.baseUrl}/embeddings`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: requestBody,
+      });
+    } catch (error) {
       this.logger.error("OpenAI-compatible embedding request failed", {
-        status: response.status,
         valueCount: input.values.length,
         purpose: input.purpose,
+        embeddingModel: this.model,
+        baseUrl: this.baseUrl,
+        requestBodyLength,
+        durationMs: Date.now() - startedAt,
+        failureStage: "network",
+        ...inputStats,
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
+      throw error;
+    }
+
+    if (!response.ok) {
+      const responseBodyPreview = await readResponseBodyPreview(response);
+
+      this.logger.error("OpenAI-compatible embedding request failed", {
+        status: response.status,
+        statusText: response.statusText,
+        valueCount: input.values.length,
+        purpose: input.purpose,
+        embeddingModel: this.model,
+        baseUrl: this.baseUrl,
+        requestBodyLength,
+        durationMs: Date.now() - startedAt,
+        failureStage: "http",
+        ...inputStats,
+        responseBodyPreview,
       });
       throw new Error(
         `OpenAI-compatible embedding request failed with status ${response.status}`,
       );
     }
 
-    const payload =
-      (await response.json()) as OpenAICompatibleEmbeddingResponse;
-    const embeddings = toEmbeddings(payload, input.values.length);
+    let embeddings: number[][];
 
-    assertEmbeddingDimensions(embeddings, this.vectorDimension);
+    try {
+      const payload =
+        (await response.json()) as OpenAICompatibleEmbeddingResponse;
+      embeddings = toEmbeddings(payload, input.values.length);
+      assertEmbeddingDimensions(embeddings, this.vectorDimension);
+    } catch (error) {
+      this.logger.error("OpenAI-compatible embedding request failed", {
+        valueCount: input.values.length,
+        purpose: input.purpose,
+        embeddingModel: this.model,
+        baseUrl: this.baseUrl,
+        requestBodyLength,
+        durationMs: Date.now() - startedAt,
+        failureStage: "response-parse",
+        ...inputStats,
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
+      throw error;
+    }
 
     this.logger.info("OpenAI-compatible embeddings generated", {
       valueCount: input.values.length,
+      purpose: input.purpose,
+      embeddingModel: this.model,
+      baseUrl: this.baseUrl,
+      requestBodyLength,
       durationMs: Date.now() - startedAt,
       vectorDimension: this.vectorDimension,
     });
@@ -185,5 +238,46 @@ function assertEmbeddingDimensions(
         `OpenAI-compatible embedding dimension mismatch: expected ${expectedDimension}, received ${embedding.length}`,
       );
     }
+  }
+}
+
+/**
+ * 汇总本次请求输入的字符长度信息，便于定位 provider 限制问题。
+ */
+function summarizeInputValues(values: string[]): {
+  totalInputLength: number;
+  minInputLength: number;
+  maxInputLength: number;
+  averageInputLength: number;
+  sampleInputLengths: number[];
+} {
+  const lengths = values.map((value) => value.length);
+  const totalInputLength = lengths.reduce((sum, length) => sum + length, 0);
+
+  return {
+    totalInputLength,
+    minInputLength: Math.min(...lengths),
+    maxInputLength: Math.max(...lengths),
+    averageInputLength: Math.round(totalInputLength / lengths.length),
+    sampleInputLengths: lengths.slice(0, 5),
+  };
+}
+
+/**
+ * 读取失败响应体的预览内容，避免日志过大。
+ */
+async function readResponseBodyPreview(
+  response: Pick<Response, "text">,
+): Promise<string | undefined> {
+  try {
+    const body = await response.text();
+
+    if (!body) {
+      return undefined;
+    }
+
+    return body.length > 1000 ? `${body.slice(0, 1000)}...` : body;
+  } catch (error) {
+    return `failed to read response body: ${String(error)}`;
   }
 }

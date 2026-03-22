@@ -120,6 +120,25 @@ describe("DefaultIndexRepositoryService", () => {
         storedChunkCount: 3,
       }),
     );
+    expect(logger.info).toHaveBeenCalledWith(
+      "Repository embedding batch started",
+      expect.objectContaining({
+        batchIndex: 1,
+        totalBatches: 2,
+        chunkCount: 2,
+        batchFilePathsPreview: ["src/a.ts", "src/b.ts"],
+      }),
+    );
+    expect(logger.info).toHaveBeenCalledWith(
+      "Repository embedding batch completed",
+      expect.objectContaining({
+        batchIndex: 2,
+        totalBatches: 2,
+        chunkCount: 1,
+        embeddedChunkCount: 3,
+        batchFilePathsPreview: ["src/c.ts"],
+      }),
+    );
     expect(result).toEqual({
       scannedFileCount: 4,
       parsedFileCount: 3,
@@ -189,5 +208,98 @@ describe("DefaultIndexRepositoryService", () => {
         failedFileCount: 1,
       }),
     );
+  });
+
+  it("logs batch chunk details when embedding generation fails", async () => {
+    const preparedChunks = [
+      createChunk({
+        id: "chunk-1",
+        filePath: "src/a.ts",
+        startLine: 1,
+        endLine: 3,
+        searchText: "alpha",
+      }),
+      createChunk({
+        id: "chunk-2",
+        filePath: "src/b.ts",
+        startLine: 10,
+        endLine: 20,
+        searchText: "beta-gamma",
+      }),
+    ];
+
+    const chunkPreparationService: RepositoryChunkPreparationService = {
+      prepare: vi.fn(async () => ({
+        scannedFileCount: 2,
+        parsedFileCount: 2,
+        skippedFileCount: 0,
+        chunks: preparedChunks,
+        failedFiles: [],
+      })),
+    };
+    const embeddingProvider: EmbeddingProvider = {
+      provider: "openai-compatible",
+      model: "Qwen/Qwen3-Embedding-8B",
+      vectorDimension: 3,
+      generateEmbeddings: vi.fn(async () => {
+        throw new Error("status 400");
+      }),
+    };
+    const chunkRepository: ChunkRepository = {
+      upsertMany: vi.fn(async () => undefined),
+      deleteByRepository: vi.fn(async () => undefined),
+      deleteByFilePaths: vi.fn(async () => 0),
+      findByFilePath: vi.fn(async () => []),
+    };
+    const logger = createLogger();
+
+    const service = new DefaultIndexRepositoryService(
+      chunkPreparationService,
+      embeddingProvider,
+      chunkRepository,
+      logger,
+    );
+
+    await expect(
+      service.execute({
+        repositoryId: "repo-a",
+        rootPath: "/tmp/repo-a",
+        embeddingBatchSize: 2,
+      }),
+    ).rejects.toThrow("status 400");
+
+    expect(logger.error).toHaveBeenCalledWith(
+      "Chunk batch embedding failed",
+      expect.objectContaining({
+        batchIndex: 1,
+        totalBatches: 1,
+        batchStart: 0,
+        chunkCount: 2,
+        batchFileCount: 2,
+        durationMs: expect.any(Number),
+        batchSearchTextTotalLength: 15,
+        batchFilePathsPreview: ["src/a.ts", "src/b.ts"],
+        batchFilePathsOmittedCount: 0,
+        batchEntries: [
+          expect.objectContaining({
+            id: "chunk-1",
+            filePath: "src/a.ts",
+            startLine: 1,
+            endLine: 3,
+            searchTextLength: 5,
+          }),
+          expect.objectContaining({
+            id: "chunk-2",
+            filePath: "src/b.ts",
+            startLine: 10,
+            endLine: 20,
+            searchTextLength: 10,
+          }),
+        ],
+        error: expect.any(Error),
+      }),
+    );
+    expect(chunkRepository.deleteByRepository).not.toHaveBeenCalled();
+    expect(chunkRepository.upsertMany).not.toHaveBeenCalled();
   });
 });

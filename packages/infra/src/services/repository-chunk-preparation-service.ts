@@ -76,18 +76,28 @@ export class RepositoryChunkPreparationService implements RepositoryChunkPrepara
       scannedFileCount: files.length,
     });
 
-    for (const absolutePath of files) {
+    for (const [index, absolutePath] of files.entries()) {
       const relativePath = normalizeRelativePath(
         path.relative(input.rootPath, absolutePath),
       );
+      const fileStartedAt = Date.now();
+
+      logger.info("Repository file preparation started", {
+        filePath: relativePath,
+        fileIndex: index + 1,
+        totalFiles: files.length,
+      });
 
       try {
         const content = await readFile(absolutePath, "utf8");
 
         if (content.includes("\u0000")) {
           skippedFileCount += 1;
-          logger.debug("Skipping binary file during repository preparation", {
+          logger.info("Repository file skipped as binary", {
             filePath: relativePath,
+            fileIndex: index + 1,
+            totalFiles: files.length,
+            durationMs: Date.now() - fileStartedAt,
           });
           continue;
         }
@@ -101,17 +111,23 @@ export class RepositoryChunkPreparationService implements RepositoryChunkPrepara
 
         if (parsedChunks.length === 0) {
           skippedFileCount += 1;
-          logger.debug("Parser returned no chunks for file", {
+          logger.info("Repository file skipped with no chunks", {
             filePath: relativePath,
+            fileIndex: index + 1,
+            totalFiles: files.length,
+            durationMs: Date.now() - fileStartedAt,
           });
           continue;
         }
 
         parsedFileCount += 1;
         chunks.push(...parsedChunks);
-        logger.debug("Parsed file into chunks", {
+        logger.info("Repository file preparation completed", {
           filePath: relativePath,
+          fileIndex: index + 1,
+          totalFiles: files.length,
           chunkCount: parsedChunks.length,
+          durationMs: Date.now() - fileStartedAt,
         });
       } catch (error) {
         failedFiles.push({
@@ -120,6 +136,9 @@ export class RepositoryChunkPreparationService implements RepositoryChunkPrepara
         });
         logger.warn("Failed to prepare file chunks", {
           filePath: relativePath,
+          fileIndex: index + 1,
+          totalFiles: files.length,
+          durationMs: Date.now() - fileStartedAt,
           error: error instanceof Error ? error : new Error(String(error)),
         });
       }

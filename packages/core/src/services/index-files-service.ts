@@ -202,29 +202,71 @@ export class DefaultIndexFilesService implements IndexFilesService {
     logger: Logger,
   ): Promise<Chunk[]> {
     const indexedChunks: Chunk[] = [];
+    const totalBatches = Math.ceil(chunks.length / batchSize);
 
     for (let start = 0; start < chunks.length; start += batchSize) {
       const batch = chunks.slice(start, start + batchSize);
+      const batchIndex = Math.floor(start / batchSize) + 1;
 
       if (batch.length === 0) {
         continue;
       }
 
-      logger.debug("Generating embeddings for file chunk batch", {
+      logger.info("File embedding batch started", {
+        batchIndex,
+        totalBatches,
         chunkCount: batch.length,
         batchStart: start,
+        batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
+        ...summarizeBatchFilePaths(batch),
       });
+      const batchStartedAt = Date.now();
 
-      const embeddings = await this.embeddingProvider.generateEmbeddings({
-        values: batch.map((chunk) => chunk.searchText),
-        purpose: "document",
-      });
+      let embeddings: number[][];
+
+      try {
+        embeddings = await this.embeddingProvider.generateEmbeddings({
+          values: batch.map((chunk) => chunk.searchText),
+          purpose: "document",
+        });
+      } catch (error) {
+        logger.error("File chunk batch embedding failed", {
+          batchIndex,
+          totalBatches,
+          batchStart: start,
+          chunkCount: batch.length,
+          batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
+          durationMs: Date.now() - batchStartedAt,
+          ...summarizeBatchFilePaths(batch),
+          batchEntries: batch.map((chunk) => ({
+            id: chunk.id,
+            filePath: chunk.filePath,
+            language: chunk.language,
+            startLine: chunk.startLine,
+            endLine: chunk.endLine,
+            searchTextLength: chunk.searchText.length,
+          })),
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
+        throw error;
+      }
 
       if (embeddings.length !== batch.length) {
         throw new Error(
           `Embedding result count mismatch: expected ${batch.length}, received ${embeddings.length}`,
         );
       }
+
+      logger.info("File embedding batch completed", {
+        batchIndex,
+        totalBatches,
+        batchStart: start,
+        chunkCount: batch.length,
+        batchFileCount: new Set(batch.map((chunk) => chunk.filePath)).size,
+        durationMs: Date.now() - batchStartedAt,
+        embeddedChunkCount: indexedChunks.length + batch.length,
+        ...summarizeBatchFilePaths(batch),
+      });
 
       indexedChunks.push(
         ...batch.map((chunk, index) => ({
@@ -258,4 +300,18 @@ function dedupeFilePaths(filePaths: string[]): string[] {
   return Array.from(
     new Set(filePaths.map((filePath) => filePath.trim())),
   ).filter((filePath) => filePath.length > 0);
+}
+
+function summarizeBatchFilePaths(chunks: PreparedChunk[]): {
+  batchFilePathsPreview: string[];
+  batchFilePathsOmittedCount: number;
+} {
+  const uniqueFilePaths = Array.from(
+    new Set(chunks.map((chunk) => chunk.filePath)),
+  );
+
+  return {
+    batchFilePathsPreview: uniqueFilePaths.slice(0, 5),
+    batchFilePathsOmittedCount: Math.max(0, uniqueFilePaths.length - 5),
+  };
 }

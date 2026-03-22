@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { Logger } from "@agent-code-index/core";
 import { OpenAICompatibleEmbeddingProvider } from "../../src/embedding/openai-compatible/openai-compatible-embedding-provider.js";
 
 describe("OpenAICompatibleEmbeddingProvider", () => {
@@ -74,20 +75,30 @@ describe("OpenAICompatibleEmbeddingProvider", () => {
   });
 
   it("fails when OpenAI-compatible API returns a non-success status", async () => {
+    const logger = createLogger();
+
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => ({
         ok: false,
         status: 401,
+        statusText: "Unauthorized",
+        text: async () =>
+          JSON.stringify({
+            error: { message: "invalid api key" },
+          }),
       })),
     );
 
-    const provider = new OpenAICompatibleEmbeddingProvider({
-      provider: "openai-compatible",
-      model: "text-embedding-3-large",
-      vectorDimension: 3,
-      apiKey: "test-key",
-    });
+    const provider = new OpenAICompatibleEmbeddingProvider(
+      {
+        provider: "openai-compatible",
+        model: "text-embedding-3-large",
+        vectorDimension: 3,
+        apiKey: "test-key",
+      },
+      logger,
+    );
 
     await expect(
       provider.generateEmbeddings({
@@ -96,6 +107,82 @@ describe("OpenAICompatibleEmbeddingProvider", () => {
       }),
     ).rejects.toThrow(
       "OpenAI-compatible embedding request failed with status 401",
+    );
+    expect(logger.error).toHaveBeenCalledWith(
+      "OpenAI-compatible embedding request failed",
+      expect.objectContaining({
+        status: 401,
+        statusText: "Unauthorized",
+        valueCount: 1,
+        purpose: "query",
+        embeddingModel: "text-embedding-3-large",
+        baseUrl: "https://api.openai.com/v1",
+        requestBodyLength: expect.any(Number),
+        durationMs: expect.any(Number),
+        failureStage: "http",
+        totalInputLength: 5,
+        minInputLength: 5,
+        maxInputLength: 5,
+        averageInputLength: 5,
+        sampleInputLengths: [5],
+        responseBodyPreview: JSON.stringify({
+          error: { message: "invalid api key" },
+        }),
+      }),
+    );
+    expect(logger.info).toHaveBeenCalledWith(
+      "OpenAI-compatible embedding request started",
+      expect.objectContaining({
+        valueCount: 1,
+        purpose: "query",
+        embeddingModel: "text-embedding-3-large",
+        baseUrl: "https://api.openai.com/v1",
+        requestBodyLength: expect.any(Number),
+      }),
+    );
+  });
+
+  it("logs request completion timing for successful responses", async () => {
+    const logger = createLogger();
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          data: [{ embedding: [1, 0, 0] }],
+        }),
+      })),
+    );
+
+    const provider = new OpenAICompatibleEmbeddingProvider(
+      {
+        provider: "openai-compatible",
+        model: "text-embedding-3-large",
+        vectorDimension: 3,
+        apiKey: "test-key",
+      },
+      logger,
+    );
+
+    await expect(
+      provider.generateEmbeddings({
+        values: ["alpha"],
+        purpose: "document",
+      }),
+    ).resolves.toEqual([[1, 0, 0]]);
+
+    expect(logger.info).toHaveBeenCalledWith(
+      "OpenAI-compatible embeddings generated",
+      expect.objectContaining({
+        valueCount: 1,
+        purpose: "document",
+        embeddingModel: "text-embedding-3-large",
+        baseUrl: "https://api.openai.com/v1",
+        requestBodyLength: expect.any(Number),
+        durationMs: expect.any(Number),
+        vectorDimension: 3,
+      }),
     );
   });
 
@@ -135,4 +222,16 @@ describe("OpenAICompatibleEmbeddingProvider", () => {
         }),
     ).toThrow("OpenAI-compatible embedding provider requires apiKey");
   });
+
+  function createLogger(): Logger {
+    return {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      child: vi.fn(function (this: Logger) {
+        return this;
+      }),
+    };
+  }
 });
