@@ -31,6 +31,7 @@ Left only files: design/v1/mcp-tool-interface-design.md, doc/progress/current-pr
 Right only files: packages/mcp-server/test/adapters/register-tools.unit.test.ts, test/template/main.py, packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts, packages/infra/tsconfig.json, packages/mcp-server/src/adapters/tools/register-tools.ts, packages/mcp-server/src/bootstrap/config.ts, yarn.lock
 
 Left top files:
+
 1. design/v1/mcp-tool-interface-design.md (score=0.7752)
 2. packages/mcp-server/README.md (score=0.7685)
 3. packages/mcp-server/README.md (score=0.7612)
@@ -43,6 +44,7 @@ Left top files:
 10. design/v1/README.md (score=0.7417)
 
 Right top files:
+
 1. packages/mcp-server/test/adapters/register-tools.unit.test.ts (score=0.7615)
 2. test/template/main.py (score=0.7420)
 3. packages/mcp-server/test/bootstrap/index-repository.real.integration.test.ts (score=0.7395)
@@ -68,6 +70,7 @@ Right only files: test/template/main.py, packages/infra/test/storage/surreal/sur
 Left top files:
 
 Right top files:
+
 1. test/template/main.py (score=0.7344)
 2. packages/infra/test/storage/surreal/surreal-client.real.integration.test.ts (score=0.7332)
 3. packages/mcp-server/test/bootstrap/container.unit.test.ts (score=0.7240)
@@ -93,6 +96,7 @@ Right only files: packages/mcp-server/README.md, test/template/main.py, packages
 Left top files:
 
 Right top files:
+
 1. packages/mcp-server/README.md (score=0.7732)
 2. test/template/main.py (score=0.7714)
 3. test/template/main.py (score=0.7610)
@@ -118,6 +122,7 @@ Right only files: test/template/main.py, test/template/audit-log.use-cases.ts
 Left top files:
 
 Right top files:
+
 1. test/template/main.py (score=0.7992)
 2. test/template/audit-log.use-cases.ts (score=0.7912)
 3. test/template/main.py (score=0.7853)
@@ -143,6 +148,7 @@ Right only files: packages/mcp-server/test/bootstrap/index-repository.real-embed
 Left top files:
 
 Right top files:
+
 1. packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts (score=0.8212)
 2. test/template/main.py (score=0.7904)
 3. test/template/main.py (score=0.7885)
@@ -168,6 +174,7 @@ Right only files: test/template/main.py, packages/mcp-server/test/bootstrap/inde
 Left top files:
 
 Right top files:
+
 1. test/template/main.py (score=0.6910)
 2. packages/mcp-server/test/bootstrap/index-repository.real-voyage.integration.test.ts (score=0.6893)
 3. packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts (score=0.6892)
@@ -193,6 +200,7 @@ Right only files: packages/mcp-server/README.md, packages/mcp-server/src/bootstr
 Left top files:
 
 Right top files:
+
 1. packages/mcp-server/README.md (score=0.7483)
 2. packages/mcp-server/src/bootstrap/config.ts (score=0.7384)
 3. packages/mcp-server/README.md (score=0.7327)
@@ -218,6 +226,7 @@ Right only files: yarn.lock, test/template/main.py, packages/mcp-server/src/boot
 Left top files:
 
 Right top files:
+
 1. yarn.lock (score=0.7908)
 2. yarn.lock (score=0.7887)
 3. yarn.lock (score=0.7760)
@@ -228,4 +237,3 @@ Right top files:
 8. test/template/main.py (score=0.7576)
 9. yarn.lock (score=0.7571)
 10. yarn.lock (score=0.7567)
-

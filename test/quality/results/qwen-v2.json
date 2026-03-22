@@ -173,9 +173,7 @@
           "metadata": {
             "docType": "readme",
             "heading": "@agent-code-index/mcp-server",
-            "headingPath": [
-              "@agent-code-index/mcp-server"
-            ],
+            "headingPath": ["@agent-code-index/mcp-server"],
             "sectionLevel": 1
           },
           "preview": "# @agent-code-index/mcp-server `packages/mcp-server` 是当前项目的运行时装配与 MCP 协议接入模块，负责把 `core` 与 `infra` 组合成一个可启动、可通过 stdio 暴露 tools 的应用。 这一层的目标是： 1. 读取运行时配置 2. 创建并装配依赖容器 3. 在启动阶段执行必要校验 4. 注册并暴露当前可用的 MCP tools 当前阶段，`mcp-server`"

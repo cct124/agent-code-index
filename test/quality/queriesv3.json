@@ -1,0 +1,50 @@
+[
+  {
+    "id": "agent-index-entrypoint-v3",
+    "query": "查 index_repository entrypoint。找 MCP tool registration -> service execute 的核心实现文件，prefer code over docs.",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-includepatterns-override-v3",
+    "query": "排查 includePatterns override ignore/.gitignore。找 LocalFileScanner implementation + unit test.",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-tokenbudget-context-v3",
+    "query": "trace search_code_context tokenBudget path。找 context packing, truncation, ContextPacket related code.",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-surreal-vector-search-v3",
+    "query": "debug Surreal vector search params。找 HNSW or KnnScan query builder implementation and tests.",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-provider-factory-v3",
+    "query": "switch embedding provider。找 provider factory, openai-compatible provider, voyage provider wiring.",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-quality-run-cleanup-v3",
+    "query": "quality run script hangs on exit。找 cleanup path and surrealClient.disconnect call site.",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-incremental-file-ops-v3",
+    "query": "trace get_file_context index_files delete_files。找 use case/service/storage path for incremental file ops.",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-indexing-concurrency-v3",
+    "query": "repo indexing is slow。找 embeddingBatchSize embeddingConcurrency flow, batching, worker concurrency code.",
+    "topK": 10,
+    "tokenBudget": 4000
+  }
+]

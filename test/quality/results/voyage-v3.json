@@ -1,0 +1,1602 @@
+{
+  "generatedAt": "2026-03-22T15:10:19.069Z",
+  "label": "voyage-v3",
+  "environment": {
+    "envFile": "/home/janex/project/ai-agent/agent-code-index/.env.development.voyageai",
+    "projectSpace": "agent_code_index_voyageai",
+    "repositoryId": "agent-code-index",
+    "rootPath": "/home/janex/project/ai-agent/agent-code-index",
+    "provider": "voyage",
+    "model": "voyage-code-3",
+    "vectorDimension": 1024
+  },
+  "indexing": {
+    "embeddingBatchSize": 16,
+    "embeddingConcurrency": 8,
+    "scannedFileCount": 127,
+    "parsedFileCount": 127,
+    "skippedFileCount": 0,
+    "preparedChunkCount": 975,
+    "embeddedChunkCount": 975,
+    "storedChunkCount": 975,
+    "failedFileCount": 0
+  },
+  "queries": [
+    {
+      "id": "agent-index-entrypoint-v3",
+      "query": "查 index_repository entrypoint。找 MCP tool registration -> service execute 的核心实现文件，prefer code over docs.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "design/v1/README.md",
+        "design/v1/mcp-tool-interface-design.md",
+        "doc/progress/current-progress.md"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7249948781713489,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:541-562",
+          "language": "markdown",
+          "startLine": 541,
+          "endLine": 562,
+          "metadata": {
+            "docType": "readme",
+            "heading": "8.1 index-repository-service.ts",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "8. 核心服务设计",
+              "8.1 index-repository-service.ts"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 8.1 index-repository-service.ts 该服务负责索引链路总编排，是第一版最关键的写入用例。 推荐流程： 1. 接收仓库根目录与索引配置 2. 调用 `FileScanner` 枚举候选文件 3. 读取文件内容并交给 `Parser` 4. 对 chunk 执行必要的标准化、摘要或 search text 构建 5. 按批次调用 `EmbeddingProvider` 生成向量 6. 将 chunk 与向"
+        },
+        {
+          "rank": 2,
+          "score": 0.7242125040198775,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:704-712",
+          "language": "markdown",
+          "startLine": 704,
+          "endLine": 712,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "12. Tool 与 Core 映射总表",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "12. Tool 与 Core 映射总表"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 12. Tool 与 Core 映射总表 | Tool | Core service | 当前状态 | 备注 | | --------------------- | --------------------------------- | -------- | ------------------------------------------- | | `index_repository` | `DefaultIndexRepos"
+        },
+        {
+          "rank": 3,
+          "score": 0.7192687509715847,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:773-784",
+          "language": "markdown",
+          "startLine": 773,
+          "endLine": 784,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "14. 结论",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "14. 结论"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 14. 结论 当前仓库已经具备把 `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context` 通过 MCP tool 暴露出去的核心 use case。 在单仓库部署场景下，建议进一步通过 `MCP_REPOSITORY_ROOT` 固定仓库根目录，使 `index_repository` 与 `index_fil"
+        },
+        {
+          "rank": 4,
+          "score": 0.7183619577612655,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:26-40",
+          "language": "markdown",
+          "startLine": 26,
+          "endLine": 40,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "2. 当前状态",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "2. 当前状态"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 2. 当前状态 截至 2026-03-22，MCP 暴露层的状态是： 1. `packages/mcp-server` 已完成配置加载、容器装配与启动期校验 2. `DefaultIndexRepositoryService` 已通过 `index_repository` tool 对外暴露 3. `DefaultSearchCodeContextService` 已通过 `search_code_context` tool 对外"
+        },
+        {
+          "rank": 5,
+          "score": 0.7177381735570288,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:150-158",
+          "language": "markdown",
+          "startLine": 150,
+          "endLine": 158,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "4. Tool 列表总览",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "4. Tool 列表总览"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 4. Tool 列表总览 | Tool | 当前状态 | 核心依赖 | v1 输出形态 | | --------------------- | -------- | --------------------------------- | -------------------------------- | | `index_repository` | 已实现 | `DefaultIndexRepositoryService` | "
+        },
+        {
+          "rank": 6,
+          "score": 0.7166973777038972,
+          "reason": "surreal vector search",
+          "filePath": "doc/progress/current-progress.md",
+          "chunkId": "doc/progress/current-progress.md:108-121",
+          "language": "markdown",
+          "startLine": 108,
+          "endLine": 121,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "3.5 MCP tool 能力",
+            "headingPath": [
+              "agent-code-index 当前进度",
+              "3. 已完成能力",
+              "3.5 MCP tool 能力"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 3.5 MCP tool 能力 当前已经可验证： 1. `packages/mcp-server` 已接入官方 MCP TypeScript SDK 2. 已可创建真实 `McpServer` 并通过 stdio transport 启动 3. `index_repository` 已完成 adapter 注册与调用映射 4. `search_code_context` 已完成 adapter 注册与调用映射 5. `index"
+        },
+        {
+          "rank": 7,
+          "score": 0.7166291406190567,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:1076-1086",
+          "language": "markdown",
+          "startLine": 1076,
+          "endLine": 1086,
+          "metadata": {
+            "docType": "readme",
+            "heading": "10.2 index-repository-tool.ts",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "10. MCP 适配层设计",
+              "10.2 index-repository-tool.ts"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 10.2 index-repository-tool.ts 输入： 1. 仓库根路径 2. 可选过滤参数 输出： 1. 索引结果摘要 2. 失败文件统计"
+        },
+        {
+          "rank": 8,
+          "score": 0.7146153979507137,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:575-575",
+          "language": "markdown",
+          "startLine": 575,
+          "endLine": 575,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "10. get_file_context",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "10. get_file_context"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 10. get_file_context"
+        },
+        {
+          "rank": 9,
+          "score": 0.7091058220746561,
+          "reason": "surreal vector search",
+          "filePath": "doc/progress/current-progress.md",
+          "chunkId": "doc/progress/current-progress.md:134-147",
+          "language": "markdown",
+          "startLine": 134,
+          "endLine": 147,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "3.7 索引主链路能力",
+            "headingPath": [
+              "agent-code-index 当前进度",
+              "3. 已完成能力",
+              "3.7 索引主链路能力"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 3.7 索引主链路能力 当前已经可验证： 1. `DefaultIndexRepositoryService` 已在 `core` 中落地 2. 已支持“prepare -> batch embed -> full replace -> upsert”主流程 3. `mcp-server` 的 container 已装配 `chunkPreparationService / fileChunkPreparationService"
+        },
+        {
+          "rank": 10,
+          "score": 0.7073013506387598,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:174-176",
+          "language": "markdown",
+          "startLine": 174,
+          "endLine": 176,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "6.1 Tool 名称",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "6. index_repository",
+              "6.1 Tool 名称"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 6.1 Tool 名称 `index_repository`"
+        }
+      ]
+    },
+    {
+      "id": "agent-includepatterns-override-v3",
+      "query": "排查 includePatterns override ignore/.gitignore。找 LocalFileScanner implementation + unit test.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/infra/test/scanning/local-file-scanner.unit.test.ts",
+        "packages/infra/src/scanning/local-file-scanner.ts",
+        "packages/infra/README.md"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.807854301690529,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/scanning/local-file-scanner.unit.test.ts",
+          "chunkId": "packages/infra/test/scanning/local-file-scanner.unit.test.ts:61-140",
+          "language": "typescript",
+          "startLine": 61,
+          "endLine": 140,
+          "metadata": {},
+          "preview": "const scanner = new LocalFileScanner(); const scannedFiles = await scanner.scan(rootPath); expect( scannedFiles.map((filePath) => path.relative(rootPath, filePath)), ).toEqual([\"packages/demo/index.ts\"]); }); it(\"merges "
+        },
+        {
+          "rank": 2,
+          "score": 0.7968045110996502,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/scanning/local-file-scanner.ts",
+          "chunkId": "packages/infra/src/scanning/local-file-scanner.ts:37-45",
+          "language": "typescript",
+          "startLine": 37,
+          "endLine": 45,
+          "metadata": {
+            "parentSymbol": "LocalFileScanner",
+            "symbolKind": "constructor",
+            "symbolName": "constructor",
+            "tags": ["constructor"]
+          },
+          "preview": "public constructor( ignorePatterns = DEFAULT_IGNORE_PATTERNS, gitignorePath?: string, includePatterns: string[] = [], ) { this.ignorePatterns = ignorePatterns; this.gitignorePath = gitignorePath; this.includePatterns = i"
+        },
+        {
+          "rank": 3,
+          "score": 0.7885504061121211,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/scanning/local-file-scanner.ts",
+          "chunkId": "packages/infra/src/scanning/local-file-scanner.ts:84-149",
+          "language": "typescript",
+          "startLine": 84,
+          "endLine": 149,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "LocalFileScanner"
+          },
+          "preview": "} if (entry.isFile()) { files.push(absolutePath); } } } /** * 判断相对路径是否应当被忽略。 * * 规则同时覆盖以下情况： * 1. 路径与忽略项完全一致 * 2. 路径以前缀目录形式命中忽略项 * 3. 任一路径片段命中忽略项 */ private isIgnored( relativePath: string, gitignoreRules: GitignoreRule["
+        },
+        {
+          "rank": 4,
+          "score": 0.7876555021048174,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/scanning/local-file-scanner.ts",
+          "chunkId": "packages/infra/src/scanning/local-file-scanner.ts:28-28",
+          "language": "typescript",
+          "startLine": 28,
+          "endLine": 28,
+          "metadata": {
+            "parentSymbol": "LocalFileScanner",
+            "symbolKind": "field",
+            "symbolName": "includePatterns",
+            "tags": ["private", "readonly"]
+          },
+          "preview": "private readonly includePatterns: string[]"
+        },
+        {
+          "rank": 5,
+          "score": 0.7786831330575527,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/scanning/local-file-scanner.ts",
+          "chunkId": "packages/infra/src/scanning/local-file-scanner.ts:24-103",
+          "language": "typescript",
+          "startLine": 24,
+          "endLine": 103,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "LocalFileScanner"
+          },
+          "preview": "class LocalFileScanner implements FileScanner { /** 需要在扫描过程中跳过的目录或路径模式。 */ private readonly ignorePatterns: string[]; /** 需要强制纳入扫描结果的文件或路径模式。 */ private readonly includePatterns: string[]; /** 可选的根 .gitignore 绝对路径。 */ pr"
+        },
+        {
+          "rank": 6,
+          "score": 0.7730706441589984,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/scanning/local-file-scanner.unit.test.ts",
+          "chunkId": "packages/infra/test/scanning/local-file-scanner.unit.test.ts:121-152",
+          "language": "typescript",
+          "startLine": 121,
+          "endLine": 152,
+          "metadata": {},
+          "preview": "await mkdir(path.join(rootPath, \"dist\"), { recursive: true }); await writeFile( path.join(rootPath, \".gitignore\"), [\"dist/\", \"*.generated.ts\"].join(\"\\n\"), ); await writeFile( path.join(rootPath, \"dist\", \"keep.ts\"), \"expo"
+        },
+        {
+          "rank": 7,
+          "score": 0.7610571778135224,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/scanning/local-file-scanner.unit.test.ts",
+          "chunkId": "packages/infra/test/scanning/local-file-scanner.unit.test.ts:1-80",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 80,
+          "metadata": {},
+          "preview": "import { mkdtemp, mkdir, rm, writeFile } from \"node:fs/promises\"; import os from \"node:os\"; import path from \"node:path\"; import { afterEach, describe, expect, it } from \"vitest\"; import { LocalFileScanner } from \"../../"
+        },
+        {
+          "rank": 8,
+          "score": 0.7610571778135224,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/scanning/local-file-scanner.unit.test.ts",
+          "chunkId": "packages/infra/test/scanning/local-file-scanner.unit.test.ts:1-80",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 80,
+          "metadata": {},
+          "preview": "import { mkdtemp, mkdir, rm, writeFile } from \"node:fs/promises\"; import os from \"node:os\"; import path from \"node:path\"; import { afterEach, describe, expect, it } from \"vitest\"; import { LocalFileScanner } from \"../../"
+        },
+        {
+          "rank": 9,
+          "score": 0.7570104801533359,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/README.md",
+          "chunkId": "packages/infra/README.md:61-71",
+          "language": "markdown",
+          "startLine": 61,
+          "endLine": 71,
+          "metadata": {
+            "docType": "readme",
+            "heading": "scanning",
+            "headingPath": [
+              "@agent-code-index/infra",
+              "当前目录结构",
+              "scanning"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### scanning 负责发现本地仓库中的候选文件，目前已包含： 1. `LocalFileScanner` 当前能力： 1. 支持递归扫描本地目录 2. 支持基础忽略规则 3. 返回稳定排序的候选文件列表"
+        },
+        {
+          "rank": 10,
+          "score": 0.7498637238527744,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/scanning/local-file-scanner.ts",
+          "chunkId": "packages/infra/src/scanning/local-file-scanner.ts:100-130",
+          "language": "typescript",
+          "startLine": 100,
+          "endLine": 130,
+          "metadata": {
+            "parentSymbol": "LocalFileScanner",
+            "symbolKind": "method",
+            "symbolName": "isIgnored",
+            "tags": ["private"]
+          },
+          "preview": "private isIgnored( relativePath: string, gitignoreRules: GitignoreRule[], ): boolean { const normalizedPath = relativePath.split(path.sep).join(\"/\"); const segments = normalizedPath.split(\"/\"); if (this.matchesIncludePat"
+        }
+      ]
+    },
+    {
+      "id": "agent-tokenbudget-context-v3",
+      "query": "trace search_code_context tokenBudget path。找 context packing, truncation, ContextPacket related code.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "design/v1/mcp-tool-interface-design.md",
+        "packages/core/test/services/search-code-context-service.unit.test.ts",
+        "packages/core/src/services/context-builder.ts",
+        "packages/core/src/domain/context-packet.ts",
+        "design/v1/README.md"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7500741480573773,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:405-412",
+          "language": "markdown",
+          "startLine": 405,
+          "endLine": 412,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.6 当前 richer ContextBuilder 语义",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "7. search_code_context",
+              "7.6 当前 richer ContextBuilder 语义"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.6 当前 richer ContextBuilder 语义 当前 `search_code_context` 的 `contextPacket` 构建流程为： 1. 先对原始 `results` 按 `chunk_id` 或 `file_path_line_range` 去重 2. 再按文件内相邻行范围合并 chunk，减少碎片化上下文 3. 对合并后的 item 估算 token，并按 `topK` 与可选 `tokenB"
+        },
+        {
+          "rank": 2,
+          "score": 0.7446965854435438,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/test/services/search-code-context-service.unit.test.ts",
+          "chunkId": "packages/core/test/services/search-code-context-service.unit.test.ts:301-380",
+          "language": "typescript",
+          "startLine": 301,
+          "endLine": 380,
+          "metadata": {},
+          "preview": "expect(result.contextPacket.truncation).toEqual({ truncated: true, strategy: \"top_k\", totalItems: 2, returnedItems: 1, omittedItems: 1, limit: 1, budgetTokens: undefined, estimatedTotalTokens: 34, estimatedReturnedTokens"
+        },
+        {
+          "rank": 3,
+          "score": 0.7430891433232426,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/services/context-builder.ts",
+          "chunkId": "packages/core/src/services/context-builder.ts:44-84",
+          "language": "typescript",
+          "startLine": 44,
+          "endLine": 84,
+          "metadata": {
+            "parentSymbol": "DefaultContextBuilder",
+            "symbolKind": "method",
+            "symbolName": "buildSearchContextPacket"
+          },
+          "preview": "public buildSearchContextPacket( input: BuildSearchContextPacketInput, ): ContextPacket { const deduplicated = dedupeSearchResults(input.results); const merged = mergeAdjacentSearchResults(deduplicated.items); const topK"
+        },
+        {
+          "rank": 4,
+          "score": 0.740016544186405,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/services/context-builder.ts",
+          "chunkId": "packages/core/src/services/context-builder.ts:43-85",
+          "language": "typescript",
+          "startLine": 43,
+          "endLine": 85,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "DefaultContextBuilder"
+          },
+          "preview": "class DefaultContextBuilder implements ContextBuilder { public buildSearchContextPacket( input: BuildSearchContextPacketInput, ): ContextPacket { const deduplicated = dedupeSearchResults(input.results); const merged = me"
+        },
+        {
+          "rank": 5,
+          "score": 0.7297205911334512,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/domain/context-packet.ts",
+          "chunkId": "packages/core/src/domain/context-packet.ts:61-102",
+          "language": "typescript",
+          "startLine": 61,
+          "endLine": 102,
+          "metadata": {},
+          "preview": "/** 当前文件命中的最小起始行。 */ startLine: number; /** 当前文件命中的最大结束行。 */ endLine: number; } /** * 上下文包的去重描述。 */ export interface ContextPacketDeduplication { /** 去重策略。 */ strategy: \"none\" | \"chunk_id\" | \"file_path_line_range\"; /** 去"
+        },
+        {
+          "rank": 6,
+          "score": 0.726403775432301,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/test/services/search-code-context-service.unit.test.ts",
+          "chunkId": "packages/core/test/services/search-code-context-service.unit.test.ts:361-440",
+          "language": "typescript",
+          "startLine": 361,
+          "endLine": 440,
+          "metadata": {},
+          "preview": "filePath: \"src/other.ts\", language: \"typescript\", content: \"export const c = 3;\", searchText: \"c\", startLine: 20, endLine: 20, hash: \"hash-3\", embedding: [1, 0, 0], metadata: { symbolName: \"c\" }, }, score: 0.7, reason: \""
+        },
+        {
+          "rank": 7,
+          "score": 0.7263736583454949,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/test/services/search-code-context-service.unit.test.ts",
+          "chunkId": "packages/core/test/services/search-code-context-service.unit.test.ts:241-320",
+          "language": "typescript",
+          "startLine": 241,
+          "endLine": 320,
+          "metadata": {},
+          "preview": "{ chunk: { id: \"chunk-1\", repositoryId: \"repo-a\", filePath: \"src/a.ts\", language: \"typescript\", content: \"export const a = 1;\", searchText: \"a\", startLine: 1, endLine: 1, hash: \"hash-1\", embedding: [1, 0, 0], metadata: {"
+        },
+        {
+          "rank": 8,
+          "score": 0.7211486632980018,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/services/context-builder.ts",
+          "chunkId": "packages/core/src/services/context-builder.ts:237-264",
+          "language": "typescript",
+          "startLine": 237,
+          "endLine": 264,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "applyTokenBudget"
+          },
+          "preview": "function applyTokenBudget( items: ContextPacketItem[], tokenBudget?: number, ): { items: ContextPacketItem[]; maxItems?: number } { if (tokenBudget === undefined) { return { items }; } const selected: ContextPacketItem[]"
+        },
+        {
+          "rank": 9,
+          "score": 0.7207653873493547,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:1088-1099",
+          "language": "markdown",
+          "startLine": 1088,
+          "endLine": 1099,
+          "metadata": {
+            "docType": "readme",
+            "heading": "10.3 search-code-context-tool.ts",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "10. MCP 适配层设计",
+              "10.3 search-code-context-tool.ts"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 10.3 search-code-context-tool.ts 输入： 1. 查询语句 2. 仓库标识 3. 可选过滤条件 输出： 1. `ContextPacket` 2. 关键命中文件摘要"
+        },
+        {
+          "rank": 10,
+          "score": 0.7164540428014393,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:325-403",
+          "language": "markdown",
+          "startLine": 325,
+          "endLine": 403,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.5 当前输出 schema",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "7. search_code_context",
+              "7.5 当前输出 schema"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.5 当前输出 schema 当前 `core` 已返回 `results + contextPacket` 双轨结果，因此 MCP 输出稳定为： ```ts interface SearchCodeContextToolResult { repositoryId: string; query: string; topK: number; resultCount: number; results: Array<{ score:"
+        }
+      ]
+    },
+    {
+      "id": "agent-surreal-vector-search-v3",
+      "query": "debug Surreal vector search params。找 HNSW or KnnScan query builder implementation and tests.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "design/v1/surreal-native-vector-search-migration.md",
+        "doc/progress/milestones.md",
+        "packages/infra/src/storage/surreal/surreal-search-repository.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7945137720427745,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/surreal-native-vector-search-migration.md",
+          "chunkId": "design/v1/surreal-native-vector-search-migration.md:409-416",
+          "language": "markdown",
+          "startLine": 409,
+          "endLine": 416,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "8.4 当前测试结论",
+            "headingPath": [
+              "Surreal 原生向量检索迁移实施指南",
+              "8. 测试改造方案",
+              "8.4 当前测试结论"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 8.4 当前测试结论 当前迁移完成后，测试重点已经变为： 1. 查询语句是否包含 `<|K,EF|>` 形式的 native HNSW 片段 2. `repositoryId` 与全部支持的精确过滤条件是否被正确下推 3. `EXPLAIN FULL` 是否能观察到预期的 KnnScan 计划 4. 真实 SurrealDB + 真实 embedding provider 的整链路是否继续通过"
+        },
+        {
+          "rank": 2,
+          "score": 0.7937481391961916,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/surreal-native-vector-search-migration.md",
+          "chunkId": "design/v1/surreal-native-vector-search-migration.md:77-105",
+          "language": "markdown",
+          "startLine": 77,
+          "endLine": 105,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "4. 官方能力确认与版本边界",
+            "headingPath": [
+              "Surreal 原生向量检索迁移实施指南",
+              "4. 官方能力确认与版本边界"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 4. 官方能力确认与版本边界 根据 Surreal 官方文档和官方文档仓库中的公开示例，当前可以确认以下细节： 1. Surreal 已公开支持向量索引、HNSW、KNN 运算符和 `vector::distance::knn()` 2. HNSW 索引定义语法为 `DEFINE INDEX ... HNSW DIMENSION <n>`，并可选指定 `TYPE`、`DIST`、`EFC`、`M` 3. HNSW 查询写法是 `<"
+        },
+        {
+          "rank": 3,
+          "score": 0.7833675284719414,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/surreal-native-vector-search-migration.md",
+          "chunkId": "design/v1/surreal-native-vector-search-migration.md:243-303",
+          "language": "markdown",
+          "startLine": 243,
+          "endLine": 303,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.4 推荐查询结构",
+            "headingPath": [
+              "Surreal 原生向量检索迁移实施指南",
+              "7. 仓储替换方案",
+              "7.4 推荐查询结构"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.4 推荐查询结构 推荐把“原生 HNSW 查询”和“brute-force 距离查询”明确分开，不要混写。 原生 HNSW 查询的推荐形态如下，具体语法需按 Surreal 实际版本微调： ```sql SELECT *, vector::distance::knn() AS distance FROM chunk WHERE repositoryId = $repositoryId AND ...filters... AN"
+        },
+        {
+          "rank": 4,
+          "score": 0.7721385814702745,
+          "reason": "surreal vector search",
+          "filePath": "doc/progress/milestones.md",
+          "chunkId": "doc/progress/milestones.md:216-235",
+          "language": "markdown",
+          "startLine": 216,
+          "endLine": 235,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "13. 里程碑十二：Surreal 原生向量检索迁移与 3.0.4 基线验证落地",
+            "headingPath": [
+              "agent-code-index 开发里程碑",
+              "13. 里程碑十二：Surreal 原生向量检索迁移与 3.0.4 基线验证落地"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 13. 里程碑十二：Surreal 原生向量检索迁移与 3.0.4 基线验证落地 已完成： 1. `SurrealChunkSchema` 已引入 HNSW 向量索引定义，并收敛 embedding 维度注入 2. `SurrealSearchRepository` 已切换为单一的 native HNSW 检索路径 3. 当前 native 路径已采用“全部精确过滤条件数据库下推 + HNSW KNN”的正式策略 4. 开发用 S"
+        },
+        {
+          "rank": 5,
+          "score": 0.7693788129661968,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/surreal-native-vector-search-migration.md",
+          "chunkId": "design/v1/surreal-native-vector-search-migration.md:330-344",
+          "language": "markdown",
+          "startLine": 330,
+          "endLine": 344,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.6 日志建议",
+            "headingPath": [
+              "Surreal 原生向量检索迁移实施指南",
+              "7. 仓储替换方案",
+              "7.6 日志建议"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.6 日志建议 迁移后新增以下日志字段： 1. `searchStrategy: \"surreal-native-vector\"` 2. `vectorDistanceMetric` 3. `nativeVectorIndexUsed` 如果 Surreal 版本支持 `EXPLAIN` 并能观察索引命中，可在 debug 日志中记录。 另外，建议在原生路径落地后补充一条运行手册说明： 1. 索引创建后可用 `INFO FOR"
+        },
+        {
+          "rank": 6,
+          "score": 0.7649152095798243,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/surreal-native-vector-search-migration.md",
+          "chunkId": "design/v1/surreal-native-vector-search-migration.md:231-241",
+          "language": "markdown",
+          "startLine": 231,
+          "endLine": 241,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.3 推荐内部结构",
+            "headingPath": [
+              "Surreal 原生向量检索迁移实施指南",
+              "7. 仓储替换方案",
+              "7.3 推荐内部结构"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.3 推荐内部结构 当前实现已经收敛为单一内部路径： 1. `nativeVectorSearch(...)` 原因： 1. 干净的 SurrealDB `3.0.4` 环境已经验证“多精确过滤条件 + HNSW KNN”稳定可用 2. 保留应用侧余弦 fallback 会让实现、测试和日志语义继续分叉 3. 当前 v1 基线更需要稳定的单一路径，而不是同时维护两套召回语义"
+        },
+        {
+          "rank": 7,
+          "score": 0.7640025570556009,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/surreal-native-vector-search-migration.md",
+          "chunkId": "design/v1/surreal-native-vector-search-migration.md:426-433",
+          "language": "markdown",
+          "startLine": 426,
+          "endLine": 433,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "10. 已完成实施结果",
+            "headingPath": [
+              "Surreal 原生向量检索迁移实施指南",
+              "10. 已完成实施结果"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 10. 已完成实施结果 截至当前，以下步骤已经完成： 1. [packages/infra/src/storage/surreal/surreal-chunk-schema.ts](../../packages/infra/src/storage/surreal/surreal-chunk-schema.ts) 已落地 HNSW 向量索引定义 2. schema 与 search repository 的轻量集成测试已经更新 3."
+        },
+        {
+          "rank": 8,
+          "score": 0.7601960317252823,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/surreal-native-vector-search-migration.md",
+          "chunkId": "design/v1/surreal-native-vector-search-migration.md:26-51",
+          "language": "markdown",
+          "startLine": 26,
+          "endLine": 51,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "2. 当前实现现状",
+            "headingPath": [
+              "Surreal 原生向量检索迁移实施指南",
+              "2. 当前实现现状"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 2. 当前实现现状 当前语义检索实现位于 [packages/infra/src/storage/surreal/surreal-search-repository.ts](../../packages/infra/src/storage/surreal/surreal-search-repository.ts)。 截至 2026-03-21，当前实现已经完成 v1 迁移，默认行为为： 1. 在 SurrealDB 中执行“全部精"
+        },
+        {
+          "rank": 9,
+          "score": 0.7512036588165412,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-search-repository.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-search-repository.ts:174-253",
+          "language": "typescript",
+          "startLine": 174,
+          "endLine": 253,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "SurrealSearchRepository"
+          },
+          "preview": "try { await this.client.connect(); const filterState = buildFilterState(input.filters); const results = await this.nativeVectorSearch(input, filterState, logger); logger.info(\"Semantic search completed\", { resultCount: r"
+        },
+        {
+          "rank": 10,
+          "score": 0.7495309405033275,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/surreal-native-vector-search-migration.md",
+          "chunkId": "design/v1/surreal-native-vector-search-migration.md:358-377",
+          "language": "markdown",
+          "startLine": 358,
+          "endLine": 377,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "8.2 SearchRepository 轻量集成测试",
+            "headingPath": [
+              "Surreal 原生向量检索迁移实施指南",
+              "8. 测试改造方案",
+              "8.2 SearchRepository 轻量集成测试"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 8.2 SearchRepository 轻量集成测试 目标文件： 1. [packages/infra/test/storage/surreal/search-repository.integration.test.ts](../../packages/infra/test/storage/surreal/search-repository.integration.test.ts) 当前测试主要断言： 1. query 被调用"
+        }
+      ]
+    },
+    {
+      "id": "agent-provider-factory-v3",
+      "query": "switch embedding provider。找 provider factory, openai-compatible provider, voyage provider wiring.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/infra/src/embedding/provider-factory.ts",
+        "design/v1/README.md",
+        "packages/infra/README.md",
+        "packages/infra/test/embedding/provider-factory.unit.test.ts",
+        "doc/progress/milestones.md",
+        "doc/progress/current-progress.md",
+        "packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts",
+        "packages/infra/src/embedding/voyage-embedding-provider.ts"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.8245391815931628,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/provider-factory.ts",
+          "chunkId": "packages/infra/src/embedding/provider-factory.ts:31-69",
+          "language": "typescript",
+          "startLine": 31,
+          "endLine": 69,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "createEmbeddingProvider"
+          },
+          "preview": "function createEmbeddingProvider( config: EmbeddingProviderConfig, logger: Logger = NOOP_LOGGER, ): EmbeddingProvider { const factoryLogger = logger.child({ package: \"infra\", module: \"embedding-provider-factory\", }); fac"
+        },
+        {
+          "rank": 2,
+          "score": 0.8110206690840867,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:797-841",
+          "language": "markdown",
+          "startLine": 797,
+          "endLine": 841,
+          "metadata": {
+            "docType": "readme",
+            "heading": "9.2 Embedding Provider 策略",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "9. 基础设施设计",
+              "9.2 Embedding Provider 策略"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 9.2 Embedding Provider 策略 截至当前，`voyage` 与 `openai-compatible` 两类 provider 都已经落地，provider factory 也已经完成统一装配。 建议职责拆分，代码位于 `packages/infra`： 1. `embedding/provider-factory.ts`：根据配置选择具体 provider 2. `embedding/openai-comp"
+        },
+        {
+          "rank": 3,
+          "score": 0.795918896937321,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/README.md",
+          "chunkId": "packages/infra/README.md:35-46",
+          "language": "markdown",
+          "startLine": 35,
+          "endLine": 46,
+          "metadata": {
+            "docType": "readme",
+            "heading": "embedding",
+            "headingPath": [
+              "@agent-code-index/infra",
+              "当前目录结构",
+              "embedding"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### embedding 负责 embedding provider 的具体实现与工厂选择，目前已包含： 1. `createEmbeddingProvider` 2. `VoyageEmbeddingProvider` 当前能力： 1. 支持按配置选择 provider 2. 已具备 Voyage 的最小 HTTP 调用实现 3. 已对 embedding 结果条数和维度做基础校验"
+        },
+        {
+          "rank": 4,
+          "score": 0.7860934717043561,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/embedding/provider-factory.unit.test.ts",
+          "chunkId": "packages/infra/test/embedding/provider-factory.unit.test.ts:1-39",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 39,
+          "metadata": {},
+          "preview": "import { describe, expect, it } from \"vitest\"; import { createEmbeddingProvider, OpenAICompatibleEmbeddingProvider, VoyageEmbeddingProvider, } from \"../../src/index.js\"; describe(\"createEmbeddingProvider\", () => { it(\"cr"
+        },
+        {
+          "rank": 5,
+          "score": 0.7835762744589423,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:31-33",
+          "language": "markdown",
+          "startLine": 31,
+          "endLine": 33,
+          "metadata": {
+            "docType": "readme",
+            "heading": "2.1 核心能力与协议解耦",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "2. 设计原则",
+              "2.1 核心能力与协议解耦"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 2.1 核心能力与协议解耦 索引、搜索、上下文拼装属于产品核心能力，不应直接依赖 MCP、HTTP 或 CLI。协议层只做请求适配、参数校验和结果映射。"
+        },
+        {
+          "rank": 6,
+          "score": 0.7803111139099924,
+          "reason": "surreal vector search",
+          "filePath": "doc/progress/milestones.md",
+          "chunkId": "doc/progress/milestones.md:130-147",
+          "language": "markdown",
+          "startLine": 130,
+          "endLine": 147,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "8. 里程碑七：多 provider embedding 接入能力落地",
+            "headingPath": [
+              "agent-code-index 开发里程碑",
+              "8. 里程碑七：多 provider embedding 接入能力落地"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 8. 里程碑七：多 provider embedding 接入能力落地 已完成： 1. `EmbeddingProvider` contract 已在 `core` 中定义 2. `createEmbeddingProvider` 已在 `infra` 中落地 3. `VoyageEmbeddingProvider` 最小 HTTP 实现已落地 4. `OpenAICompatibleEmbeddingProvider` 最小 H"
+        },
+        {
+          "rank": 7,
+          "score": 0.7767257781428271,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/README.md",
+          "chunkId": "packages/infra/README.md:108-114",
+          "language": "markdown",
+          "startLine": 108,
+          "endLine": 114,
+          "metadata": {
+            "docType": "readme",
+            "heading": "1. Embedding Provider 实现",
+            "headingPath": [
+              "@agent-code-index/infra",
+              "当前已经实现的功能",
+              "1. Embedding Provider 实现"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 1. Embedding Provider 实现 已实现： 1. provider factory 2. Voyage provider 最小实现 3. provider 单元测试"
+        },
+        {
+          "rank": 8,
+          "score": 0.7719318853574806,
+          "reason": "surreal vector search",
+          "filePath": "doc/progress/current-progress.md",
+          "chunkId": "doc/progress/current-progress.md:94-106",
+          "language": "markdown",
+          "startLine": 94,
+          "endLine": 106,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "3.4 embedding 能力",
+            "headingPath": [
+              "agent-code-index 当前进度",
+              "3. 已完成能力",
+              "3.4 embedding 能力"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 3.4 embedding 能力 当前已经可验证： 1. `EmbeddingProvider` contract 已在 `core` 中定义 2. `createEmbeddingProvider` 已可按配置创建 provider 3. `VoyageEmbeddingProvider` 已具备最小 HTTP 调用能力 4. `OpenAICompatibleEmbeddingProvider` 已具备最小 HTTP 调用能"
+        },
+        {
+          "rank": 9,
+          "score": 0.7502642459371743,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts:39-39",
+          "language": "typescript",
+          "startLine": 39,
+          "endLine": 39,
+          "metadata": {
+            "parentSymbol": "OpenAICompatibleEmbeddingProvider",
+            "symbolKind": "field",
+            "symbolName": "provider",
+            "tags": ["readonly"]
+          },
+          "preview": "public readonly provider = \"openai-compatible\""
+        },
+        {
+          "rank": 10,
+          "score": 0.7476722390263519,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/voyage-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/voyage-embedding-provider.ts:42-42",
+          "language": "typescript",
+          "startLine": 42,
+          "endLine": 42,
+          "metadata": {
+            "parentSymbol": "VoyageEmbeddingProvider",
+            "symbolKind": "field",
+            "symbolName": "provider",
+            "tags": ["readonly"]
+          },
+          "preview": "public readonly provider = \"voyage\""
+        }
+      ]
+    },
+    {
+      "id": "agent-quality-run-cleanup-v3",
+      "query": "quality run script hangs on exit。找 cleanup path and surrealClient.disconnect call site.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/infra/src/storage/surreal/surreal-client.ts",
+        "design/v1/README.md",
+        "doc/progress/milestones.md",
+        "packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts",
+        ".vscode/mcp.example.jsonc"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.6923732459890388,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-client.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-client.ts:135-214",
+          "language": "typescript",
+          "startLine": 135,
+          "endLine": 214,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "DefaultSurrealClient"
+          },
+          "preview": "error, sanitizeSurrealConnectionConfig(this.config), ), ); throw error; } } /** * 关闭当前连接。 */ public async disconnect(): Promise<void> { if (!this.isConnected) { this.logger.debug( \"Surreal client disconnect skipped becau"
+        },
+        {
+          "rank": 2,
+          "score": 0.6834787555413065,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:861-877",
+          "language": "markdown",
+          "startLine": 861,
+          "endLine": 877,
+          "metadata": {
+            "docType": "readme",
+            "heading": "9.2.2 项目级 Embedding 配置",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "9. 基础设施设计",
+              "9.2.2 项目级 Embedding 配置"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 9.2.2 项目级 Embedding 配置 配置模型应从 `VoyageConfig` 演进为通用的 `EmbeddingConfig`。 建议字段包括： 1. `EMBEDDING_PROVIDER` 2. `EMBEDDING_MODEL` 3. `EMBEDDING_VECTOR_DIMENSION` 4. `EMBEDDING_API_KEY` 5. `EMBEDDING_BASE_URL` 说明： 1. Voyage"
+        },
+        {
+          "rank": 3,
+          "score": 0.683439499942318,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:973-1000",
+          "language": "markdown",
+          "startLine": 973,
+          "endLine": 1000,
+          "metadata": {
+            "docType": "readme",
+            "heading": "9.3.4 切块策略",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "9. 基础设施设计",
+              "9.3.4 切块策略"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 9.3.4 切块策略 对于 Python 和 TypeScript，v1 建议按语义边界切块，而不是只按固定窗口切块。 优先切出的节点包括： 1. class 2. function 3. method 4. 可选的 top-level variable 或 export block 每个 chunk 至少应携带以下元数据： 1. `filePath` 2. `language` 3. `symbolName` 4. `symb"
+        },
+        {
+          "rank": 4,
+          "score": 0.6808863364985874,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:634-636",
+          "language": "markdown",
+          "startLine": 634,
+          "endLine": 636,
+          "metadata": {
+            "docType": "readme",
+            "heading": "8.4 explain-impact-service.ts",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "8. 核心服务设计",
+              "8.4 explain-impact-service.ts"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 8.4 explain-impact-service.ts 该服务不纳入 v1 实现，但建议预留位置。后续如果增加变更影响分析，可以基于索引数据、符号关系和引用关系扩展。"
+        },
+        {
+          "rank": 5,
+          "score": 0.6765478125470942,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-client.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-client.ts:146-165",
+          "language": "typescript",
+          "startLine": 146,
+          "endLine": 165,
+          "metadata": {
+            "parentSymbol": "DefaultSurrealClient",
+            "symbolKind": "method",
+            "symbolName": "disconnect",
+            "tags": ["async"]
+          },
+          "preview": "public async disconnect(): Promise<void> { if (!this.isConnected) { this.logger.debug( \"Surreal client disconnect skipped because connection is not active\", ); return; } try { await this.driver.close(); this.isConnected "
+        },
+        {
+          "rank": 6,
+          "score": 0.6742574551878922,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-client.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-client.ts:85-85",
+          "language": "typescript",
+          "startLine": 85,
+          "endLine": 85,
+          "metadata": {
+            "parentSymbol": "DefaultSurrealClient",
+            "symbolKind": "field",
+            "symbolName": "isConnected",
+            "tags": ["private"]
+          },
+          "preview": "private isConnected = false"
+        },
+        {
+          "rank": 7,
+          "score": 0.6704193206173868,
+          "reason": "surreal vector search",
+          "filePath": "doc/progress/milestones.md",
+          "chunkId": "doc/progress/milestones.md:73-86",
+          "language": "markdown",
+          "startLine": 73,
+          "endLine": 86,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "5. 里程碑四：真实 SurrealDB 验证能力落地",
+            "headingPath": [
+              "agent-code-index 开发里程碑",
+              "5. 里程碑四：真实 SurrealDB 验证能力落地"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 5. 里程碑四：真实 SurrealDB 验证能力落地 已完成： 1. `DefaultSurrealClient` 真实连接测试落地 2. `project_metadata` 真实仓储测试落地 3. `createApp()` 真实启动链路测试落地 4. Vitest workspace 包源码别名已补齐，测试运行时解析稳定 5. `healthCheck` 已修正为兼容当前 WebSocket RPC 连接方式的轻量查询验证"
+        },
+        {
+          "rank": 8,
+          "score": 0.6694184812195753,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:780-795",
+          "language": "markdown",
+          "startLine": 780,
+          "endLine": 795,
+          "metadata": {
+            "docType": "readme",
+            "heading": "9.1.6 运行时差异处理",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "9. 基础设施设计",
+              "9.1.6 运行时差异处理"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 9.1.6 运行时差异处理 本地与云端 SurrealDB 的主要差异通常体现在运行特性，而非业务语义。 需要重点考虑： 1. 云端环境的网络超时与重试 2. TLS 与证书配置 3. 权限与鉴权失败 4. 不同环境的版本差异 因此建议： 1. 对连接错误、鉴权错误、能力不支持错误分别建模 2. 对可重试错误采用有限重试 3. 对配置错误和 schema 错误尽早失败"
+        },
+        {
+          "rank": 9,
+          "score": 0.6661484299207396,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts:30-30",
+          "language": "typescript",
+          "startLine": 30,
+          "endLine": 30,
+          "metadata": {
+            "parentSymbol": "SurrealProjectMetadataSchema",
+            "symbolKind": "field",
+            "symbolName": "client",
+            "tags": ["private", "readonly"]
+          },
+          "preview": "private readonly client: SurrealClient"
+        },
+        {
+          "rank": 10,
+          "score": 0.6635826375270981,
+          "reason": "surreal vector search",
+          "filePath": ".vscode/mcp.example.jsonc",
+          "chunkId": ".vscode/mcp.example.jsonc:181-207",
+          "language": "text",
+          "startLine": 181,
+          "endLine": 207,
+          "metadata": {},
+          "preview": "\"DEFAULT_SCAN_INCLUDE_PATTERNS\": \".env.example,dist/schema.json\", // 可选的根 .gitignore 绝对路径；其中的排除规则会并入扫描忽略集合。 \"DEFAULT_SCAN_GITIGNORE_PATH\": \"/workspace/repo-b/.gitignore\", // native HNSW 路径的候选窗口倍数。 \"SEARCH_NATIVE_CANDIDAT"
+        }
+      ]
+    },
+    {
+      "id": "agent-incremental-file-ops-v3",
+      "query": "trace get_file_context index_files delete_files。找 use case/service/storage path for incremental file ops.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "design/v1/README.md",
+        "design/v1/mcp-tool-interface-design.md"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.6871371401914574,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:1101-1110",
+          "language": "markdown",
+          "startLine": 1101,
+          "endLine": 1110,
+          "metadata": {
+            "docType": "readme",
+            "heading": "10.4 get-file-context-tool.ts",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "10. MCP 适配层设计",
+              "10.4 get-file-context-tool.ts"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 10.4 get-file-context-tool.ts 输入： 1. 仓库标识 2. 文件路径 输出： 1. 文件级上下文包"
+        },
+        {
+          "rank": 2,
+          "score": 0.6785983753488307,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:763-771",
+          "language": "markdown",
+          "startLine": 763,
+          "endLine": 771,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "13.5 get_file_context",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "13. 示例",
+              "13.5 get_file_context"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 13.5 get_file_context 输入： ```json { \"filePath\": \"src/shipping.ts\" } ```"
+        },
+        {
+          "rank": 3,
+          "score": 0.6784347861390988,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:615-632",
+          "language": "markdown",
+          "startLine": 615,
+          "endLine": 632,
+          "metadata": {
+            "docType": "readme",
+            "heading": "8.3 get-file-context-service.ts",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "8. 核心服务设计",
+              "8.3 get-file-context-service.ts"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 8.3 get-file-context-service.ts 该服务面向“按文件取上下文”的场景。 当前状态：该服务已在 `core` 落地，并已通过 `get_file_context` MCP tool 对外暴露。 推荐流程： 1. 根据 `repositoryId + filePath` 查询 chunk 2. 重新按行号排序与合并 3. 输出适合 Agent 阅读的文件上下文包 4. 当前实现同时返回结构化 `chun"
+        },
+        {
+          "rank": 4,
+          "score": 0.6781212167657422,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:1179-1214",
+          "language": "markdown",
+          "startLine": 1179,
+          "endLine": 1214,
+          "metadata": {
+            "docType": "readme",
+            "heading": "11.4 v1 打包与部署策略",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "11. 启动与装配",
+              "11.4 v1 打包与部署策略"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 11.4 v1 打包与部署策略 v1 建议采用 workspace + 三包方案：`core`、`infra`、`mcp-server`。 推荐形态： 1. 根目录 `package.json` 作为 workspace 清单 2. `packages/core` 维护自己的 `package.json` 3. `packages/infra` 维护自己的 `package.json` 4. `packages/mcp-serv"
+        },
+        {
+          "rank": 5,
+          "score": 0.6741039880309426,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:129-148",
+          "language": "markdown",
+          "startLine": 129,
+          "endLine": 148,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "3.6 文件级增量更新优先暴露两个核心方法",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "3. 设计原则",
+              "3.6 文件级增量更新优先暴露两个核心方法"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 3.6 文件级增量更新优先暴露两个核心方法 对于项目持续开发场景，v1 建议把文件级增量更新拆成两个核心 tool： 1. `index_files` 2. `delete_files` 不单独把 `update_files` 作为公开核心契约，原因是： 1. `index_files` 可以直接定义为“覆盖式重建文件索引” 2. 对已存在文件，`index_files` 内部应先删除旧 chunk 再重建 3. 对新增文件，`"
+        },
+        {
+          "rank": 6,
+          "score": 0.6726479987789294,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:773-784",
+          "language": "markdown",
+          "startLine": 773,
+          "endLine": 784,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "14. 结论",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "14. 结论"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 14. 结论 当前仓库已经具备把 `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context` 通过 MCP tool 暴露出去的核心 use case。 在单仓库部署场景下，建议进一步通过 `MCP_REPOSITORY_ROOT` 固定仓库根目录，使 `index_repository` 与 `index_fil"
+        },
+        {
+          "rank": 7,
+          "score": 0.6721937527540274,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:704-712",
+          "language": "markdown",
+          "startLine": 704,
+          "endLine": 712,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "12. Tool 与 Core 映射总表",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "12. Tool 与 Core 映射总表"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 12. Tool 与 Core 映射总表 | Tool | Core service | 当前状态 | 备注 | | --------------------- | --------------------------------- | -------- | ------------------------------------------- | | `index_repository` | `DefaultIndexRepos"
+        },
+        {
+          "rank": 8,
+          "score": 0.6720869711033985,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:150-158",
+          "language": "markdown",
+          "startLine": 150,
+          "endLine": 158,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "4. Tool 列表总览",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "4. Tool 列表总览"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 4. Tool 列表总览 | Tool | 当前状态 | 核心依赖 | v1 输出形态 | | --------------------- | -------- | --------------------------------- | -------------------------------- | | `index_repository` | 已实现 | `DefaultIndexRepositoryService` | "
+        },
+        {
+          "rank": 9,
+          "score": 0.6683546417681989,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:581-583",
+          "language": "markdown",
+          "startLine": 581,
+          "endLine": 583,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "10.2 用途",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "10. get_file_context",
+              "10.2 用途"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 10.2 用途 按仓库与文件路径拉取文件级上下文，供 Agent 做连续阅读或二次分析。"
+        },
+        {
+          "rank": 10,
+          "score": 0.6683546417681989,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:581-583",
+          "language": "markdown",
+          "startLine": 581,
+          "endLine": 583,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "10.2 用途",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "10. get_file_context",
+              "10.2 用途"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 10.2 用途 按仓库与文件路径拉取文件级上下文，供 Agent 做连续阅读或二次分析。"
+        }
+      ]
+    },
+    {
+      "id": "agent-indexing-concurrency-v3",
+      "query": "repo indexing is slow。找 embeddingBatchSize embeddingConcurrency flow, batching, worker concurrency code.",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/core/src/services/index-repository-service.ts",
+        "packages/core/src/services/index-files-service.ts",
+        "design/v1/README.md",
+        "design/v1/mcp-tool-interface-design.md"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.8302579081460594,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/services/index-repository-service.ts",
+          "chunkId": "packages/core/src/services/index-repository-service.ts:250-329",
+          "language": "typescript",
+          "startLine": 250,
+          "endLine": 329,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "DefaultIndexRepositoryService"
+          },
+          "preview": "embeddingConcurrency: number, logger: Logger, ): Promise<IndexedChunk[]> { const indexedChunksByBatch: IndexedChunk[][] = []; const totalBatches = Math.ceil(chunks.length / batchSize); const totalWorkers = Math.min(embed"
+        },
+        {
+          "rank": 2,
+          "score": 0.8132890012428746,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/services/index-repository-service.ts",
+          "chunkId": "packages/core/src/services/index-repository-service.ts:190-269",
+          "language": "typescript",
+          "startLine": 190,
+          "endLine": 269,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "DefaultIndexRepositoryService"
+          },
+          "preview": "logger.info(\"Repository chunk preparation completed\", { scannedFileCount: prepared.scannedFileCount, parsedFileCount: prepared.parsedFileCount, skippedFileCount: prepared.skippedFileCount, chunkCount: prepared.chunks.len"
+        },
+        {
+          "rank": 3,
+          "score": 0.805435218956814,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/services/index-files-service.ts",
+          "chunkId": "packages/core/src/services/index-files-service.ts:229-308",
+          "language": "typescript",
+          "startLine": 229,
+          "endLine": 308,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "DefaultIndexFilesService"
+          },
+          "preview": "let nextBatchStart = 0; let firstError: unknown; const runWorker = async (workerIndex: number): Promise<void> => { while (true) { if (firstError !== undefined) { return; } const start = nextBatchStart; nextBatchStart += "
+        },
+        {
+          "rank": 4,
+          "score": 0.8002676190065066,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:564-592",
+          "language": "markdown",
+          "startLine": 564,
+          "endLine": 592,
+          "metadata": {
+            "docType": "readme",
+            "heading": "8.1.1 Embedding 批处理与并发策略",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "8. 核心服务设计",
+              "8.1.1 Embedding 批处理与并发策略"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 8.1.1 Embedding 批处理与并发策略 索引链路中的 embedding 生成建议显式区分两个运行参数： 1. `embeddingBatchSize`：单次请求携带的 chunk 数量 2. `embeddingConcurrency`：允许同时并发的批次数量 两者语义不同： 1. `embeddingBatchSize` 决定单次请求体大小和单次失败影响范围 2. `embeddingConcurrency` 决定"
+        },
+        {
+          "rank": 5,
+          "score": 0.7998667175971104,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/services/index-repository-service.ts",
+          "chunkId": "packages/core/src/services/index-repository-service.ts:247-326",
+          "language": "typescript",
+          "startLine": 247,
+          "endLine": 326,
+          "metadata": {
+            "parentSymbol": "DefaultIndexRepositoryService",
+            "symbolKind": "method",
+            "symbolName": "generateIndexedChunks",
+            "tags": ["private", "async"]
+          },
+          "preview": "private async generateIndexedChunks( chunks: PreparedChunk[], batchSize: number, embeddingConcurrency: number, logger: Logger, ): Promise<IndexedChunk[]> { const indexedChunksByBatch: IndexedChunk[][] = []; const totalBa"
+        },
+        {
+          "rank": 6,
+          "score": 0.7840251206351452,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/services/index-files-service.ts",
+          "chunkId": "packages/core/src/services/index-files-service.ts:289-337",
+          "language": "typescript",
+          "startLine": 289,
+          "endLine": 337,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "DefaultIndexFilesService"
+          },
+          "preview": "}); firstError = error; return; } if (embeddings.length !== batch.length) { firstError = new Error( `Embedding result count mismatch: expected ${batch.length}, received ${embeddings.length}`, ); return; } const indexedBa"
+        },
+        {
+          "rank": 7,
+          "score": 0.7840100459661301,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/services/index-repository-service.ts",
+          "chunkId": "packages/core/src/services/index-repository-service.ts:307-384",
+          "language": "typescript",
+          "startLine": 307,
+          "endLine": 384,
+          "metadata": {
+            "parentSymbol": "DefaultIndexRepositoryService",
+            "symbolKind": "method",
+            "symbolName": "generateIndexedChunks",
+            "tags": ["private", "async"]
+          },
+          "preview": "let embeddings: number[][]; try { embeddings = await this.embeddingProvider.generateEmbeddings({ values: batch.map((chunk) => chunk.searchText), purpose: \"document\", }); } catch (error) { logger.error(\"Chunk batch embedd"
+        },
+        {
+          "rank": 8,
+          "score": 0.7788708591764019,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/services/index-files-service.ts",
+          "chunkId": "packages/core/src/services/index-files-service.ts:207-286",
+          "language": "typescript",
+          "startLine": 207,
+          "endLine": 286,
+          "metadata": {
+            "parentSymbol": "DefaultIndexFilesService",
+            "symbolKind": "method",
+            "symbolName": "generateIndexedChunks",
+            "tags": ["private", "async"]
+          },
+          "preview": "private async generateIndexedChunks( chunks: PreparedChunk[], batchSize: number, embeddingConcurrency: number, logger: Logger, ): Promise<Chunk[]> { const indexedChunksByBatch: Chunk[][] = []; const totalBatches = Math.c"
+        },
+        {
+          "rank": 9,
+          "score": 0.7775058938983376,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:716-725",
+          "language": "markdown",
+          "startLine": 716,
+          "endLine": 725,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "13.1 index_repository",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "13. 示例",
+              "13.1 index_repository"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 13.1 index_repository 输入： ```json { \"mode\": \"full\", \"embeddingBatchSize\": 16 } ```"
+        },
+        {
+          "rank": 10,
+          "score": 0.7767829991284511,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/services/index-files-service.ts",
+          "chunkId": "packages/core/src/services/index-files-service.ts:169-248",
+          "language": "typescript",
+          "startLine": 169,
+          "endLine": 248,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "DefaultIndexFilesService"
+          },
+          "preview": "if (successfulFilePaths.length > 0) { deletedChunkCount = await this.chunkRepository.deleteByFilePaths({ repositoryId: input.repositoryId, filePaths: successfulFilePaths, }); } if (indexedChunks.length > 0) { await this."
+        }
+      ]
+    }
+  ]
+}

@@ -64,9 +64,7 @@
           "startLine": 387,
           "endLine": 408,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "parentSymbol": "MemoryClient",
             "symbolKind": "method",
             "symbolName": "history"
@@ -131,9 +129,7 @@
           "startLine": 358,
           "endLine": 384,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "parentSymbol": "MemoryClient",
             "symbolKind": "method",
             "symbolName": "delete_all"
@@ -229,9 +225,7 @@
             "parentSymbol": "AsyncMemoryClient",
             "symbolKind": "field",
             "symbolName": "project_id",
-            "tags": [
-              "instance-field"
-            ]
+            "tags": ["instance-field"]
           },
           "preview": "self.project_id = project_id"
         },
@@ -284,9 +278,7 @@
           "startLine": 387,
           "endLine": 408,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "parentSymbol": "MemoryClient",
             "symbolKind": "method",
             "symbolName": "history"
@@ -360,9 +352,7 @@
           "startLine": 411,
           "endLine": 417,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "parentSymbol": "MemoryClient",
             "symbolKind": "method",
             "symbolName": "users"
@@ -416,16 +406,12 @@
           "startLine": 1517,
           "endLine": 1589,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "isAsync": true,
             "parentSymbol": "AsyncMemoryClient",
             "symbolKind": "method",
             "symbolName": "update_project",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async def update_project( self, custom_instructions: Optional[str] = None, custom_categories: Optional[List[str]] = None, retrieval_criteria: Optional[List[Dict[str, Any]]] = None, enable_graph: Optional[bool] = None, ve"
         },
@@ -454,16 +440,12 @@
           "startLine": 1625,
           "endLine": 1650,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "isAsync": true,
             "parentSymbol": "AsyncMemoryClient",
             "symbolKind": "method",
             "symbolName": "create_webhook",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async def create_webhook(self, url: str, name: str, project_id: str, event_types: List[str]) -> Dict[str, Any]: \"\"\"Create a webhook for the current project. Args: url: The URL to send the webhook to. name: The name of th"
         },
@@ -498,16 +480,12 @@
           "startLine": 1434,
           "endLine": 1449,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "isAsync": true,
             "parentSymbol": "AsyncMemoryClient",
             "symbolKind": "method",
             "symbolName": "create_memory_export",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async def create_memory_export(self, schema: str, **kwargs) -> Dict[str, Any]: \"\"\"Create a memory export with the provided schema. Args: schema: JSON schema defining the export structure **kwargs: Optional filters like u"
         },
@@ -521,16 +499,12 @@
           "startLine": 1653,
           "endLine": 1684,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "isAsync": true,
             "parentSymbol": "AsyncMemoryClient",
             "symbolKind": "method",
             "symbolName": "update_webhook",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async def update_webhook( self, webhook_id: int, name: Optional[str] = None, url: Optional[str] = None, event_types: Optional[List[str]] = None, ) -> Dict[str, Any]: \"\"\"Update a webhook configuration. Args: webhook_id: I"
         },
@@ -576,9 +550,7 @@
           "metadata": {
             "symbolKind": "function",
             "symbolName": "cleanupCreatedData",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async function cleanupCreatedData(contexts: TestContext[]): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = createSurrealCli"
         }
@@ -609,9 +581,7 @@
             "parentSymbol": "MemoryClient",
             "symbolKind": "field",
             "symbolName": "user_email",
-            "tags": [
-              "instance-field"
-            ]
+            "tags": ["instance-field"]
           },
           "preview": "self.user_email = self._validate_api_key()"
         },
@@ -628,9 +598,7 @@
             "parentSymbol": "AuditLogUseCases",
             "symbolKind": "method",
             "symbolName": "exportAuditLogs",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async exportAuditLogs( request: ExportAclAuditLogsRequest, ): Promise<ExportAclAuditLogsResponse> { const limit = this.normalizeExportLimit(request.limit); const actorId = this.normalizeActorId(request.actorId); const ac"
         },
@@ -648,9 +616,7 @@
             "parentSymbol": "MemoryClient",
             "symbolKind": "field",
             "symbolName": "api_key",
-            "tags": [
-              "instance-field"
-            ]
+            "tags": ["instance-field"]
           },
           "preview": "self.api_key = api_key or os.getenv(\"MEM0_API_KEY\")"
         },
@@ -715,9 +681,7 @@
             "parentSymbol": "AuditLogUseCases",
             "symbolKind": "method",
             "symbolName": "listAuditLogs",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async listAuditLogs( request: ListAclAuditLogsRequest, ): Promise<ListAclAuditLogsResponse> { const page = request.page > 0 ? request.page : 1; const pageSize = this.normalizePageSize(request.pageSize); const actorId = t"
         },
@@ -735,9 +699,7 @@
             "parentSymbol": "MemoryClient",
             "symbolKind": "field",
             "symbolName": "client",
-            "tags": [
-              "instance-field"
-            ]
+            "tags": ["instance-field"]
           },
           "preview": "self.client = client"
         },
@@ -751,9 +713,7 @@
           "startLine": 131,
           "endLine": 176,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "parentSymbol": "MemoryClient",
             "symbolKind": "method",
             "symbolName": "add"
@@ -774,9 +734,7 @@
             "parentSymbol": "MemoryClient",
             "symbolKind": "field",
             "symbolName": "org_id",
-            "tags": [
-              "instance-field"
-            ]
+            "tags": ["instance-field"]
           },
           "preview": "self.org_id = org_id"
         }
@@ -820,9 +778,7 @@
           "startLine": 863,
           "endLine": 884,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "parentSymbol": "MemoryClient",
             "symbolKind": "method",
             "symbolName": "feedback"
@@ -839,9 +795,7 @@
           "startLine": 334,
           "endLine": 355,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "parentSymbol": "MemoryClient",
             "symbolKind": "method",
             "symbolName": "delete"
@@ -860,9 +814,7 @@
           "metadata": {
             "symbolKind": "function",
             "symbolName": "cleanupCreatedData",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async function cleanupCreatedData(contexts: TestContext[]): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = createSurrealCli"
         },
@@ -880,9 +832,7 @@
             "parentSymbol": "AsyncMemoryClient",
             "symbolKind": "field",
             "symbolName": "api_key",
-            "tags": [
-              "instance-field"
-            ]
+            "tags": ["instance-field"]
           },
           "preview": "self.api_key = api_key or os.getenv(\"MEM0_API_KEY\")"
         },
@@ -898,9 +848,7 @@
           "metadata": {
             "symbolKind": "function",
             "symbolName": "startStdioServer",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async function startStdioServer(): Promise<void> { const app = await createApp(); const server = createMcpServer(app); const transport = new StdioServerTransport(); await server.connect(transport); app.container.logger.i"
         },
@@ -918,9 +866,7 @@
             "parentSymbol": "AsyncMemoryClient",
             "symbolKind": "field",
             "symbolName": "host",
-            "tags": [
-              "instance-field"
-            ]
+            "tags": ["instance-field"]
           },
           "preview": "self.host = host or \"https://api.mem0.ai\""
         },
@@ -934,16 +880,12 @@
           "startLine": 1283,
           "endLine": 1289,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "isAsync": true,
             "parentSymbol": "AsyncMemoryClient",
             "symbolKind": "method",
             "symbolName": "users",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async def users(self) -> Dict[str, Any]: \"\"\"Get all users, agents, and sessions for which memories exist.\"\"\" params = self._prepare_params() response = await self.async_client.get(\"/v1/entities/\", params=params) response"
         },
@@ -999,9 +941,7 @@
           "startLine": 298,
           "endLine": 331,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "parentSymbol": "MemoryClient",
             "symbolKind": "method",
             "symbolName": "update"
@@ -1020,9 +960,7 @@
           "metadata": {
             "symbolKind": "function",
             "symbolName": "cleanupCreatedData",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async function cleanupCreatedData(contexts: TestContext[]): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = createSurrealCli"
         },
@@ -1038,9 +976,7 @@
           "metadata": {
             "symbolKind": "function",
             "symbolName": "cleanupCreatedData",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async function cleanupCreatedData(contexts: TestContext[]): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = createSurrealCli"
         },
@@ -1056,9 +992,7 @@
           "metadata": {
             "symbolKind": "function",
             "symbolName": "cleanupCreatedProjectMetadata",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async function cleanupCreatedProjectMetadata( contexts: TestContext[], ): Promise<void> { const uniqueContexts = deduplicateContexts(contexts); await Promise.all( uniqueContexts.map(async (context) => { const client = cr"
         },
@@ -1072,9 +1006,7 @@
           "startLine": 131,
           "endLine": 176,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "parentSymbol": "MemoryClient",
             "symbolKind": "method",
             "symbolName": "add"
@@ -1111,9 +1043,7 @@
             "parentSymbol": "AsyncMemoryClient",
             "symbolKind": "field",
             "symbolName": "host",
-            "tags": [
-              "instance-field"
-            ]
+            "tags": ["instance-field"]
           },
           "preview": "self.host = host or \"https://api.mem0.ai\""
         },
@@ -1131,9 +1061,7 @@
             "parentSymbol": "AsyncMemoryClient",
             "symbolKind": "method",
             "symbolName": "__aexit__",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async def __aexit__(self, exc_type, exc_val, exc_tb): await self.async_client.aclose()"
         },
@@ -1147,9 +1075,7 @@
           "startLine": 387,
           "endLine": 408,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "parentSymbol": "MemoryClient",
             "symbolKind": "method",
             "symbolName": "history"
@@ -1273,9 +1199,7 @@
             "parentSymbol": "AsyncMemoryClient",
             "symbolKind": "field",
             "symbolName": "org_id",
-            "tags": [
-              "instance-field"
-            ]
+            "tags": ["instance-field"]
           },
           "preview": "self.org_id = org_id"
         },
@@ -1342,9 +1266,7 @@
           "metadata": {
             "docType": "readme",
             "heading": "agent-code-index",
-            "headingPath": [
-              "agent-code-index"
-            ],
+            "headingPath": ["agent-code-index"],
             "sectionLevel": 1
           },
           "preview": "# agent-code-index 面向 Agent 的代码与工程文档索引工具。 当前项目的目标，是把“仓库扫描 -> 语义切块 -> embedding -> 向量检索 -> 通过 MCP 暴露能力”这条链路稳定落地，并保持核心能力与协议层解耦。"
@@ -1433,9 +1355,7 @@
           "startLine": 835,
           "endLine": 860,
           "metadata": {
-            "decorators": [
-              "api_error_handler"
-            ],
+            "decorators": ["api_error_handler"],
             "parentSymbol": "MemoryClient",
             "symbolKind": "method",
             "symbolName": "delete_webhook"
@@ -1483,9 +1403,7 @@
             "parentSymbol": "AsyncMemoryClient",
             "symbolKind": "field",
             "symbolName": "project_id",
-            "tags": [
-              "instance-field"
-            ]
+            "tags": ["instance-field"]
           },
           "preview": "self.project_id = project_id"
         },
