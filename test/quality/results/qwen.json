@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-22T14:36:49.381Z",
+  "generatedAt": "2026-03-22T14:46:22.905Z",
   "label": "qwen",
   "environment": {
     "envFile": "/home/janex/project/ai-agent/agent-code-index/.env.development",
@@ -13,12 +13,12 @@
   "indexing": {
     "embeddingBatchSize": 16,
     "embeddingConcurrency": 8,
-    "scannedFileCount": 132,
-    "parsedFileCount": 132,
+    "scannedFileCount": 127,
+    "parsedFileCount": 127,
     "skippedFileCount": 0,
-    "preparedChunkCount": 1015,
-    "embeddedChunkCount": 1015,
-    "storedChunkCount": 1015,
+    "preparedChunkCount": 975,
+    "embeddedChunkCount": 975,
+    "storedChunkCount": 975,
     "failedFileCount": 0
   },
   "queries": [
@@ -29,39 +29,16 @@
       "tokenBudget": 4000,
       "resultCount": 10,
       "files": [
-        "test/quality/results/qwen.json",
-        "test/quality/queries.json",
         "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
-        "packages/mcp-server/src/adapters/tools/register-tools.ts"
+        "design/v1/README.md",
+        "design/v1/mcp-tool-interface-design.md",
+        "packages/mcp-server/src/adapters/tools/register-tools.ts",
+        "packages/mcp-server/test/adapters/register-tools.unit.test.ts"
       ],
       "results": [
         {
           "rank": 1,
-          "score": 0.9194501959198026,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1-80",
-          "language": "json",
-          "startLine": 1,
-          "endLine": 80,
-          "metadata": {},
-          "preview": "{ \"generatedAt\": \"2026-03-22T14:33:01.617Z\", \"label\": \"qwen\", \"environment\": { \"envFile\": \"/home/janex/project/ai-agent/agent-code-index/.env.development\", \"projectSpace\": \"agent_code_index_dev\", \"repositoryId\": \"agent-c"
-        },
-        {
-          "rank": 2,
-          "score": 0.919219618460546,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/queries.json",
-          "chunkId": "test/quality/queries.json:1-51",
-          "language": "json",
-          "startLine": 1,
-          "endLine": 51,
-          "metadata": {},
-          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
-        },
-        {
-          "rank": 3,
-          "score": 0.8943224541556923,
+          "score": 0.8971287812055969,
           "reason": "surreal vector search",
           "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
           "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:121-200",
@@ -72,56 +49,29 @@
           "preview": "totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { execute: async () => ({ requestedFileCount: 1"
         },
         {
-          "rank": 4,
-          "score": 0.8916409927450579,
+          "rank": 2,
+          "score": 0.848024296136765,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1321-1400",
-          "language": "json",
-          "startLine": 1321,
-          "endLine": 1400,
-          "metadata": {},
-          "preview": "\"endLine\": 200, \"metadata\": {}, \"preview\": \"totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { e"
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:1088-1099",
+          "language": "markdown",
+          "startLine": 1088,
+          "endLine": 1099,
+          "metadata": {
+            "docType": "readme",
+            "heading": "10.3 search-code-context-tool.ts",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "10. MCP 适配层设计",
+              "10.3 search-code-context-tool.ts"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 10.3 search-code-context-tool.ts 输入： 1. 查询语句 2. 仓库标识 3. 可选过滤条件 输出： 1. `ContextPacket` 2. 关键命中文件摘要"
         },
         {
-          "rank": 5,
-          "score": 0.865749992440211,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:541-620",
-          "language": "json",
-          "startLine": 541,
-          "endLine": 620,
-          "metadata": {},
-          "preview": "\"symbolKind\": \"method\", \"symbolName\": \"execute\", \"tags\": [ \"async\" ] }, \"preview\": \"public async execute( input: SearchCodeContextInput, ): Promise<SearchCodeContextResult> { const query = input.query.trim(); if (!query "
-        },
-        {
-          "rank": 6,
-          "score": 0.8572955914809711,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:421-500",
-          "language": "json",
-          "startLine": 421,
-          "endLine": 500,
-          "metadata": {},
-          "preview": "\"score\": 0.81951541091915, \"reason\": \"surreal vector search\", \"filePath\": \"design/v1/README.md\", \"chunkId\": \"design/v1/README.md:1088-1099\", \"language\": \"markdown\", \"startLine\": 1088, \"endLine\": 1099, \"metadata\": { \"docT"
-        },
-        {
-          "rank": 7,
-          "score": 0.8502766113812225,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:61-140",
-          "language": "json",
-          "startLine": 61,
-          "endLine": 140,
-          "metadata": {},
-          "preview": "\"endLine\": 200, \"metadata\": {}, \"preview\": \"totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { e"
-        },
-        {
-          "rank": 8,
-          "score": 0.8451517831006337,
+          "rank": 3,
+          "score": 0.846593531337191,
           "reason": "surreal vector search",
           "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
           "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:61-140",
@@ -132,20 +82,50 @@
           "preview": "reason: \"semantic_match\", chunk: { id: \"chunk-a\", repositoryId: \"repo-a\", filePath: \"src/index.ts\", language: \"typescript\", content: \"export const value = 1;\", searchText: \"value\", startLine: 1, endLine: 1, hash: \"hash-a"
         },
         {
-          "rank": 9,
-          "score": 0.844551473969477,
+          "rank": 4,
+          "score": 0.8396597702373589,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1201-1280",
-          "language": "json",
-          "startLine": 1201,
-          "endLine": 1280,
-          "metadata": {},
-          "preview": "\"language\": \"typescript\", \"startLine\": 130, \"endLine\": 209, \"metadata\": { \"symbolKind\": \"class\", \"symbolName\": \"DefaultIndexRepositoryService\" }, \"preview\": \"class DefaultIndexRepositoryService implements IndexRepository"
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:252-254",
+          "language": "markdown",
+          "startLine": 252,
+          "endLine": 254,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.1 Tool 名称",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "7. search_code_context",
+              "7.1 Tool 名称"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.1 Tool 名称 `search_code_context`"
         },
         {
-          "rank": 10,
-          "score": 0.8279999403819983,
+          "rank": 5,
+          "score": 0.8396597702373589,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:252-254",
+          "language": "markdown",
+          "startLine": 252,
+          "endLine": 254,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.1 Tool 名称",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "7. search_code_context",
+              "7.1 Tool 名称"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.1 Tool 名称 `search_code_context`"
+        },
+        {
+          "rank": 6,
+          "score": 0.8276684380132788,
           "reason": "surreal vector search",
           "filePath": "packages/mcp-server/src/adapters/tools/register-tools.ts",
           "chunkId": "packages/mcp-server/src/adapters/tools/register-tools.ts:115-194",
@@ -157,6 +137,75 @@
             "symbolName": "registerAgentCodeIndexTools"
           },
           "preview": "return createToolErrorResult(logger, \"index_repository\", error); } }, ); server.registerTool( \"search_code_context\", { title: \"搜索代码上下文\", description: \"对自然语言查询执行语义代码检索，并返回按相关性排序的代码上下文结果。\", inputSchema: searchCodeContextIn"
+        },
+        {
+          "rank": 7,
+          "score": 0.8172398833695668,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+          "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:1-80",
+          "language": "javascript",
+          "startLine": 1,
+          "endLine": 80,
+          "metadata": {},
+          "preview": "import { StdioServerTransport } from \"@modelcontextprotocol/sdk/server/stdio.js\"; import { createMcpServer } from \"../../dist/server.js\"; const app = { config: { projectSpace: \"smoke-project\", surreal: { url: \"ws://127.0"
+        },
+        {
+          "rank": 8,
+          "score": 0.806049787355892,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:260-315",
+          "language": "markdown",
+          "startLine": 260,
+          "endLine": 315,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.3 输入 schema",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "7. search_code_context",
+              "7.3 输入 schema"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.3 输入 schema ```ts interface SearchCodeContextToolInput { repositoryId?: string; query: string; topK?: number; tokenBudget?: number; filters?: { filePath?: string; language?: string; hash?: string; startLine?: numbe"
+        },
+        {
+          "rank": 9,
+          "score": 0.806049787355892,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:260-315",
+          "language": "markdown",
+          "startLine": 260,
+          "endLine": 315,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.3 输入 schema",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "7. search_code_context",
+              "7.3 输入 schema"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.3 输入 schema ```ts interface SearchCodeContextToolInput { repositoryId?: string; query: string; topK?: number; tokenBudget?: number; filters?: { filePath?: string; language?: string; hash?: string; startLine?: numbe"
+        },
+        {
+          "rank": 10,
+          "score": 0.8004683947122941,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/adapters/register-tools.unit.test.ts",
+          "chunkId": "packages/mcp-server/test/adapters/register-tools.unit.test.ts:455-516",
+          "language": "typescript",
+          "startLine": 455,
+          "endLine": 516,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "createSearchCodeContextResult"
+          },
+          "preview": "function createSearchCodeContextResult() { return { repositoryId: \"repo-a\", query: \"find exported value\", topK: 10, resultCount: 1, results: createSearchResults(), contextPacket: { kind: \"search\", repositoryId: \"repo-a\","
         }
       ]
     },
@@ -167,158 +216,157 @@
       "tokenBudget": 4000,
       "resultCount": 10,
       "files": [
-        "test/quality/results/qwen.json",
-        "test/quality/queries.json",
-        "tsconfig.json",
-        "packages/mcp-server/README.md"
+        "packages/infra/test/parsing/typescript-tree-sitter-parser.unit.test.ts",
+        "packages/infra/src/scanning/local-file-scanner.ts",
+        "packages/infra/src/parsing/tree-sitter/languages/typescript-parser.ts",
+        "packages/infra/src/parsing/tree-sitter/tree-sitter-parser.ts",
+        ".vscode/mcp.example.jsonc"
       ],
       "results": [
         {
           "rank": 1,
-          "score": 0.8831096724714357,
+          "score": 0.8470906943500282,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:241-320",
-          "language": "json",
-          "startLine": 241,
-          "endLine": 320,
-          "metadata": {},
-          "preview": "\"filePath\": \"packages/infra/src/scanning/local-file-scanner.ts\", \"chunkId\": \"packages/infra/src/scanning/local-file-scanner.ts:26-26\", \"language\": \"typescript\", \"startLine\": 26, \"endLine\": 26, \"metadata\": { \"parentSymbol"
-        },
-        {
-          "rank": 2,
-          "score": 0.8802761650549291,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:181-260",
-          "language": "json",
-          "startLine": 181,
-          "endLine": 260,
-          "metadata": {},
-          "preview": "\"chunkId\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts:78-92\", \"language\": \"typescript\", \"startLine\": 78, \"endLine\": 92, \"metadata\": { \"symbolKind\": \"function\", \"symbolName\": \"createMetadata\" }, \"preview\": \"func"
-        },
-        {
-          "rank": 3,
-          "score": 0.875052268010487,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:121-200",
-          "language": "json",
+          "filePath": "packages/infra/test/parsing/typescript-tree-sitter-parser.unit.test.ts",
+          "chunkId": "packages/infra/test/parsing/typescript-tree-sitter-parser.unit.test.ts:121-200",
+          "language": "typescript",
           "startLine": 121,
           "endLine": 200,
           "metadata": {},
-          "preview": "\"endLine\": 80, \"metadata\": {}, \"preview\": \"import { StdioServerTransport } from \\\"@modelcontextprotocol/sdk/server/stdio.js\\\"; import { createMcpServer } from \\\"../../dist/server.js\\\"; const app = { config: { projectSpac"
+          "preview": "startLine: 5, endLine: 6, metadata: expect.objectContaining({ symbolName: \"oversized\", symbolKind: \"function\", }), }), ); }); it(\"extracts getter, setter, private field, and export default semantics\", async () => { const"
+        },
+        {
+          "rank": 2,
+          "score": 0.8329746016263437,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/scanning/local-file-scanner.ts",
+          "chunkId": "packages/infra/src/scanning/local-file-scanner.ts:26-26",
+          "language": "typescript",
+          "startLine": 26,
+          "endLine": 26,
+          "metadata": {
+            "parentSymbol": "LocalFileScanner",
+            "symbolKind": "field",
+            "symbolName": "ignorePatterns",
+            "tags": ["private", "readonly"]
+          },
+          "preview": "private readonly ignorePatterns: string[]"
+        },
+        {
+          "rank": 3,
+          "score": 0.8329746016263437,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/scanning/local-file-scanner.ts",
+          "chunkId": "packages/infra/src/scanning/local-file-scanner.ts:26-26",
+          "language": "typescript",
+          "startLine": 26,
+          "endLine": 26,
+          "metadata": {
+            "parentSymbol": "LocalFileScanner",
+            "symbolKind": "field",
+            "symbolName": "ignorePatterns",
+            "tags": ["private", "readonly"]
+          },
+          "preview": "private readonly ignorePatterns: string[]"
         },
         {
           "rank": 4,
-          "score": 0.8421398398945976,
+          "score": 0.8328576948783954,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:301-380",
-          "language": "json",
-          "startLine": 301,
-          "endLine": 380,
-          "metadata": {},
-          "preview": "\"symbolName\": \"gitignorePath\", \"tags\": [ \"private\", \"readonly\" ] }, \"preview\": \"private readonly gitignorePath?: string\" }, { \"rank\": 7, \"score\": 0.8057055338584097, \"reason\": \"surreal vector search\", \"filePath\": \"packag"
+          "filePath": "packages/infra/src/parsing/tree-sitter/languages/typescript-parser.ts",
+          "chunkId": "packages/infra/src/parsing/tree-sitter/languages/typescript-parser.ts:425-444",
+          "language": "typescript",
+          "startLine": 425,
+          "endLine": 444,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "applyDefaultExportToExistingChunks"
+          },
+          "preview": "function applyDefaultExportToExistingChunks( chunks: PreparedChunk[], symbolName: string, pendingDefaultExports: Set<string>, ): void { const matchingChunks = chunks.filter( (chunk) => chunk.metadata.parentSymbol === und"
         },
         {
           "rank": 5,
-          "score": 0.7581211732927876,
+          "score": 0.8317380942430471,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:361-440",
-          "language": "json",
-          "startLine": 361,
-          "endLine": 440,
-          "metadata": {},
-          "preview": "\"language\": \"markdown\", \"startLine\": 480, \"endLine\": 496, \"metadata\": { \"docType\": \"readme\", \"heading\": \"7.4 FileScanner\", \"headingPath\": [ \"agent-code-index v1 设计文档\", \"7. 核心接口设计\", \"7.4 FileScanner\" ], \"sectionLevel\": 3 "
+          "filePath": "packages/infra/src/parsing/tree-sitter/tree-sitter-parser.ts",
+          "chunkId": "packages/infra/src/parsing/tree-sitter/tree-sitter-parser.ts:149-160",
+          "language": "typescript",
+          "startLine": 149,
+          "endLine": 160,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "hasTreeSitterError"
+          },
+          "preview": "function hasTreeSitterError(rootNode: SyntaxNode): boolean { const candidate = rootNode as SyntaxNode & { hasError?: boolean | (() => boolean); }; const hasError = candidate.hasError; if (typeof hasError === \"function\") "
         },
         {
           "rank": 6,
-          "score": 0.7471335794057974,
+          "score": 0.8114351500777953,
           "reason": "surreal vector search",
-          "filePath": "test/quality/queries.json",
-          "chunkId": "test/quality/queries.json:1-51",
-          "language": "json",
-          "startLine": 1,
-          "endLine": 51,
+          "filePath": ".vscode/mcp.example.jsonc",
+          "chunkId": ".vscode/mcp.example.jsonc:181-207",
+          "language": "text",
+          "startLine": 181,
+          "endLine": 207,
           "metadata": {},
-          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
+          "preview": "\"DEFAULT_SCAN_INCLUDE_PATTERNS\": \".env.example,dist/schema.json\", // 可选的根 .gitignore 绝对路径；其中的排除规则会并入扫描忽略集合。 \"DEFAULT_SCAN_GITIGNORE_PATH\": \"/workspace/repo-b/.gitignore\", // native HNSW 路径的候选窗口倍数。 \"SEARCH_NATIVE_CANDIDAT"
         },
         {
           "rank": 7,
-          "score": 0.7405721625821058,
+          "score": 0.8114351500777953,
           "reason": "surreal vector search",
-          "filePath": "tsconfig.json",
-          "chunkId": "tsconfig.json:1-9",
-          "language": "json",
-          "startLine": 1,
-          "endLine": 9,
+          "filePath": ".vscode/mcp.example.jsonc",
+          "chunkId": ".vscode/mcp.example.jsonc:181-207",
+          "language": "text",
+          "startLine": 181,
+          "endLine": 207,
           "metadata": {},
-          "preview": "{ \"files\": [], \"references\": [ { \"path\": \"./packages/core\" }, { \"path\": \"./packages/infra\" }, { \"path\": \"./packages/mcp-server\" } ] }"
+          "preview": "\"DEFAULT_SCAN_INCLUDE_PATTERNS\": \".env.example,dist/schema.json\", // 可选的根 .gitignore 绝对路径；其中的排除规则会并入扫描忽略集合。 \"DEFAULT_SCAN_GITIGNORE_PATH\": \"/workspace/repo-b/.gitignore\", // native HNSW 路径的候选窗口倍数。 \"SEARCH_NATIVE_CANDIDAT"
         },
         {
           "rank": 8,
-          "score": 0.738188595540029,
+          "score": 0.8057383228755721,
           "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/README.md",
-          "chunkId": "packages/mcp-server/README.md:200-214",
-          "language": "markdown",
-          "startLine": 200,
-          "endLine": 214,
+          "filePath": "packages/infra/src/parsing/tree-sitter/languages/typescript-parser.ts",
+          "chunkId": "packages/infra/src/parsing/tree-sitter/languages/typescript-parser.ts:412-423",
+          "language": "typescript",
+          "startLine": 412,
+          "endLine": 423,
           "metadata": {
-            "docType": "readme",
-            "heading": "必填环境变量",
-            "headingPath": [
-              "@agent-code-index/mcp-server",
-              "MCP JSON 配置约定",
-              "必填环境变量"
-            ],
-            "sectionLevel": 3
+            "symbolKind": "function",
+            "symbolName": "resolvePendingDefaultExportTags"
           },
-          "preview": "### 必填环境变量 以下字段是当前配置模型要求的最小集合： 1. `PROJECT_SPACE` 2. `SURREAL_URL` 3. `SURREAL_DATABASE` 4. `EMBEDDING_PROVIDER` 5. `EMBEDDING_VECTOR_DIMENSION` 6. `EMBEDDING_API_KEY` 另外，Surreal 认证需要二选一： 1. `SURREAL_USERNAME` + `SURREAL"
+          "preview": "function resolvePendingDefaultExportTags( symbolName: string, pendingDefaultExports: Set<string>, ): string[] | undefined { if (!pendingDefaultExports.has(symbolName)) { return undefined; } pendingDefaultExports.delete(s"
         },
         {
           "rank": 9,
-          "score": 0.726099738855031,
+          "score": 0.8049843467423157,
           "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/README.md",
-          "chunkId": "packages/mcp-server/README.md:216-249",
-          "language": "markdown",
-          "startLine": 216,
-          "endLine": 249,
+          "filePath": "packages/infra/src/scanning/local-file-scanner.ts",
+          "chunkId": "packages/infra/src/scanning/local-file-scanner.ts:24-103",
+          "language": "typescript",
+          "startLine": 24,
+          "endLine": 103,
           "metadata": {
-            "docType": "readme",
-            "heading": "常用可选环境变量",
-            "headingPath": [
-              "@agent-code-index/mcp-server",
-              "MCP JSON 配置约定",
-              "常用可选环境变量"
-            ],
-            "sectionLevel": 3
+            "symbolKind": "class",
+            "symbolName": "LocalFileScanner"
           },
-          "preview": "### 常用可选环境变量 1. `EMBEDDING_MODEL` 2. `EMBEDDING_BASE_URL` 3. `SURREAL_USE_TLS` 4. `SURREAL_DEPLOYMENT_MODE` 5. `DEFAULT_TOP_K` 6. `MCP_DEFAULT_REPOSITORY_ID` 7. `MCP_REPOSITORY_ROOT` 8. `DEFAULT_SCAN_IGNORE_PATTERNS` 9. "
+          "preview": "class LocalFileScanner implements FileScanner { /** 需要在扫描过程中跳过的目录或路径模式。 */ private readonly ignorePatterns: string[]; /** 需要强制纳入扫描结果的文件或路径模式。 */ private readonly includePatterns: string[]; /** 可选的根 .gitignore 绝对路径。 */ pr"
         },
         {
           "rank": 10,
-          "score": 0.726099738855031,
+          "score": 0.8049843467423157,
           "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/README.md",
-          "chunkId": "packages/mcp-server/README.md:216-249",
-          "language": "markdown",
-          "startLine": 216,
-          "endLine": 249,
+          "filePath": "packages/infra/src/scanning/local-file-scanner.ts",
+          "chunkId": "packages/infra/src/scanning/local-file-scanner.ts:24-103",
+          "language": "typescript",
+          "startLine": 24,
+          "endLine": 103,
           "metadata": {
-            "docType": "readme",
-            "heading": "常用可选环境变量",
-            "headingPath": [
-              "@agent-code-index/mcp-server",
-              "MCP JSON 配置约定",
-              "常用可选环境变量"
-            ],
-            "sectionLevel": 3
+            "symbolKind": "class",
+            "symbolName": "LocalFileScanner"
           },
-          "preview": "### 常用可选环境变量 1. `EMBEDDING_MODEL` 2. `EMBEDDING_BASE_URL` 3. `SURREAL_USE_TLS` 4. `SURREAL_DEPLOYMENT_MODE` 5. `DEFAULT_TOP_K` 6. `MCP_DEFAULT_REPOSITORY_ID` 7. `MCP_REPOSITORY_ROOT` 8. `DEFAULT_SCAN_IGNORE_PATTERNS` 9. "
+          "preview": "class LocalFileScanner implements FileScanner { /** 需要在扫描过程中跳过的目录或路径模式。 */ private readonly ignorePatterns: string[]; /** 需要强制纳入扫描结果的文件或路径模式。 */ private readonly includePatterns: string[]; /** 可选的根 .gitignore 绝对路径。 */ pr"
         }
       ]
     },
@@ -329,27 +377,16 @@
       "tokenBudget": 4000,
       "resultCount": 10,
       "files": [
-        "test/quality/queries.json",
         "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
-        "test/quality/results/qwen.json",
-        "packages/mcp-server/src/bootstrap/app.ts"
+        "design/v1/mcp-tool-interface-design.md",
+        "design/v1/README.md",
+        "packages/mcp-server/src/adapters/tools/register-tools.ts",
+        "packages/mcp-server/test/adapters/register-tools.unit.test.ts"
       ],
       "results": [
         {
           "rank": 1,
-          "score": 0.8839723897612568,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/queries.json",
-          "chunkId": "test/quality/queries.json:1-51",
-          "language": "json",
-          "startLine": 1,
-          "endLine": 51,
-          "metadata": {},
-          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
-        },
-        {
-          "rank": 2,
-          "score": 0.8629008470335199,
+          "score": 0.8638760730599908,
           "reason": "surreal vector search",
           "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
           "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:121-200",
@@ -360,68 +397,71 @@
           "preview": "totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { execute: async () => ({ requestedFileCount: 1"
         },
         {
-          "rank": 3,
-          "score": 0.855065356612483,
+          "rank": 2,
+          "score": 0.826125700569165,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1-80",
-          "language": "json",
-          "startLine": 1,
-          "endLine": 80,
-          "metadata": {},
-          "preview": "{ \"generatedAt\": \"2026-03-22T14:33:01.617Z\", \"label\": \"qwen\", \"environment\": { \"envFile\": \"/home/janex/project/ai-agent/agent-code-index/.env.development\", \"projectSpace\": \"agent_code_index_dev\", \"repositoryId\": \"agent-c"
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:252-254",
+          "language": "markdown",
+          "startLine": 252,
+          "endLine": 254,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.1 Tool 名称",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "7. search_code_context",
+              "7.1 Tool 名称"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.1 Tool 名称 `search_code_context`"
+        },
+        {
+          "rank": 3,
+          "score": 0.826125700569165,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:252-254",
+          "language": "markdown",
+          "startLine": 252,
+          "endLine": 254,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.1 Tool 名称",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "7. search_code_context",
+              "7.1 Tool 名称"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.1 Tool 名称 `search_code_context`"
         },
         {
           "rank": 4,
-          "score": 0.8350274651780474,
+          "score": 0.817365446540695,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:541-620",
-          "language": "json",
-          "startLine": 541,
-          "endLine": 620,
-          "metadata": {},
-          "preview": "\"symbolKind\": \"method\", \"symbolName\": \"execute\", \"tags\": [ \"async\" ] }, \"preview\": \"public async execute( input: SearchCodeContextInput, ): Promise<SearchCodeContextResult> { const query = input.query.trim(); if (!query "
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:1088-1099",
+          "language": "markdown",
+          "startLine": 1088,
+          "endLine": 1099,
+          "metadata": {
+            "docType": "readme",
+            "heading": "10.3 search-code-context-tool.ts",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "10. MCP 适配层设计",
+              "10.3 search-code-context-tool.ts"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 10.3 search-code-context-tool.ts 输入： 1. 查询语句 2. 仓库标识 3. 可选过滤条件 输出： 1. `ContextPacket` 2. 关键命中文件摘要"
         },
         {
           "rank": 5,
-          "score": 0.8281697959633852,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:421-500",
-          "language": "json",
-          "startLine": 421,
-          "endLine": 500,
-          "metadata": {},
-          "preview": "\"score\": 0.81951541091915, \"reason\": \"surreal vector search\", \"filePath\": \"design/v1/README.md\", \"chunkId\": \"design/v1/README.md:1088-1099\", \"language\": \"markdown\", \"startLine\": 1088, \"endLine\": 1099, \"metadata\": { \"docT"
-        },
-        {
-          "rank": 6,
-          "score": 0.8249996311963486,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1321-1400",
-          "language": "json",
-          "startLine": 1321,
-          "endLine": 1400,
-          "metadata": {},
-          "preview": "\"endLine\": 200, \"metadata\": {}, \"preview\": \"totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { e"
-        },
-        {
-          "rank": 7,
-          "score": 0.8207236437397435,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:61-140",
-          "language": "json",
-          "startLine": 61,
-          "endLine": 140,
-          "metadata": {},
-          "preview": "\"endLine\": 200, \"metadata\": {}, \"preview\": \"totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { e"
-        },
-        {
-          "rank": 8,
-          "score": 0.8123923540083529,
+          "score": 0.8139155161292657,
           "reason": "surreal vector search",
           "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
           "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:61-140",
@@ -432,32 +472,88 @@
           "preview": "reason: \"semantic_match\", chunk: { id: \"chunk-a\", repositoryId: \"repo-a\", filePath: \"src/index.ts\", language: \"typescript\", content: \"export const value = 1;\", searchText: \"value\", startLine: 1, endLine: 1, hash: \"hash-a"
         },
         {
-          "rank": 9,
-          "score": 0.8103595078223733,
+          "rank": 6,
+          "score": 0.8058140623941833,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:481-560",
-          "language": "json",
-          "startLine": 481,
-          "endLine": 560,
-          "metadata": {},
-          "preview": "\"endLine\": 194, \"metadata\": { \"symbolKind\": \"function\", \"symbolName\": \"registerAgentCodeIndexTools\" }, \"preview\": \"return createToolErrorResult(logger, \\\"index_repository\\\", error); } }, ); server.registerTool( \\\"search_"
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:260-315",
+          "language": "markdown",
+          "startLine": 260,
+          "endLine": 315,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.3 输入 schema",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "7. search_code_context",
+              "7.3 输入 schema"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.3 输入 schema ```ts interface SearchCodeContextToolInput { repositoryId?: string; query: string; topK?: number; tokenBudget?: number; filters?: { filePath?: string; language?: string; hash?: string; startLine?: numbe"
+        },
+        {
+          "rank": 7,
+          "score": 0.8058140623941833,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:260-315",
+          "language": "markdown",
+          "startLine": 260,
+          "endLine": 315,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.3 输入 schema",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "7. search_code_context",
+              "7.3 输入 schema"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.3 输入 schema ```ts interface SearchCodeContextToolInput { repositoryId?: string; query: string; topK?: number; tokenBudget?: number; filters?: { filePath?: string; language?: string; hash?: string; startLine?: numbe"
+        },
+        {
+          "rank": 8,
+          "score": 0.8006964064814708,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/src/adapters/tools/register-tools.ts",
+          "chunkId": "packages/mcp-server/src/adapters/tools/register-tools.ts:115-194",
+          "language": "typescript",
+          "startLine": 115,
+          "endLine": 194,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "registerAgentCodeIndexTools"
+          },
+          "preview": "return createToolErrorResult(logger, \"index_repository\", error); } }, ); server.registerTool( \"search_code_context\", { title: \"搜索代码上下文\", description: \"对自然语言查询执行语义代码检索，并返回按相关性排序的代码上下文结果。\", inputSchema: searchCodeContextIn"
+        },
+        {
+          "rank": 9,
+          "score": 0.793530217306823,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/test/adapters/register-tools.unit.test.ts",
+          "chunkId": "packages/mcp-server/test/adapters/register-tools.unit.test.ts:455-516",
+          "language": "typescript",
+          "startLine": 455,
+          "endLine": 516,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "createSearchCodeContextResult"
+          },
+          "preview": "function createSearchCodeContextResult() { return { repositoryId: \"repo-a\", query: \"find exported value\", topK: 10, resultCount: 1, results: createSearchResults(), contextPacket: { kind: \"search\", repositoryId: \"repo-a\","
         },
         {
           "rank": 10,
-          "score": 0.8063240164502655,
+          "score": 0.7833824655130832,
           "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/src/bootstrap/app.ts",
-          "chunkId": "packages/mcp-server/src/bootstrap/app.ts:22-66",
-          "language": "typescript",
-          "startLine": 22,
-          "endLine": 66,
-          "metadata": {
-            "symbolKind": "function",
-            "symbolName": "createApp",
-            "tags": ["async"]
-          },
-          "preview": "async function createApp(): Promise<App> { const config = loadConfig(); const container = createContainer(config); const logger = container.logger.child({ module: \"app\", component: \"createApp\", projectSpace: config.proje"
+          "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
+          "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:1-80",
+          "language": "javascript",
+          "startLine": 1,
+          "endLine": 80,
+          "metadata": {},
+          "preview": "import { StdioServerTransport } from \"@modelcontextprotocol/sdk/server/stdio.js\"; import { createMcpServer } from \"../../dist/server.js\"; const app = { config: { projectSpace: \"smoke-project\", surreal: { url: \"ws://127.0"
         }
       ]
     },
@@ -467,360 +563,170 @@
       "topK": 10,
       "tokenBudget": 4000,
       "resultCount": 10,
-      "files": ["test/quality/results/qwen.json", "test/quality/queries.json"],
-      "results": [
-        {
-          "rank": 1,
-          "score": 0.8027990275428284,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:541-620",
-          "language": "json",
-          "startLine": 541,
-          "endLine": 620,
-          "metadata": {},
-          "preview": "\"symbolKind\": \"method\", \"symbolName\": \"execute\", \"tags\": [ \"async\" ] }, \"preview\": \"public async execute( input: SearchCodeContextInput, ): Promise<SearchCodeContextResult> { const query = input.query.trim(); if (!query "
-        },
-        {
-          "rank": 2,
-          "score": 0.792919386832583,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:601-680",
-          "language": "json",
-          "startLine": 601,
-          "endLine": 680,
-          "metadata": {},
-          "preview": "\"chunkId\": \"test/quality/queries.json:1-51\", \"language\": \"json\", \"startLine\": 1, \"endLine\": 51, \"metadata\": {}, \"preview\": \"[ { \\\"id\\\": \\\"mcp-tools-index-search\\\", \\\"query\\\": \\\"index_repository search_code_context index_"
-        },
-        {
-          "rank": 3,
-          "score": 0.7922108590190621,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:661-740",
-          "language": "json",
-          "startLine": 661,
-          "endLine": 740,
-          "metadata": {},
-          "preview": "\"headingPath\": [ \"agent-code-index MCP Tool Interface 设计\", \"13. 示例\", \"13.1 index_repository\" ], \"sectionLevel\": 3 }, \"preview\": \"### 13.1 index_repository 输入： ```json { \\\"mode\\\": \\\"full\\\", \\\"embeddingBatchSize\\\": 16 } ``"
-        },
-        {
-          "rank": 4,
-          "score": 0.7881338001538081,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:481-560",
-          "language": "json",
-          "startLine": 481,
-          "endLine": 560,
-          "metadata": {},
-          "preview": "\"endLine\": 194, \"metadata\": { \"symbolKind\": \"function\", \"symbolName\": \"registerAgentCodeIndexTools\" }, \"preview\": \"return createToolErrorResult(logger, \\\"index_repository\\\", error); } }, ); server.registerTool( \\\"search_"
-        },
-        {
-          "rank": 5,
-          "score": 0.7732199083070745,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:721-800",
-          "language": "json",
-          "startLine": 721,
-          "endLine": 800,
-          "metadata": {},
-          "preview": "\"rank\": 10, \"score\": 0.7332855729990148, \"reason\": \"surreal vector search\", \"filePath\": \"test/template/main.py\", \"chunkId\": \"test/template/main.py:1150-1175\", \"language\": \"python\", \"startLine\": 1150, \"endLine\": 1175, \"me"
-        },
-        {
-          "rank": 6,
-          "score": 0.7601250690251941,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/queries.json",
-          "chunkId": "test/quality/queries.json:1-51",
-          "language": "json",
-          "startLine": 1,
-          "endLine": 51,
-          "metadata": {},
-          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
-        },
-        {
-          "rank": 7,
-          "score": 0.7505828720225368,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:901-980",
-          "language": "json",
-          "startLine": 901,
-          "endLine": 980,
-          "metadata": {},
-          "preview": "\"filePath\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts\", \"chunkId\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts:78-92\", \"language\": \"typescript\", \"startLine\": 78, \"endLine\": 92, \"metadata\": { \"symbolKi"
-        },
-        {
-          "rank": 8,
-          "score": 0.7457574779931693,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1081-1160",
-          "language": "json",
-          "startLine": 1081,
-          "endLine": 1160,
-          "metadata": {},
-          "preview": "\"endLine\": 48, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"field\", \"symbolName\": \"apiKey\", \"tags\": [ \"private\", \"readonly\" ] }, \"preview\": \"private readonly apiKey: string\" }, { \"rank\": 10, \"s"
-        },
-        {
-          "rank": 9,
-          "score": 0.744611004699689,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:961-1040",
-          "language": "json",
-          "startLine": 961,
-          "endLine": 1040,
-          "metadata": {},
-          "preview": "\"chunkId\": \"packages/infra/src/embedding/voyage-embedding-provider.ts:76-127\", \"language\": \"typescript\", \"startLine\": 76, \"endLine\": 127, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"method\", \""
-        },
-        {
-          "rank": 10,
-          "score": 0.7435399887519794,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1381-1460",
-          "language": "json",
-          "startLine": 1381,
-          "endLine": 1460,
-          "metadata": {},
-          "preview": "\"endLine\": 579, \"metadata\": { \"docType\": \"markdown\", \"heading\": \"10.1 Tool 名称\", \"headingPath\": [ \"agent-code-index MCP Tool Interface 设计\", \"10. get_file_context\", \"10.1 Tool 名称\" ], \"sectionLevel\": 3 }, \"preview\": \"### 10"
-        }
-      ]
-    },
-    {
-      "id": "openai-compatible-provider",
-      "query": "OpenAI-compatible embedding provider SiliconFlow Qwen3-Embedding-8B",
-      "topK": 10,
-      "tokenBudget": 4000,
-      "resultCount": 10,
       "files": [
-        "test/quality/results/qwen.json",
-        "packages/mcp-server/src/bootstrap/config.ts",
-        "test/quality/queries.json",
-        "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts"
-      ],
-      "results": [
-        {
-          "rank": 1,
-          "score": 0.8589329686511207,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:721-800",
-          "language": "json",
-          "startLine": 721,
-          "endLine": 800,
-          "metadata": {},
-          "preview": "\"rank\": 10, \"score\": 0.7332855729990148, \"reason\": \"surreal vector search\", \"filePath\": \"test/template/main.py\", \"chunkId\": \"test/template/main.py:1150-1175\", \"language\": \"python\", \"startLine\": 1150, \"endLine\": 1175, \"me"
-        },
-        {
-          "rank": 2,
-          "score": 0.8257399881709641,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:901-980",
-          "language": "json",
-          "startLine": 901,
-          "endLine": 980,
-          "metadata": {},
-          "preview": "\"filePath\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts\", \"chunkId\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts:78-92\", \"language\": \"typescript\", \"startLine\": 78, \"endLine\": 92, \"metadata\": { \"symbolKi"
-        },
-        {
-          "rank": 3,
-          "score": 0.8134277518676413,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:961-1040",
-          "language": "json",
-          "startLine": 961,
-          "endLine": 1040,
-          "metadata": {},
-          "preview": "\"chunkId\": \"packages/infra/src/embedding/voyage-embedding-provider.ts:76-127\", \"language\": \"typescript\", \"startLine\": 76, \"endLine\": 127, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"method\", \""
-        },
-        {
-          "rank": 4,
-          "score": 0.7988362575689181,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:841-920",
-          "language": "json",
-          "startLine": 841,
-          "endLine": 920,
-          "metadata": {},
-          "preview": "\"rank\": 6, \"score\": 0.7605406282145881, \"reason\": \"surreal vector search\", \"filePath\": \"packages/infra/README.md\", \"chunkId\": \"packages/infra/README.md:35-46\", \"language\": \"markdown\", \"startLine\": 35, \"endLine\": 46, \"met"
-        },
-        {
-          "rank": 5,
-          "score": 0.7714289786867671,
-          "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
-          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:391-398",
-          "language": "typescript",
-          "startLine": 391,
-          "endLine": 398,
-          "metadata": {
-            "symbolKind": "function",
-            "symbolName": "defaultEmbeddingModelForProvider"
-          },
-          "preview": "function defaultEmbeddingModelForProvider(provider: EmbeddingProvider): string { switch (provider) { case \"openai-compatible\": return \"text-embedding-3-large\"; case \"voyage\": return \"voyage-code-3\"; } }"
-        },
-        {
-          "rank": 6,
-          "score": 0.7711427284182271,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:781-860",
-          "language": "json",
-          "startLine": 781,
-          "endLine": 860,
-          "metadata": {},
-          "preview": "\"language\": \"typescript\", \"startLine\": 39, \"endLine\": 39, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"field\", \"symbolName\": \"provider\", \"tags\": [ \"readonly\" ] }, \"preview\": \"public readonly pr"
-        },
-        {
-          "rank": 7,
-          "score": 0.7702138042670941,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1021-1100",
-          "language": "json",
-          "startLine": 1021,
-          "endLine": 1100,
-          "metadata": {},
-          "preview": "], \"sectionLevel\": 2 }, \"preview\": \"## 14. 里程碑十三：VoyageAI 真实 embedding 兼容性验证落地 已完成： 1. 新增 `.env.development.voyageai` 作为 Voyage 本地测试环境模板 2. 新增 `VoyageEmbeddingProvider` 的真实集成测试 3. 已验证 document/query 两类 embedding 调用均能正常返回"
-        },
-        {
-          "rank": 8,
-          "score": 0.7693389263197709,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/queries.json",
-          "chunkId": "test/quality/queries.json:1-51",
-          "language": "json",
-          "startLine": 1,
-          "endLine": 51,
-          "metadata": {},
-          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
-        },
-        {
-          "rank": 9,
-          "score": 0.7623465216047152,
-          "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1081-1160",
-          "language": "json",
-          "startLine": 1081,
-          "endLine": 1160,
-          "metadata": {},
-          "preview": "\"endLine\": 48, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"field\", \"symbolName\": \"apiKey\", \"tags\": [ \"private\", \"readonly\" ] }, \"preview\": \"private readonly apiKey: string\" }, { \"rank\": 10, \"s"
-        },
-        {
-          "rank": 10,
-          "score": 0.758565618954894,
-          "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts",
-          "chunkId": "packages/mcp-server/test/bootstrap/index-repository.real-embedding.integration.test.ts:215-225",
-          "language": "typescript",
-          "startLine": 215,
-          "endLine": 225,
-          "metadata": {
-            "symbolKind": "function",
-            "symbolName": "requireEnv"
-          },
-          "preview": "function requireEnv(key: string): string { const value = process.env[key]?.trim(); if (!value) { throw new Error( `Missing required environment variable for real integration test: ${key}`, ); } return value; }"
-        }
-      ]
-    },
-    {
-      "id": "voyage-provider",
-      "query": "Voyage embedding provider voyage-code-3 provider factory real integration",
-      "topK": 10,
-      "tokenBudget": 4000,
-      "resultCount": 10,
-      "files": [
-        "test/quality/results/qwen.json",
+        "packages/infra/src/storage/surreal/surreal-search-repository.ts",
+        "packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts",
+        "design/v1/surreal-native-vector-search-migration.md",
+        "design/v1/mcp-tool-interface-design.md",
         "packages/mcp-server/test/bootstrap/app.unit.test.ts",
-        "test/quality/queries.json",
-        "packages/mcp-server/src/bootstrap/config.ts",
-        "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs"
+        "test/template/main.py"
       ],
       "results": [
         {
           "rank": 1,
-          "score": 0.8475109882774051,
+          "score": 0.7766524554555462,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:901-980",
-          "language": "json",
-          "startLine": 901,
-          "endLine": 980,
-          "metadata": {},
-          "preview": "\"filePath\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts\", \"chunkId\": \"packages/mcp-server/test/bootstrap/app.unit.test.ts:78-92\", \"language\": \"typescript\", \"startLine\": 78, \"endLine\": 92, \"metadata\": { \"symbolKi"
+          "filePath": "packages/infra/src/storage/surreal/surreal-search-repository.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-search-repository.ts:174-253",
+          "language": "typescript",
+          "startLine": 174,
+          "endLine": 253,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "SurrealSearchRepository"
+          },
+          "preview": "try { await this.client.connect(); const filterState = buildFilterState(input.filters); const results = await this.nativeVectorSearch(input, filterState, logger); logger.info(\"Semantic search completed\", { resultCount: r"
         },
         {
           "rank": 2,
-          "score": 0.8260170050837032,
+          "score": 0.7643247084093407,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:961-1040",
-          "language": "json",
-          "startLine": 961,
-          "endLine": 1040,
-          "metadata": {},
-          "preview": "\"chunkId\": \"packages/infra/src/embedding/voyage-embedding-provider.ts:76-127\", \"language\": \"typescript\", \"startLine\": 76, \"endLine\": 127, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"method\", \""
+          "filePath": "packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-project-metadata-schema.ts:30-30",
+          "language": "typescript",
+          "startLine": 30,
+          "endLine": 30,
+          "metadata": {
+            "parentSymbol": "SurrealProjectMetadataSchema",
+            "symbolKind": "field",
+            "symbolName": "client",
+            "tags": ["private", "readonly"]
+          },
+          "preview": "private readonly client: SurrealClient"
         },
         {
           "rank": 3,
-          "score": 0.7873336423121535,
+          "score": 0.7560736921956637,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1021-1100",
-          "language": "json",
-          "startLine": 1021,
-          "endLine": 1100,
-          "metadata": {},
-          "preview": "], \"sectionLevel\": 2 }, \"preview\": \"## 14. 里程碑十三：VoyageAI 真实 embedding 兼容性验证落地 已完成： 1. 新增 `.env.development.voyageai` 作为 Voyage 本地测试环境模板 2. 新增 `VoyageEmbeddingProvider` 的真实集成测试 3. 已验证 document/query 两类 embedding 调用均能正常返回"
+          "filePath": "packages/infra/src/storage/surreal/surreal-search-repository.ts",
+          "chunkId": "packages/infra/src/storage/surreal/surreal-search-repository.ts:208-263",
+          "language": "typescript",
+          "startLine": 208,
+          "endLine": 263,
+          "metadata": {
+            "parentSymbol": "SurrealSearchRepository",
+            "symbolKind": "method",
+            "symbolName": "nativeVectorSearch",
+            "tags": ["private", "async"]
+          },
+          "preview": "private async nativeVectorSearch( input: SemanticSearchInput, filterState: ReturnType<typeof buildFilterState>, logger: Logger, ): Promise<SearchResult[]> { const topK = normalizeTopK(input.topK); const candidateK = Math"
         },
         {
           "rank": 4,
-          "score": 0.7679291538790752,
+          "score": 0.746588186542926,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:721-800",
-          "language": "json",
-          "startLine": 721,
-          "endLine": 800,
-          "metadata": {},
-          "preview": "\"rank\": 10, \"score\": 0.7332855729990148, \"reason\": \"surreal vector search\", \"filePath\": \"test/template/main.py\", \"chunkId\": \"test/template/main.py:1150-1175\", \"language\": \"python\", \"startLine\": 1150, \"endLine\": 1175, \"me"
+          "filePath": "design/v1/surreal-native-vector-search-migration.md",
+          "chunkId": "design/v1/surreal-native-vector-search-migration.md:243-303",
+          "language": "markdown",
+          "startLine": 243,
+          "endLine": 303,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.4 推荐查询结构",
+            "headingPath": [
+              "Surreal 原生向量检索迁移实施指南",
+              "7. 仓储替换方案",
+              "7.4 推荐查询结构"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.4 推荐查询结构 推荐把“原生 HNSW 查询”和“brute-force 距离查询”明确分开，不要混写。 原生 HNSW 查询的推荐形态如下，具体语法需按 Surreal 实际版本微调： ```sql SELECT *, vector::distance::knn() AS distance FROM chunk WHERE repositoryId = $repositoryId AND ...filters... AN"
         },
         {
           "rank": 5,
-          "score": 0.7470517171616661,
+          "score": 0.746588186542926,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:781-860",
-          "language": "json",
-          "startLine": 781,
-          "endLine": 860,
-          "metadata": {},
-          "preview": "\"language\": \"typescript\", \"startLine\": 39, \"endLine\": 39, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"field\", \"symbolName\": \"provider\", \"tags\": [ \"readonly\" ] }, \"preview\": \"public readonly pr"
+          "filePath": "design/v1/surreal-native-vector-search-migration.md",
+          "chunkId": "design/v1/surreal-native-vector-search-migration.md:243-303",
+          "language": "markdown",
+          "startLine": 243,
+          "endLine": 303,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "7.4 推荐查询结构",
+            "headingPath": [
+              "Surreal 原生向量检索迁移实施指南",
+              "7. 仓储替换方案",
+              "7.4 推荐查询结构"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 7.4 推荐查询结构 推荐把“原生 HNSW 查询”和“brute-force 距离查询”明确分开，不要混写。 原生 HNSW 查询的推荐形态如下，具体语法需按 Surreal 实际版本微调： ```sql SELECT *, vector::distance::knn() AS distance FROM chunk WHERE repositoryId = $repositoryId AND ...filters... AN"
         },
         {
           "rank": 6,
-          "score": 0.7457467166592412,
+          "score": 0.7423718478086945,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:841-920",
-          "language": "json",
-          "startLine": 841,
-          "endLine": 920,
-          "metadata": {},
-          "preview": "\"rank\": 6, \"score\": 0.7605406282145881, \"reason\": \"surreal vector search\", \"filePath\": \"packages/infra/README.md\", \"chunkId\": \"packages/infra/README.md:35-46\", \"language\": \"markdown\", \"startLine\": 35, \"endLine\": 46, \"met"
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:716-725",
+          "language": "markdown",
+          "startLine": 716,
+          "endLine": 725,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "13.1 index_repository",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "13. 示例",
+              "13.1 index_repository"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 13.1 index_repository 输入： ```json { \"mode\": \"full\", \"embeddingBatchSize\": 16 } ```"
         },
         {
           "rank": 7,
-          "score": 0.7351080884407137,
+          "score": 0.737980846525393,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/surreal-native-vector-search-migration.md",
+          "chunkId": "design/v1/surreal-native-vector-search-migration.md:77-105",
+          "language": "markdown",
+          "startLine": 77,
+          "endLine": 105,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "4. 官方能力确认与版本边界",
+            "headingPath": [
+              "Surreal 原生向量检索迁移实施指南",
+              "4. 官方能力确认与版本边界"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 4. 官方能力确认与版本边界 根据 Surreal 官方文档和官方文档仓库中的公开示例，当前可以确认以下细节： 1. Surreal 已公开支持向量索引、HNSW、KNN 运算符和 `vector::distance::knn()` 2. HNSW 索引定义语法为 `DEFINE INDEX ... HNSW DIMENSION <n>`，并可选指定 `TYPE`、`DIST`、`EFC`、`M` 3. HNSW 查询写法是 `<"
+        },
+        {
+          "rank": 8,
+          "score": 0.737980846525393,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/surreal-native-vector-search-migration.md",
+          "chunkId": "design/v1/surreal-native-vector-search-migration.md:77-105",
+          "language": "markdown",
+          "startLine": 77,
+          "endLine": 105,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "4. 官方能力确认与版本边界",
+            "headingPath": [
+              "Surreal 原生向量检索迁移实施指南",
+              "4. 官方能力确认与版本边界"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 4. 官方能力确认与版本边界 根据 Surreal 官方文档和官方文档仓库中的公开示例，当前可以确认以下细节： 1. Surreal 已公开支持向量索引、HNSW、KNN 运算符和 `vector::distance::knn()` 2. HNSW 索引定义语法为 `DEFINE INDEX ... HNSW DIMENSION <n>`，并可选指定 `TYPE`、`DIST`、`EFC`、`M` 3. HNSW 查询写法是 `<"
+        },
+        {
+          "rank": 9,
+          "score": 0.7373269559340575,
           "reason": "surreal vector search",
           "filePath": "packages/mcp-server/test/bootstrap/app.unit.test.ts",
           "chunkId": "packages/mcp-server/test/bootstrap/app.unit.test.ts:78-92",
@@ -834,20 +740,131 @@
           "preview": "function createMetadata( overrides: Partial<ProjectMetadata> = {}, ): ProjectMetadata { return { projectSpace: \"demo-project\", namespace: \"demo_project\", database: \"default\", embeddingProvider: \"voyage\", embeddingModel: "
         },
         {
-          "rank": 8,
-          "score": 0.7306120330242625,
+          "rank": 10,
+          "score": 0.7363117628089058,
           "reason": "surreal vector search",
-          "filePath": "test/quality/queries.json",
-          "chunkId": "test/quality/queries.json:1-51",
-          "language": "json",
+          "filePath": "test/template/main.py",
+          "chunkId": "test/template/main.py:204-283",
+          "language": "python",
+          "startLine": 204,
+          "endLine": 283,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "MemoryClient"
+          },
+          "preview": "\"\"\"Retrieve all memories, with optional filtering. Args: **kwargs: Optional parameters for filtering (user_id, agent_id, app_id, top_k, page, page_size). Returns: A dictionary containing memories in v1.1 format: {\"result"
+        }
+      ]
+    },
+    {
+      "id": "openai-compatible-provider",
+      "query": "OpenAI-compatible embedding provider SiliconFlow Qwen3-Embedding-8B",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/core/src/contracts/embedding-provider.ts",
+        "packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts",
+        "packages/infra/src/embedding/voyage-embedding-provider.ts",
+        "packages/mcp-server/src/bootstrap/config.ts",
+        "packages/infra/README.md"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7804300724338697,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/contracts/embedding-provider.ts",
+          "chunkId": "packages/core/src/contracts/embedding-provider.ts:1-34",
+          "language": "typescript",
           "startLine": 1,
-          "endLine": 51,
+          "endLine": 34,
           "metadata": {},
-          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
+          "preview": "/** * embedding 生成的用途类型。 */ export type EmbeddingPurpose = \"document\" | \"query\"; /** * embedding 生成请求。 */ export interface GenerateEmbeddingsInput { /** 需要转换为向量的文本列表。 */ values: string[]; /** 当前向量用于文档索引还是查询。 */ purpose: "
         },
         {
-          "rank": 9,
-          "score": 0.7305986669194774,
+          "rank": 2,
+          "score": 0.7804300724338697,
+          "reason": "surreal vector search",
+          "filePath": "packages/core/src/contracts/embedding-provider.ts",
+          "chunkId": "packages/core/src/contracts/embedding-provider.ts:1-34",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 34,
+          "metadata": {},
+          "preview": "/** * embedding 生成的用途类型。 */ export type EmbeddingPurpose = \"document\" | \"query\"; /** * embedding 生成请求。 */ export interface GenerateEmbeddingsInput { /** 需要转换为向量的文本列表。 */ values: string[]; /** 当前向量用于文档索引还是查询。 */ purpose: "
+        },
+        {
+          "rank": 3,
+          "score": 0.7733203282114017,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts:76-155",
+          "language": "typescript",
+          "startLine": 76,
+          "endLine": 155,
+          "metadata": {
+            "parentSymbol": "OpenAICompatibleEmbeddingProvider",
+            "symbolKind": "method",
+            "symbolName": "generateEmbeddings",
+            "tags": ["async"]
+          },
+          "preview": "public async generateEmbeddings( input: GenerateEmbeddingsInput, ): Promise<number[][]> { if (input.values.length === 0) { return []; } const startedAt = Date.now(); const inputStats = summarizeInputValues(input.values);"
+        },
+        {
+          "rank": 4,
+          "score": 0.7733203282114017,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts:76-155",
+          "language": "typescript",
+          "startLine": 76,
+          "endLine": 155,
+          "metadata": {
+            "parentSymbol": "OpenAICompatibleEmbeddingProvider",
+            "symbolKind": "method",
+            "symbolName": "generateEmbeddings",
+            "tags": ["async"]
+          },
+          "preview": "public async generateEmbeddings( input: GenerateEmbeddingsInput, ): Promise<number[][]> { if (input.values.length === 0) { return []; } const startedAt = Date.now(); const inputStats = summarizeInputValues(input.values);"
+        },
+        {
+          "rank": 5,
+          "score": 0.7722384239157832,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/voyage-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/voyage-embedding-provider.ts:42-42",
+          "language": "typescript",
+          "startLine": 42,
+          "endLine": 42,
+          "metadata": {
+            "parentSymbol": "VoyageEmbeddingProvider",
+            "symbolKind": "field",
+            "symbolName": "provider",
+            "tags": ["readonly"]
+          },
+          "preview": "public readonly provider = \"voyage\""
+        },
+        {
+          "rank": 6,
+          "score": 0.7722384239157832,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/voyage-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/voyage-embedding-provider.ts:42-42",
+          "language": "typescript",
+          "startLine": 42,
+          "endLine": 42,
+          "metadata": {
+            "parentSymbol": "VoyageEmbeddingProvider",
+            "symbolKind": "field",
+            "symbolName": "provider",
+            "tags": ["readonly"]
+          },
+          "preview": "public readonly provider = \"voyage\""
+        },
+        {
+          "rank": 7,
+          "score": 0.7707352489078829,
           "reason": "surreal vector search",
           "filePath": "packages/mcp-server/src/bootstrap/config.ts",
           "chunkId": "packages/mcp-server/src/bootstrap/config.ts:391-398",
@@ -861,16 +878,239 @@
           "preview": "function defaultEmbeddingModelForProvider(provider: EmbeddingProvider): string { switch (provider) { case \"openai-compatible\": return \"text-embedding-3-large\"; case \"voyage\": return \"voyage-code-3\"; } }"
         },
         {
-          "rank": 10,
-          "score": 0.7261977737953925,
+          "rank": 8,
+          "score": 0.7664014941001518,
           "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
-          "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:121-200",
-          "language": "javascript",
-          "startLine": 121,
-          "endLine": 200,
+          "filePath": "packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts:39-39",
+          "language": "typescript",
+          "startLine": 39,
+          "endLine": 39,
+          "metadata": {
+            "parentSymbol": "OpenAICompatibleEmbeddingProvider",
+            "symbolKind": "field",
+            "symbolName": "provider",
+            "tags": ["readonly"]
+          },
+          "preview": "public readonly provider = \"openai-compatible\""
+        },
+        {
+          "rank": 9,
+          "score": 0.7664014941001518,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/openai-compatible/openai-compatible-embedding-provider.ts:39-39",
+          "language": "typescript",
+          "startLine": 39,
+          "endLine": 39,
+          "metadata": {
+            "parentSymbol": "OpenAICompatibleEmbeddingProvider",
+            "symbolKind": "field",
+            "symbolName": "provider",
+            "tags": ["readonly"]
+          },
+          "preview": "public readonly provider = \"openai-compatible\""
+        },
+        {
+          "rank": 10,
+          "score": 0.7605179432657492,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/README.md",
+          "chunkId": "packages/infra/README.md:35-46",
+          "language": "markdown",
+          "startLine": 35,
+          "endLine": 46,
+          "metadata": {
+            "docType": "readme",
+            "heading": "embedding",
+            "headingPath": [
+              "@agent-code-index/infra",
+              "当前目录结构",
+              "embedding"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### embedding 负责 embedding provider 的具体实现与工厂选择，目前已包含： 1. `createEmbeddingProvider` 2. `VoyageEmbeddingProvider` 当前能力： 1. 支持按配置选择 provider 2. 已具备 Voyage 的最小 HTTP 调用实现 3. 已对 embedding 结果条数和维度做基础校验"
+        }
+      ]
+    },
+    {
+      "id": "voyage-provider",
+      "query": "Voyage embedding provider voyage-code-3 provider factory real integration",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "packages/infra/src/embedding/voyage-embedding-provider.ts",
+        "packages/infra/test/embedding/voyage-embedding-provider.unit.test.ts",
+        "packages/infra/test/embedding/real-embedding-test-env.ts",
+        "doc/progress/milestones.md"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.8207031023182315,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/voyage-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/voyage-embedding-provider.ts:42-42",
+          "language": "typescript",
+          "startLine": 42,
+          "endLine": 42,
+          "metadata": {
+            "parentSymbol": "VoyageEmbeddingProvider",
+            "symbolKind": "field",
+            "symbolName": "provider",
+            "tags": ["readonly"]
+          },
+          "preview": "public readonly provider = \"voyage\""
+        },
+        {
+          "rank": 2,
+          "score": 0.8207031023182315,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/voyage-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/voyage-embedding-provider.ts:42-42",
+          "language": "typescript",
+          "startLine": 42,
+          "endLine": 42,
+          "metadata": {
+            "parentSymbol": "VoyageEmbeddingProvider",
+            "symbolKind": "field",
+            "symbolName": "provider",
+            "tags": ["readonly"]
+          },
+          "preview": "public readonly provider = \"voyage\""
+        },
+        {
+          "rank": 3,
+          "score": 0.7749929497651544,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/voyage-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/voyage-embedding-provider.ts:40-119",
+          "language": "typescript",
+          "startLine": 40,
+          "endLine": 119,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "VoyageEmbeddingProvider"
+          },
+          "preview": "class VoyageEmbeddingProvider implements EmbeddingProvider { /** 当前 provider 名称。 */ public readonly provider = \"voyage\"; /** 当前绑定模型。 */ public readonly model: string; /** 当前向量维度。 */ public readonly vectorDimension: numbe"
+        },
+        {
+          "rank": 4,
+          "score": 0.7749929497651544,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/voyage-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/voyage-embedding-provider.ts:40-119",
+          "language": "typescript",
+          "startLine": 40,
+          "endLine": 119,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "VoyageEmbeddingProvider"
+          },
+          "preview": "class VoyageEmbeddingProvider implements EmbeddingProvider { /** 当前 provider 名称。 */ public readonly provider = \"voyage\"; /** 当前绑定模型。 */ public readonly model: string; /** 当前向量维度。 */ public readonly vectorDimension: numbe"
+        },
+        {
+          "rank": 5,
+          "score": 0.7526078740705738,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/embedding/voyage-embedding-provider.unit.test.ts",
+          "chunkId": "packages/infra/test/embedding/voyage-embedding-provider.unit.test.ts:1-80",
+          "language": "typescript",
+          "startLine": 1,
+          "endLine": 80,
           "metadata": {},
-          "preview": "totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { execute: async () => ({ requestedFileCount: 1"
+          "preview": "import { afterEach, describe, expect, it, vi } from \"vitest\"; import { VoyageEmbeddingProvider } from \"../../src/embedding/voyage-embedding-provider.js\"; describe(\"VoyageEmbeddingProvider\", () => { afterEach(() => { vi.r"
+        },
+        {
+          "rank": 6,
+          "score": 0.7520890187386957,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/test/embedding/real-embedding-test-env.ts",
+          "chunkId": "packages/infra/test/embedding/real-embedding-test-env.ts:7-17",
+          "language": "typescript",
+          "startLine": 7,
+          "endLine": 17,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "requireEmbeddingEnv"
+          },
+          "preview": "function requireEmbeddingEnv(key: string): string { const value = process.env[key]?.trim(); if (!value) { throw new Error( `Missing required environment variable for real embedding integration test: ${key}`, ); } return "
+        },
+        {
+          "rank": 7,
+          "score": 0.7494604709027979,
+          "reason": "surreal vector search",
+          "filePath": "doc/progress/milestones.md",
+          "chunkId": "doc/progress/milestones.md:237-249",
+          "language": "markdown",
+          "startLine": 237,
+          "endLine": 249,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "14. 里程碑十三：VoyageAI 真实 embedding 兼容性验证落地",
+            "headingPath": [
+              "agent-code-index 开发里程碑",
+              "14. 里程碑十三：VoyageAI 真实 embedding 兼容性验证落地"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 14. 里程碑十三：VoyageAI 真实 embedding 兼容性验证落地 已完成： 1. 新增 `.env.development.voyageai` 作为 Voyage 本地测试环境模板 2. 新增 `VoyageEmbeddingProvider` 的真实集成测试 3. 已验证 document/query 两类 embedding 调用均能正常返回向量 4. 已确认当前 `VoyageEmbeddingProvider"
+        },
+        {
+          "rank": 8,
+          "score": 0.7494604709027979,
+          "reason": "surreal vector search",
+          "filePath": "doc/progress/milestones.md",
+          "chunkId": "doc/progress/milestones.md:237-249",
+          "language": "markdown",
+          "startLine": 237,
+          "endLine": 249,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "14. 里程碑十三：VoyageAI 真实 embedding 兼容性验证落地",
+            "headingPath": [
+              "agent-code-index 开发里程碑",
+              "14. 里程碑十三：VoyageAI 真实 embedding 兼容性验证落地"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 14. 里程碑十三：VoyageAI 真实 embedding 兼容性验证落地 已完成： 1. 新增 `.env.development.voyageai` 作为 Voyage 本地测试环境模板 2. 新增 `VoyageEmbeddingProvider` 的真实集成测试 3. 已验证 document/query 两类 embedding 调用均能正常返回向量 4. 已确认当前 `VoyageEmbeddingProvider"
+        },
+        {
+          "rank": 9,
+          "score": 0.7486886845683303,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/voyage-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/voyage-embedding-provider.ts:61-74",
+          "language": "typescript",
+          "startLine": 61,
+          "endLine": 74,
+          "metadata": {
+            "parentSymbol": "VoyageEmbeddingProvider",
+            "symbolKind": "constructor",
+            "symbolName": "constructor",
+            "tags": ["constructor"]
+          },
+          "preview": "public constructor( config: VoyageEmbeddingProviderConfig, logger: Logger = NOOP_LOGGER, ) { if (!config.apiKey?.trim()) { throw new Error(\"Voyage embedding provider requires apiKey\"); } this.model = config.model; this.v"
+        },
+        {
+          "rank": 10,
+          "score": 0.7486886845683303,
+          "reason": "surreal vector search",
+          "filePath": "packages/infra/src/embedding/voyage-embedding-provider.ts",
+          "chunkId": "packages/infra/src/embedding/voyage-embedding-provider.ts:61-74",
+          "language": "typescript",
+          "startLine": 61,
+          "endLine": 74,
+          "metadata": {
+            "parentSymbol": "VoyageEmbeddingProvider",
+            "symbolKind": "constructor",
+            "symbolName": "constructor",
+            "tags": ["constructor"]
+          },
+          "preview": "public constructor( config: VoyageEmbeddingProviderConfig, logger: Logger = NOOP_LOGGER, ) { if (!config.apiKey?.trim()) { throw new Error(\"Voyage embedding provider requires apiKey\"); } this.model = config.model; this.v"
         }
       ]
     },
@@ -881,135 +1121,174 @@
       "tokenBudget": 4000,
       "resultCount": 10,
       "files": [
-        "test/quality/results/qwen.json",
-        "yarn.lock",
-        "packages/mcp-server/src/bootstrap/logger.ts",
-        "test/quality/queries.json"
+        "packages/core/src/services/index-repository-service.ts",
+        "design/v1/mcp-tool-interface-design.md",
+        "packages/core/src/services/index-files-service.ts"
       ],
       "results": [
         {
           "rank": 1,
-          "score": 0.8598226933798503,
+          "score": 0.8030868594564269,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1081-1160",
-          "language": "json",
-          "startLine": 1081,
-          "endLine": 1160,
-          "metadata": {},
-          "preview": "\"endLine\": 48, \"metadata\": { \"parentSymbol\": \"VoyageEmbeddingProvider\", \"symbolKind\": \"field\", \"symbolName\": \"apiKey\", \"tags\": [ \"private\", \"readonly\" ] }, \"preview\": \"private readonly apiKey: string\" }, { \"rank\": 10, \"s"
+          "filePath": "packages/core/src/services/index-repository-service.ts",
+          "chunkId": "packages/core/src/services/index-repository-service.ts:250-329",
+          "language": "typescript",
+          "startLine": 250,
+          "endLine": 329,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "DefaultIndexRepositoryService"
+          },
+          "preview": "embeddingConcurrency: number, logger: Logger, ): Promise<IndexedChunk[]> { const indexedChunksByBatch: IndexedChunk[][] = []; const totalBatches = Math.ceil(chunks.length / batchSize); const totalWorkers = Math.min(embed"
         },
         {
           "rank": 2,
-          "score": 0.8030868594564269,
+          "score": 0.7949441459118955,
           "reason": "surreal vector search",
-          "filePath": "yarn.lock",
-          "chunkId": "yarn.lock:1201-1280",
-          "language": "text",
-          "startLine": 1201,
-          "endLine": 1280,
-          "metadata": {},
-          "preview": "ip-address: \"npm:10.1.0\" peerDependencies: express: \">= 4.11\" checksum: 10c0/e3229938457cec617460c54ef4e90c8c254facc884729325d20ea35e3838bd273e4c611fc1f4a76f6d14c411e30d31b15e88eb4be87408615ff0aacc142511a2 languageName: "
+          "filePath": "packages/core/src/services/index-repository-service.ts",
+          "chunkId": "packages/core/src/services/index-repository-service.ts:190-269",
+          "language": "typescript",
+          "startLine": 190,
+          "endLine": 269,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "DefaultIndexRepositoryService"
+          },
+          "preview": "logger.info(\"Repository chunk preparation completed\", { scannedFileCount: prepared.scannedFileCount, parsedFileCount: prepared.parsedFileCount, skippedFileCount: prepared.skippedFileCount, chunkCount: prepared.chunks.len"
         },
         {
           "rank": 3,
-          "score": 0.7949441459118955,
+          "score": 0.7906917717967336,
           "reason": "surreal vector search",
-          "filePath": "yarn.lock",
-          "chunkId": "yarn.lock:1021-1100",
-          "language": "text",
-          "startLine": 1021,
-          "endLine": 1100,
-          "metadata": {},
-          "preview": "checksum: 10c0/3f54eb49c16c18707949ff25a1456728c883e81259f045003499efba399c08bad00deebf65cccde8c0e07908c1a225c9d472b7107e558f2a48e28d530e34527c languageName: node linkType: hard \"es-errors@npm:^1.3.0\": version: 1.3.0 res"
+          "filePath": "packages/core/src/services/index-repository-service.ts",
+          "chunkId": "packages/core/src/services/index-repository-service.ts:247-326",
+          "language": "typescript",
+          "startLine": 247,
+          "endLine": 326,
+          "metadata": {
+            "parentSymbol": "DefaultIndexRepositoryService",
+            "symbolKind": "method",
+            "symbolName": "generateIndexedChunks",
+            "tags": ["private", "async"]
+          },
+          "preview": "private async generateIndexedChunks( chunks: PreparedChunk[], batchSize: number, embeddingConcurrency: number, logger: Logger, ): Promise<IndexedChunk[]> { const indexedChunksByBatch: IndexedChunk[][] = []; const totalBa"
         },
         {
           "rank": 4,
-          "score": 0.7906917717967336,
+          "score": 0.7903666911165117,
           "reason": "surreal vector search",
-          "filePath": "yarn.lock",
-          "chunkId": "yarn.lock:1141-1220",
-          "language": "text",
-          "startLine": 1141,
-          "endLine": 1220,
-          "metadata": {},
-          "preview": "languageName: node linkType: hard \"escape-string-regexp@npm:^5.0.0\": version: 5.0.0 resolution: \"escape-string-regexp@npm:5.0.0\" checksum: 10c0/6366f474c6f37a802800a435232395e04e9885919873e382b157ab7e8f0feb8fed71497f84a6"
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:716-725",
+          "language": "markdown",
+          "startLine": 716,
+          "endLine": 725,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "13.1 index_repository",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "13. 示例",
+              "13.1 index_repository"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 13.1 index_repository 输入： ```json { \"mode\": \"full\", \"embeddingBatchSize\": 16 } ```"
         },
         {
           "rank": 5,
-          "score": 0.7903666911165117,
+          "score": 0.7722375163627155,
           "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/src/bootstrap/logger.ts",
-          "chunkId": "packages/mcp-server/src/bootstrap/logger.ts:115-117",
+          "filePath": "packages/core/src/services/index-repository-service.ts",
+          "chunkId": "packages/core/src/services/index-repository-service.ts:130-209",
           "language": "typescript",
-          "startLine": 115,
-          "endLine": 117,
+          "startLine": 130,
+          "endLine": 209,
           "metadata": {
-            "parentSymbol": "PinoLoggerAdapter",
-            "symbolKind": "method",
-            "symbolName": "warn"
+            "symbolKind": "class",
+            "symbolName": "DefaultIndexRepositoryService"
           },
-          "preview": "public warn(message: string, fields?: LogFields): void { write(this.logger.warn.bind(this.logger), message, fields); }"
+          "preview": "class DefaultIndexRepositoryService implements IndexRepositoryService { /** 仓库 chunk 准备服务。 */ private readonly chunkPreparationService: RepositoryChunkPreparationService; /** embedding provider。 */ private readonly embed"
         },
         {
           "rank": 6,
           "score": 0.7722375163627155,
           "reason": "surreal vector search",
-          "filePath": "yarn.lock",
-          "chunkId": "yarn.lock:601-680",
-          "language": "text",
-          "startLine": 601,
-          "endLine": 680,
-          "metadata": {},
-          "preview": "vite: ^6.0.0 || ^7.0.0 || ^8.0.0-0 peerDependenciesMeta: msw: optional: true vite: optional: true checksum: 10c0/f61d3df6461008eb1e62ba465172207b29bd0d9866ff6bc88cd40fc99cd5d215ad89e2894ba6de87068e33f75de903b28a65ccc6074"
+          "filePath": "packages/core/src/services/index-repository-service.ts",
+          "chunkId": "packages/core/src/services/index-repository-service.ts:130-209",
+          "language": "typescript",
+          "startLine": 130,
+          "endLine": 209,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "DefaultIndexRepositoryService"
+          },
+          "preview": "class DefaultIndexRepositoryService implements IndexRepositoryService { /** 仓库 chunk 准备服务。 */ private readonly chunkPreparationService: RepositoryChunkPreparationService; /** embedding provider。 */ private readonly embed"
         },
         {
           "rank": 7,
-          "score": 0.7689174417346446,
+          "score": 0.7679755225057634,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1141-1220",
-          "language": "json",
-          "startLine": 1141,
-          "endLine": 1220,
-          "metadata": {},
-          "preview": "\"score\": 0.7944756883748854, \"reason\": \"surreal vector search\", \"filePath\": \"packages/core/src/services/index-repository-service.ts\", \"chunkId\": \"packages/core/src/services/index-repository-service.ts:190-269\", \"language"
+          "filePath": "packages/core/src/services/index-repository-service.ts",
+          "chunkId": "packages/core/src/services/index-repository-service.ts:162-241",
+          "language": "typescript",
+          "startLine": 162,
+          "endLine": 241,
+          "metadata": {
+            "parentSymbol": "DefaultIndexRepositoryService",
+            "symbolKind": "method",
+            "symbolName": "execute",
+            "tags": ["async"]
+          },
+          "preview": "public async execute( input: IndexRepositoryInput, ): Promise<IndexRepositoryResult> { const mode = input.mode ?? \"full\"; const batchSize = normalizeEmbeddingBatchSize(input.embeddingBatchSize); const embeddingConcurrenc"
         },
         {
           "rank": 8,
-          "score": 0.7679755225057634,
+          "score": 0.7652425760751338,
           "reason": "surreal vector search",
-          "filePath": "yarn.lock",
-          "chunkId": "yarn.lock:961-1040",
-          "language": "text",
-          "startLine": 961,
-          "endLine": 1040,
-          "metadata": {},
-          "preview": "\"detect-libc@npm:^2.0.3\": version: 2.1.2 resolution: \"detect-libc@npm:2.1.2\" checksum: 10c0/acc675c29a5649fa1fb6e255f993b8ee829e510b6b56b0910666949c80c364738833417d0edb5f90e4e46be17228b0f2b66a010513984e18b15deeeac49369c4"
+          "filePath": "packages/core/src/services/index-files-service.ts",
+          "chunkId": "packages/core/src/services/index-files-service.ts:207-286",
+          "language": "typescript",
+          "startLine": 207,
+          "endLine": 286,
+          "metadata": {
+            "parentSymbol": "DefaultIndexFilesService",
+            "symbolKind": "method",
+            "symbolName": "generateIndexedChunks",
+            "tags": ["private", "async"]
+          },
+          "preview": "private async generateIndexedChunks( chunks: PreparedChunk[], batchSize: number, embeddingConcurrency: number, logger: Logger, ): Promise<Chunk[]> { const indexedChunksByBatch: Chunk[][] = []; const totalBatches = Math.c"
         },
         {
           "rank": 9,
-          "score": 0.7665415050345888,
+          "score": 0.7643013217409939,
           "reason": "surreal vector search",
-          "filePath": "test/quality/queries.json",
-          "chunkId": "test/quality/queries.json:1-51",
-          "language": "json",
-          "startLine": 1,
-          "endLine": 51,
-          "metadata": {},
-          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
+          "filePath": "packages/core/src/services/index-files-service.ts",
+          "chunkId": "packages/core/src/services/index-files-service.ts:169-248",
+          "language": "typescript",
+          "startLine": 169,
+          "endLine": 248,
+          "metadata": {
+            "symbolKind": "class",
+            "symbolName": "DefaultIndexFilesService"
+          },
+          "preview": "if (successfulFilePaths.length > 0) { deletedChunkCount = await this.chunkRepository.deleteByFilePaths({ repositoryId: input.repositoryId, filePaths: successfulFilePaths, }); } if (indexedChunks.length > 0) { await this."
         },
         {
           "rank": 10,
-          "score": 0.7643013217409939,
+          "score": 0.7609793234623342,
           "reason": "surreal vector search",
-          "filePath": "yarn.lock",
-          "chunkId": "yarn.lock:61-140",
-          "language": "text",
-          "startLine": 61,
-          "endLine": 140,
-          "metadata": {},
-          "preview": "tslib: \"npm:^2.4.0\" checksum: 10c0/750edca117e0363ab2de10622f8ee60e57d8690c2f29c49704813da5cd627c641798d7f3cb0d953c62fdc71688e02e333ddbf2c1204f38b47e3e40657332a6f5 languageName: node linkType: hard \"@emnapi/wasi-threads@"
+          "filePath": "packages/core/src/services/index-repository-service.ts",
+          "chunkId": "packages/core/src/services/index-repository-service.ts:307-384",
+          "language": "typescript",
+          "startLine": 307,
+          "endLine": 384,
+          "metadata": {
+            "parentSymbol": "DefaultIndexRepositoryService",
+            "symbolKind": "method",
+            "symbolName": "generateIndexedChunks",
+            "tags": ["private", "async"]
+          },
+          "preview": "let embeddings: number[][]; try { embeddings = await this.embeddingProvider.generateEmbeddings({ values: batch.map((chunk) => chunk.searchText), purpose: \"document\", }); } catch (error) { logger.error(\"Chunk batch embedd"
         }
       ]
     },
@@ -1020,139 +1299,197 @@
       "tokenBudget": 4000,
       "resultCount": 10,
       "files": [
-        "test/quality/results/qwen.json",
-        "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
-        "test/quality/queries.json",
-        "packages/mcp-server/src/bootstrap/config.ts",
-        "packages/mcp-server/src/bootstrap/container.ts",
-        "packages/mcp-server/src/bootstrap/logger.ts",
+        "packages/mcp-server/src/adapters/tools/register-tools.ts",
+        "design/v1/mcp-tool-interface-design.md",
         "test/template/main.py"
       ],
       "results": [
         {
           "rank": 1,
-          "score": 0.8459689095688728,
+          "score": 0.8283664574422804,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1321-1400",
-          "language": "json",
-          "startLine": 1321,
-          "endLine": 1400,
-          "metadata": {},
-          "preview": "\"endLine\": 200, \"metadata\": {}, \"preview\": \"totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { e"
+          "filePath": "packages/mcp-server/src/adapters/tools/register-tools.ts",
+          "chunkId": "packages/mcp-server/src/adapters/tools/register-tools.ts:235-314",
+          "language": "typescript",
+          "startLine": 235,
+          "endLine": 314,
+          "metadata": {
+            "symbolKind": "function",
+            "symbolName": "registerAgentCodeIndexTools"
+          },
+          "preview": "title: \"删除文件索引\", description: \"删除指定文件列表对应的全部已索引 chunk 数据。\", inputSchema: deleteFilesInputSchema, annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false, }, }, async (args) ="
         },
         {
           "rank": 2,
-          "score": 0.8333455938598378,
+          "score": 0.7944256530157736,
           "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs",
-          "chunkId": "packages/mcp-server/test/fixtures/stdio-smoke-server.mjs:121-200",
-          "language": "javascript",
-          "startLine": 121,
-          "endLine": 200,
-          "metadata": {},
-          "preview": "totalItems: 1, returnedItems: 1, omittedItems: 0, limit: 10, budgetTokens: undefined, estimatedTotalTokens: 18, estimatedReturnedTokens: 18, }, }, }), }, indexFilesService: { execute: async () => ({ requestedFileCount: 1"
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:416-418",
+          "language": "markdown",
+          "startLine": 416,
+          "endLine": 418,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "8.1 Tool 名称",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "8. index_files",
+              "8.1 Tool 名称"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 8.1 Tool 名称 `index_files`"
         },
         {
           "rank": 3,
-          "score": 0.8294561197320326,
+          "score": 0.7944256530157736,
           "reason": "surreal vector search",
-          "filePath": "test/quality/queries.json",
-          "chunkId": "test/quality/queries.json:1-51",
-          "language": "json",
-          "startLine": 1,
-          "endLine": 51,
-          "metadata": {},
-          "preview": "[ { \"id\": \"mcp-tools-index-search\", \"query\": \"index_repository search_code_context index_files delete_files get_file_context MCP tools\", \"topK\": 10, \"tokenBudget\": 4000 }, { \"id\": \"gitignore-include-patterns\", \"query\": \""
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:416-418",
+          "language": "markdown",
+          "startLine": 416,
+          "endLine": 418,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "8.1 Tool 名称",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "8. index_files",
+              "8.1 Tool 名称"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 8.1 Tool 名称 `index_files`"
         },
         {
           "rank": 4,
-          "score": 0.8230067751374782,
+          "score": 0.7848701797445025,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1381-1460",
-          "language": "json",
-          "startLine": 1381,
-          "endLine": 1460,
-          "metadata": {},
-          "preview": "\"endLine\": 579, \"metadata\": { \"docType\": \"markdown\", \"heading\": \"10.1 Tool 名称\", \"headingPath\": [ \"agent-code-index MCP Tool Interface 设计\", \"10. get_file_context\", \"10.1 Tool 名称\" ], \"sectionLevel\": 3 }, \"preview\": \"### 10"
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:577-579",
+          "language": "markdown",
+          "startLine": 577,
+          "endLine": 579,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "10.1 Tool 名称",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "10. get_file_context",
+              "10.1 Tool 名称"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 10.1 Tool 名称 `get_file_context`"
         },
         {
           "rank": 5,
-          "score": 0.8193193353288738,
+          "score": 0.7848701797445025,
           "reason": "surreal vector search",
-          "filePath": "test/quality/results/qwen.json",
-          "chunkId": "test/quality/results/qwen.json:1261-1340",
-          "language": "json",
-          "startLine": 1261,
-          "endLine": 1340,
-          "metadata": {},
-          "preview": "\"filePath\": \"packages/core/src/services/index-repository-service.ts\", \"chunkId\": \"packages/core/src/services/index-repository-service.ts:307-384\", \"language\": \"typescript\", \"startLine\": 307, \"endLine\": 384, \"metadata\": {"
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:577-579",
+          "language": "markdown",
+          "startLine": 577,
+          "endLine": 579,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "10.1 Tool 名称",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "10. get_file_context",
+              "10.1 Tool 名称"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 10.1 Tool 名称 `get_file_context`"
         },
         {
           "rank": 6,
-          "score": 0.7951918220996218,
+          "score": 0.7798531290355846,
           "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
-          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:202-210",
-          "language": "typescript",
-          "startLine": 202,
-          "endLine": 210,
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:716-725",
+          "language": "markdown",
+          "startLine": 716,
+          "endLine": 725,
           "metadata": {
-            "symbolKind": "function",
-            "symbolName": "requireEnv"
+            "docType": "markdown",
+            "heading": "13.1 index_repository",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "13. 示例",
+              "13.1 index_repository"
+            ],
+            "sectionLevel": 3
           },
-          "preview": "function requireEnv(env: EnvMap, key: string): string { const value = env[key]?.trim(); if (!value) { throw new Error(`Missing required environment variable: ${key}`); } return value; }"
+          "preview": "### 13.1 index_repository 输入： ```json { \"mode\": \"full\", \"embeddingBatchSize\": 16 } ```"
         },
         {
           "rank": 7,
-          "score": 0.7850146938620053,
+          "score": 0.7798531290355846,
           "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/src/bootstrap/container.ts",
-          "chunkId": "packages/mcp-server/src/bootstrap/container.ts:201-212",
-          "language": "typescript",
-          "startLine": 201,
-          "endLine": 212,
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:716-725",
+          "language": "markdown",
+          "startLine": 716,
+          "endLine": 725,
           "metadata": {
-            "symbolKind": "function",
-            "symbolName": "toSurrealConnectionConfig"
+            "docType": "markdown",
+            "heading": "13.1 index_repository",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "13. 示例",
+              "13.1 index_repository"
+            ],
+            "sectionLevel": 3
           },
-          "preview": "function toSurrealConnectionConfig(config: AppConfig): SurrealConnectionConfig { return { url: config.surreal.url, namespace: config.surreal.namespace, database: config.surreal.database, username: config.surreal.username"
+          "preview": "### 13.1 index_repository 输入： ```json { \"mode\": \"full\", \"embeddingBatchSize\": 16 } ```"
         },
         {
           "rank": 8,
-          "score": 0.7802322250306373,
+          "score": 0.7762545788350977,
           "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/src/bootstrap/logger.ts",
-          "chunkId": "packages/mcp-server/src/bootstrap/logger.ts:115-117",
-          "language": "typescript",
-          "startLine": 115,
-          "endLine": 117,
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:511-513",
+          "language": "markdown",
+          "startLine": 511,
+          "endLine": 513,
           "metadata": {
-            "parentSymbol": "PinoLoggerAdapter",
-            "symbolKind": "method",
-            "symbolName": "warn"
+            "docType": "markdown",
+            "heading": "9.1 Tool 名称",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "9. delete_files",
+              "9.1 Tool 名称"
+            ],
+            "sectionLevel": 3
           },
-          "preview": "public warn(message: string, fields?: LogFields): void { write(this.logger.warn.bind(this.logger), message, fields); }"
+          "preview": "### 9.1 Tool 名称 `delete_files`"
         },
         {
           "rank": 9,
-          "score": 0.7780094288319256,
+          "score": 0.7762545788350977,
           "reason": "surreal vector search",
-          "filePath": "packages/mcp-server/src/bootstrap/config.ts",
-          "chunkId": "packages/mcp-server/src/bootstrap/config.ts:363-386",
-          "language": "typescript",
-          "startLine": 363,
-          "endLine": 386,
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:511-513",
+          "language": "markdown",
+          "startLine": 511,
+          "endLine": 513,
           "metadata": {
-            "symbolKind": "function",
-            "symbolName": "logLevelEnv"
+            "docType": "markdown",
+            "heading": "9.1 Tool 名称",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "9. delete_files",
+              "9.1 Tool 名称"
+            ],
+            "sectionLevel": 3
           },
-          "preview": "function logLevelEnv( env: EnvMap, key: string, fallback: LoggingConfig[\"level\"], ): LoggingConfig[\"level\"] { const value = optionalEnv(env, key); if (value === undefined) { return fallback; } if ( value === \"debug\" || v"
+          "preview": "### 9.1 Tool 名称 `delete_files`"
         },
         {
           "rank": 10,
-          "score": 0.7737901780418568,
+          "score": 0.7745183697718221,
           "reason": "surreal vector search",
           "filePath": "test/template/main.py",
           "chunkId": "test/template/main.py:504-583",
