@@ -455,9 +455,7 @@
           "metadata": {
             "symbolKind": "function",
             "symbolName": "createApp",
-            "tags": [
-              "async"
-            ]
+            "tags": ["async"]
           },
           "preview": "async function createApp(): Promise<App> { const config = loadConfig(); const container = createContainer(config); const logger = container.logger.child({ module: \"app\", component: \"createApp\", projectSpace: config.proje"
         }
@@ -469,10 +467,7 @@
       "topK": 10,
       "tokenBudget": 4000,
       "resultCount": 10,
-      "files": [
-        "test/quality/results/qwen.json",
-        "test/quality/queries.json"
-      ],
+      "files": ["test/quality/results/qwen.json", "test/quality/queries.json"],
       "results": [
         {
           "rank": 1,
