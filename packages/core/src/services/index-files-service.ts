@@ -6,7 +6,6 @@ import type { IndexRepositoryFailure } from "./index-repository-service.js";
 
 const DEFAULT_EMBEDDING_BATCH_SIZE = 32;
 const DEFAULT_EMBEDDING_CONCURRENCY = 1;
-const INDEX_FILES_SOURCE_FINGERPRINT = "index-files-fingerprint-2026-03-22a";
 
 /**
  * 文件级 chunk 准备输入。
@@ -148,7 +147,6 @@ export class DefaultIndexFilesService implements IndexFilesService {
       rootPath: input.rootPath,
       provider: this.embeddingProvider.provider,
       embeddingModel: this.embeddingProvider.model,
-      sourceFingerprint: INDEX_FILES_SOURCE_FINGERPRINT,
     });
 
     try {
@@ -221,7 +219,6 @@ export class DefaultIndexFilesService implements IndexFilesService {
     }
 
     logger.info("File embedding worker pool initialized", {
-      sourceFingerprint: INDEX_FILES_SOURCE_FINGERPRINT,
       totalBatches,
       batchSize,
       requestedEmbeddingConcurrency: embeddingConcurrency,
@@ -253,7 +250,6 @@ export class DefaultIndexFilesService implements IndexFilesService {
         }
 
         logger.info("File embedding batch started", {
-          sourceFingerprint: INDEX_FILES_SOURCE_FINGERPRINT,
           batchIndex,
           totalBatches,
           chunkCount: batch.length,
@@ -310,7 +306,6 @@ export class DefaultIndexFilesService implements IndexFilesService {
         indexedChunksByBatch[batchIndex - 1] = indexedBatch;
 
         logger.info("File embedding batch completed", {
-          sourceFingerprint: INDEX_FILES_SOURCE_FINGERPRINT,
           batchIndex,
           totalBatches,
           batchStart: start,

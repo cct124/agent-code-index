@@ -11,8 +11,6 @@ import { NOOP_LOGGER, type Logger } from "../contracts/logger.js";
  */
 const DEFAULT_EMBEDDING_BATCH_SIZE = 32;
 const DEFAULT_EMBEDDING_CONCURRENCY = 1;
-const INDEX_REPOSITORY_SOURCE_FINGERPRINT =
-  "index-repository-fingerprint-2026-03-22a";
 
 /**
  * 索引写入模式。
@@ -182,7 +180,6 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
       rootPath: input.rootPath,
       provider: this.embeddingProvider.provider,
       embeddingModel: this.embeddingProvider.model,
-      sourceFingerprint: INDEX_REPOSITORY_SOURCE_FINGERPRINT,
     });
 
     try {
@@ -262,7 +259,6 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
     }
 
     logger.info("Repository embedding worker pool initialized", {
-      sourceFingerprint: INDEX_REPOSITORY_SOURCE_FINGERPRINT,
       totalBatches,
       batchSize,
       requestedEmbeddingConcurrency: embeddingConcurrency,
@@ -294,7 +290,6 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
         }
 
         logger.info("Repository embedding batch started", {
-          sourceFingerprint: INDEX_REPOSITORY_SOURCE_FINGERPRINT,
           batchIndex,
           totalBatches,
           chunkCount: batch.length,
@@ -359,7 +354,6 @@ export class DefaultIndexRepositoryService implements IndexRepositoryService {
         indexedChunksByBatch[batchIndex - 1] = indexedBatch;
 
         logger.info("Repository embedding batch completed", {
-          sourceFingerprint: INDEX_REPOSITORY_SOURCE_FINGERPRINT,
           batchIndex,
           totalBatches,
           batchStart: start,

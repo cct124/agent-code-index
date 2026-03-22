@@ -7,7 +7,6 @@ import { createApp, type App } from "./bootstrap/app.js";
 
 const SERVER_NAME = "agent-code-index";
 const SERVER_VERSION = "0.1.0";
-const SOURCE_FINGERPRINT = "startup-fingerprint-2026-03-22a";
 
 /**
  * 基于已装配应用创建 MCP server，并注册当前可用 tools。
@@ -19,17 +18,6 @@ export function createMcpServer(app: App): McpServer {
   });
 
   registerAgentCodeIndexTools(server, app);
-
-  app.container.logger.info("MCP runtime fingerprint", {
-    serverName: SERVER_NAME,
-    serverVersion: SERVER_VERSION,
-    sourceFingerprint: SOURCE_FINGERPRINT,
-    serverModulePath: fileURLToPath(import.meta.url),
-    entryArg: process.argv[1],
-    cwd: process.cwd(),
-    pid: process.pid,
-    isSourceRuntime: fileURLToPath(import.meta.url).includes("/src/"),
-  });
 
   app.container.logger.info("MCP server created", {
     serverName: SERVER_NAME,
