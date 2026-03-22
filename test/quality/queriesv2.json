@@ -1,0 +1,50 @@
+[
+  {
+    "id": "agent-find-mcp-index-entrypoint-v2",
+    "query": "我要排查仓库索引入口。请找出 MCP tool 是怎么把 index_repository 请求接到具体索引服务上的，优先返回真正执行注册和调用链的实现文件。",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-debug-whitelist-override-v2",
+    "query": "用户说 .gitignore 里忽略的文件仍然需要进入索引。请定位扫描阶段里 includePatterns 覆盖 ignore 和 .gitignore 的实现，以及对应测试。",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-trace-context-budget-v2",
+    "query": "我要调 search_code_context 返回结果的 tokenBudget 行为。请找到控制上下文截断、打包和返回结构的核心实现，而不是只看 README。",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-debug-surreal-search-v2",
+    "query": "搜索召回不稳定，我想看 SurrealDB 原生向量检索参数是在哪里构造的。请找出 HNSW 或 KnnScan 相关查询实现和测试。",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-switch-embedding-provider-v2",
+    "query": "我要切换 embedding provider 并确认配置是怎么落到具体 provider 实现上的。请定位 provider factory、Qwen openai-compatible provider、Voyage provider 的关键代码。",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-fix-quality-run-hang-v2",
+    "query": "评测脚本执行完索引和搜索后没有退出。请找出质量评测脚本里资源清理和 Surreal client disconnect 的实现位置。",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-trace-incremental-file-ops-v2",
+    "query": "我要确认 get_file_context、index_files、delete_files 这几个增量文件操作分别走到哪些服务和存储层实现。请优先返回核心代码路径。",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "agent-find-indexing-concurrency-v2",
+    "query": "仓库索引太慢，我想调 embeddingBatchSize 和 embeddingConcurrency。请找出这些参数在索引流程里如何传递、分批和并发执行。",
+    "topK": 10,
+    "tokenBudget": 4000
+  }
+]
