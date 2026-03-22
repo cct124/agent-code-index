@@ -67,6 +67,12 @@
         // 如果这里留空，那么调用 MCP tool 时必须显式传 repositoryId，否则应返回校验错误。
         "MCP_DEFAULT_REPOSITORY_ID": "repo-a",
 
+        // 单仓库部署时可选的固定仓库根目录。
+        // 当 index_repository / index_files 未显式传 rootPath 时，adapter 可回填此值。
+        // 解析优先级为：tool 输入值 > MCP_REPOSITORY_ROOT > 校验错误。
+        // 不建议依赖工作目录推断仓库根目录。
+        "MCP_REPOSITORY_ROOT": "/workspace/repo-a",
+
         // 扫描仓库时默认忽略的路径模式，使用逗号分隔。
         "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next",
 
@@ -136,6 +142,12 @@
         // 该字段不会改变 core 层 repositoryId 仍然必填的约束。
         // 如果这里留空，那么调用 MCP tool 时必须显式传 repositoryId，否则应返回校验错误。
         "MCP_DEFAULT_REPOSITORY_ID": "repo-b",
+
+        // 单仓库部署时可选的固定仓库根目录。
+        // 当 index_repository / index_files 未显式传 rootPath 时，adapter 可回填此值。
+        // 解析优先级为：tool 输入值 > MCP_REPOSITORY_ROOT > 校验错误。
+        // 不建议依赖工作目录推断仓库根目录。
+        "MCP_REPOSITORY_ROOT": "/workspace/repo-b",
 
         // 扫描仓库时默认忽略的路径模式，使用逗号分隔。
         "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next",

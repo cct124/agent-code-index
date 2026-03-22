@@ -73,6 +73,12 @@ export interface McpConfig {
    * 该字段仅用于 adapter 回填 tool 输入，不改变 core 层 repositoryId 必填约束。
    */
   defaultRepositoryId?: string;
+  /**
+   * 单仓库部署时可使用的固定仓库根目录。
+   *
+   * 该字段仅用于需要读取文件系统的方法回填 rootPath。
+   */
+  repositoryRoot?: string;
 }
 
 /**
@@ -168,6 +174,7 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
     },
     mcp: {
       defaultRepositoryId: optionalEnv(env, "MCP_DEFAULT_REPOSITORY_ID"),
+      repositoryRoot: optionalEnv(env, "MCP_REPOSITORY_ROOT"),
     },
     logging: {
       level: logLevelEnv(env, "LOG_LEVEL", "info"),
