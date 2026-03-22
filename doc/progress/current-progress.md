@@ -23,7 +23,9 @@
 13. OpenAI-compatible 与 Voyage 两条 provider 路径都已具备本地 SurrealDB 端到端索引与检索验证
 14. `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context` 已通过 MCP tool server 对外暴露
 15. `search_code_context` 已升级为 `results + richer ContextPacket` 双轨输出，并具备相邻 chunk 合并、文件聚合和 token budget 驱动的 `max_items` 截断
-16. 以“索引、检索、文件级更新、文件上下文读取、MCP 暴露”作为 v1 功能闭环来看，当前实现已经达到可定版状态
+16. `index_repository` 与 `index_files` 已支持 `embeddingConcurrency`，索引阶段已从串行批处理演进到固定 worker pool 并发批处理
+17. 扫描链路已支持通过 `DEFAULT_SCAN_GITIGNORE_PATH` 注入根 `.gitignore` 规则，并可在未显式配置时自动从 `MCP_REPOSITORY_ROOT/.gitignore` 或 `process.cwd()/.gitignore` 发现排除规则，减少构建产物与日志文件对 RAG 数据库的污染
+18. 以“索引、检索、文件级更新、文件上下文读取、MCP 暴露”作为 v1 功能闭环来看，当前实现已经达到可定版状态
 
 ## 2. 当前项目结构
 
@@ -140,6 +142,9 @@
 5. 已具备真实 SurrealDB 环境下的 `prepare -> embed -> upsert -> search` 链路集成测试
 6. 已具备真实 SurrealDB + OpenAI-compatible provider 的 `query text -> query embedding -> search` 正式用例验证
 7. 已具备真实 SurrealDB + Voyage provider 的 `prepare -> real embed -> upsert -> query embed -> search` 端到端验证
+8. `index_repository` 与 `index_files` 已支持 `embeddingBatchSize + embeddingConcurrency` 双参数，embedding 批次会按固定 worker pool 并发执行，同时保留批次结果顺序
+9. `index_repository` 当前默认仍采用 `full` 覆盖式重建语义，但删除旧数据发生在全部新 embedding 生成完成之后，避免在 embedding 失败时误删旧索引
+10. `LocalFileScanner` 已支持合并根 `.gitignore` 规则，能自动排除 `dist`、`*.tsbuildinfo`、`.logs` 等构建与运行产物，降低 RAG 数据污染与 provider 400 风险
 
 ### 3.8 当前测试覆盖
 
@@ -161,6 +166,8 @@
 14. 真实 SurrealDB + Voyage provider 的 `prepare -> real embed -> upsert -> query embed -> search` 集成测试
 15. 子进程 stdio MCP smoke test 已验证真实 transport 接入与 `get_file_context` 调用
 16. `search_code_context` 与 `get_file_context` 的 `ContextPacket` 相关单元测试已通过
+17. `embeddingConcurrency` 并发批处理相关单元测试已通过
+18. `.gitignore` 规则注入、自动发现与扫描忽略回退相关单元测试已通过
 
 截至最近一次回归，以下验证已通过：
 
@@ -178,6 +185,7 @@
 12. native 主路径已切换为“全部过滤数据库下推 + KNN”，并通过 unit test 与真实 EXPLAIN FULL 计划断言验证
 13. VoyageAI 真实 embedding 兼容性测试已通过，document/query 两类向量生成均正常
 14. Voyage + Surreal 的真实 `prepare -> real embed -> upsert -> query embed -> search` 端到端测试已补齐
+15. 自动发现 `.gitignore` 的 live 配置下，完整 `index_repository` 已重新验证通过，且语义检索结果中已不再混入 `.logs/agent-code-index.log`
 
 ## 4. 当前未纳入 v1 定版阻塞的增强项
 
@@ -187,7 +195,7 @@
 2. 原生向量检索路径的进一步调优，例如更复杂过滤组合验证、`EF` 参数调优与候选窗口默认值调优
 3. richer `ContextBuilder` 的下一阶段能力，例如跨文件重排、query-aware summarization 与更细粒度预算分配
 4. parser metadata 的进一步增强，例如 imports、继承/implements、调用点与更完整的可见性/修饰信息
-5. provider 级重试、超时、限流与并发控制仍未形成正式能力
+5. provider 级重试、超时、限流仍未形成正式能力；当前已落地的是索引服务层的批次并发控制，不等价于 provider 自身具备完整可靠性治理
 6. provider / MCP / storage 跨模块统一错误码文档仍未形成
 7. requestId / indexingRunId 等跨请求链路追踪字段尚未贯穿到全部模块
 
@@ -199,7 +207,7 @@
 2. 开发环境从 `2.4.1` 切到 `3.0.4` 时无法直接复用旧 RocksDB 数据目录，后续若要做版本升级而不是空库重建，必须单独遵循官方升级路径
 3. native 路径虽然已支持候选窗口参数配置化，并有 `EXPLAIN FULL` 真实测试兜底，但当前默认值仍属于经验值，不是基于真实数据集调优后的最优值
 4. 当前 parser 已具备 TypeScript、TSX、JavaScript、JSX、Python 和 Markdown 的第一版结构感知能力，但更多语言尚未覆盖
-5. 当前已接入 Voyage 与 OpenAI-compatible provider，两条 provider 路径的真实 embedding 兼容性与本地 SurrealDB 端到端索引验证都已补齐，但 provider 级可靠性治理仍较薄
+5. 当前已接入 Voyage 与 OpenAI-compatible provider，两条 provider 路径的真实 embedding 兼容性与本地 SurrealDB 端到端索引验证都已补齐，索引层并发能力也已落地，但 provider 级可靠性治理仍较薄
 6. `createApp()` 已经是异步启动流程，当前 stdio MCP server 已正确 await；后续新增 transport 时仍需保持这一约束
 7. 当前 embedding provider 已支持 `voyage` 与 `openai-compatible`，但 provider 级重试、超时、限流和并发控制仍未形成正式策略
 8. 当前错误分类已覆盖第一版日志诊断需求，但尚未形成跨 provider / MCP / storage 的统一错误码文档
@@ -211,7 +219,7 @@
 3. 不应在 `core` 层引入任何 Surreal 或 MCP 细节
 4. 当前 tree-sitter 和 Markdown 解析能力都应继续限制在 `packages/infra`
 5. 后续新增语言 parser 时，应复用当前 `ParserFactory + TreeSitterParser + fallback` 的分层模式
-6. 后续若要提升吞吐，应优先增强 provider 的重试、退避和批次并发控制，而不是绕过当前索引服务抽象
+6. 后续若要继续提升吞吐，应优先在现有 `embeddingConcurrency` 能力基础上增强 provider 的重试、退避、限流和并发保护，而不是绕过当前索引服务抽象
 7. 日志中不应输出 token、password、apiKey、Authorization 等敏感字段，新增日志点应复用当前脱敏工具
 
 ### 5.3 embedding 领域决策
@@ -241,7 +249,8 @@
 3. `search_code_context` 与 `get_file_context` 已形成统一的 `ContextPacket` 出口，不再只是临时返回结构
 4. `voyage` 与 `openai-compatible` 两条 provider 路径都已具备真实环境验证
 5. SurrealDB `3.0.4` 下的 native HNSW 检索已经成为单一路径，并通过真实测试回归
-6. 当前全量 `typecheck` 已通过，最近一次全量 unit tests 也已通过
+6. 索引批次并发能力与 `.gitignore` 动态注入/自动发现能力都已落地，并通过单元测试与 live MCP 验证
+7. 当前全量 `typecheck` 已通过，最近一次全量 unit tests 也已通过
 
 因此，如果 v1 的目标是“功能完整、架构稳定、可本地接入 MCP 的第一版”，当前已经满足。
 

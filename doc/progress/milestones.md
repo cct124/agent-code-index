@@ -21,6 +21,7 @@
 13. VoyageAI 真实 embedding 兼容性验证落地
 14. 真实 embedding provider 与 Surreal 端到端索引闭环验证落地
 15. MCP tool server 与文件级增量索引能力落地
+16. 索引批次并发能力与 `.gitignore` 动态注入落地
 
 ## 2. 里程碑一：架构设计与工程骨架完成
 
@@ -115,14 +116,16 @@
 2. `IndexRepositoryInput / Result` 已在 `core` 中收敛
 3. `DefaultIndexRepositoryService` 已完成并通过单元测试
 4. 已支持 `embeddingBatchSize` 批处理
-5. 已支持全量覆盖模式下的 `delete -> upsert`
-6. `mcp-server` container 已完成 `indexRepositoryService` 装配
-7. 已补齐真实 SurrealDB 环境下的 `prepare -> embed -> upsert -> search` 集成测试
+5. 已支持 `embeddingConcurrency`，embedding 批次会按固定 worker pool 并发执行
+6. 已支持全量覆盖模式下的 `delete -> upsert`
+7. `mcp-server` container 已完成 `indexRepositoryService` 装配
+8. 已补齐真实 SurrealDB 环境下的 `prepare -> embed -> upsert -> search` 集成测试
 
 该里程碑的意义是：
 
 1. 项目已经具备真正可运行的索引写入闭环
-2. 后续接入 MCP tool 时无需再回头补索引核心编排
+2. 当前索引吞吐已经从“批处理但串行执行”提升到“批处理 + 固定并发执行”
+3. 后续接入 MCP tool 时无需再回头补索引核心编排
 
 ## 8. 里程碑七：多 provider embedding 接入能力落地
 
@@ -286,7 +289,27 @@
 4. 当前 stdio MCP server 已具备更完整的本地排障能力，不再只能依赖终端瞬时日志
 5. 下一阶段的主要缺口已经收敛为跨文件重排、query-aware summarization 与更高级的检索后处理
 
-## 16. 当前里程碑结论
+## 17. 里程碑十六：索引批次并发能力与 `.gitignore` 动态注入落地
+
+已完成：
+
+1. `IndexRepositoryService` 与 `IndexFilesService` 已新增 `embeddingConcurrency` 输入参数
+2. 两条索引链路的 embedding 阶段已从串行批处理改为固定 worker pool 并发执行，同时保留批次结果顺序
+3. MCP `index_repository` 与 `index_files` tool 已支持透传 `embeddingConcurrency`
+4. 并发执行相关单元测试已补齐，验证多个批次会在 worker 空闲前并发启动
+5. `LocalFileScanner` 已支持合并根 `.gitignore` 排除规则
+6. `DEFAULT_SCAN_GITIGNORE_PATH` 已支持显式注入根 `.gitignore` 绝对路径
+7. 当未显式配置 `DEFAULT_SCAN_GITIGNORE_PATH` 时，启动装配会自动尝试使用 `MCP_REPOSITORY_ROOT/.gitignore`，再回退到 `process.cwd()/.gitignore`
+8. `.gitignore` 文件不存在时扫描器会静默降级，不会导致 MCP 启动失败
+9. 已通过 live MCP 重新验证完整 `index_repository` 成功，`.logs` 等运行产物不再污染语义检索结果
+
+该里程碑的意义是：
+
+1. 索引阶段的工程可用性已经从“功能正确但吞吐不可接受”推进到“具备可调并发度的可用 v1 实现”
+2. RAG 数据库的语料边界已经从静态忽略列表升级为“静态规则 + `.gitignore` 动态注入 + 自动发现”的组合机制
+3. 本地构建产物、日志文件和 `.tsbuildinfo` 导致的索引污染与 provider 400 风险已得到实质性收敛
+
+## 18. 当前里程碑结论
 
 截至当前，可以将阶段成果概括为：
 
@@ -306,7 +329,8 @@
 14. VoyageAI 真实 embedding 兼容性验证已落地
 15. 真实 embedding provider 与 Surreal 端到端索引闭环验证已落地
 16. MCP tool server 与文件级增量索引能力已落地
-17. 以当前范围定义的 v1 功能闭环已完成，可进入定版状态
+17. 索引批次并发能力与 `.gitignore` 动态注入能力已落地
+18. 以当前范围定义的 v1 功能闭环已完成，可进入定版状态
 
 这意味着：
 

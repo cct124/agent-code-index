@@ -14,8 +14,10 @@
 5. TypeScript、JavaScript、Python 的 tree-sitter 语义切块与 Markdown 结构化章节切块已经完成
 6. Surreal 原生 HNSW 检索、`3.0.4` 开发基线验证、候选窗口参数配置化与 `EXPLAIN FULL` 真实验证已经完成
 7. VoyageAI 真实 embedding 兼容性验证，以及 OpenAI-compatible / Voyage + Surreal 的真实端到端索引验证已经完成
-8. 当前 5 个 MCP tools 与 search/file 双 `ContextPacket` 已经落地，功能性 v1 可以定版
-9. 后续更适合作为 v1.1 继续增强 provider 稳定性、上下文后处理和检索质量
+8. `index_repository` 与 `index_files` 已支持可调的 embedding 批次并发执行，索引吞吐已完成 v1 级收口
+9. 当前扫描链路已支持 `.gitignore` 动态注入与自动发现，构建产物和日志文件对 RAG 数据库的污染已明显降低
+10. 当前 5 个 MCP tools 与 search/file 双 `ContextPacket` 已经落地，功能性 v1 可以定版
+11. 后续更适合作为 v1.1 继续增强 provider 稳定性、上下文后处理和检索质量
 
 建议阅读顺序：
 
