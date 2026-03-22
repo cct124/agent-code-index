@@ -24,6 +24,8 @@ const DEFAULT_IGNORE_PATTERNS = [
 export class LocalFileScanner implements FileScanner {
   /** 需要在扫描过程中跳过的目录或路径模式。 */
   private readonly ignorePatterns: string[];
+  /** 需要强制纳入扫描结果的文件或路径模式。 */
+  private readonly includePatterns: string[];
   /** 可选的根 .gitignore 绝对路径。 */
   private readonly gitignorePath?: string;
 
@@ -35,9 +37,11 @@ export class LocalFileScanner implements FileScanner {
   public constructor(
     ignorePatterns = DEFAULT_IGNORE_PATTERNS,
     gitignorePath?: string,
+    includePatterns: string[] = [],
   ) {
     this.ignorePatterns = ignorePatterns;
     this.gitignorePath = gitignorePath;
+    this.includePatterns = includePatterns;
   }
 
   /**
@@ -67,7 +71,10 @@ export class LocalFileScanner implements FileScanner {
       const absolutePath = path.join(currentPath, entry.name);
       const relativePath = path.relative(rootPath, absolutePath);
 
-      if (this.isIgnored(relativePath, gitignoreRules)) {
+      if (
+        this.isIgnored(relativePath, gitignoreRules) &&
+        !(entry.isDirectory() && this.hasIncludedDescendant(relativePath))
+      ) {
         continue;
       }
 
@@ -97,6 +104,10 @@ export class LocalFileScanner implements FileScanner {
     const normalizedPath = relativePath.split(path.sep).join("/");
     const segments = normalizedPath.split("/");
 
+    if (this.matchesIncludePattern(normalizedPath, segments)) {
+      return false;
+    }
+
     if (
       this.ignorePatterns.some((pattern) =>
         matchesSimplePattern(pattern, normalizedPath, segments),
@@ -116,6 +127,24 @@ export class LocalFileScanner implements FileScanner {
     }
 
     return ignored;
+  }
+
+  private matchesIncludePattern(
+    normalizedPath: string,
+    segments: string[],
+  ): boolean {
+    return this.includePatterns.some((pattern) =>
+      matchesSimplePattern(pattern, normalizedPath, segments),
+    );
+  }
+
+  private hasIncludedDescendant(relativePath: string): boolean {
+    const normalizedPath = relativePath.split(path.sep).join("/");
+
+    return this.includePatterns.some(
+      (pattern) =>
+        pattern === normalizedPath || pattern.startsWith(`${normalizedPath}/`),
+    );
   }
 }
 

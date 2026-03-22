@@ -117,6 +117,7 @@ export function createContainer(config: AppConfig): AppContainer {
     new LocalFileScanner(
       config.indexing.ignorePatterns,
       resolveScanGitignorePath(config),
+      config.indexing.includePatterns,
     ),
     new ParserFactory({}, logger.child({ module: "parsing" })),
     logger.child({ module: "chunk-preparation" }),

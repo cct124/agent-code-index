@@ -20,6 +20,7 @@ function createBaseEnv(): Record<string, string> {
     EMBEDDING_API_KEY: "test-key",
     DEFAULT_TOP_K: "10",
     DEFAULT_SCAN_IGNORE_PATTERNS: "node_modules,.git,dist,*.tsbuildinfo",
+    DEFAULT_SCAN_INCLUDE_PATTERNS: ".env.example,dist/schema.json",
     DEFAULT_SCAN_GITIGNORE_PATH: "/workspace/repo-a/.gitignore",
     LOG_LEVEL: "info",
     LOG_PRETTY: "true",
@@ -59,6 +60,10 @@ describe("loadConfig", () => {
       ".git",
       "dist",
       "*.tsbuildinfo",
+    ]);
+    expect(config.indexing.includePatterns).toEqual([
+      ".env.example",
+      "dist/schema.json",
     ]);
     expect(config.indexing.gitignorePath).toBe("/workspace/repo-a/.gitignore");
     expect(config.indexing.nativeCandidateMultiplier).toBe(20);

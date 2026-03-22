@@ -58,6 +58,7 @@ function createConfig(): AppConfig {
     indexing: {
       defaultTopK: 10,
       ignorePatterns: ["node_modules", ".git"],
+      includePatterns: [],
       nativeCandidateMultiplier: 20,
       nativeEfSearchMin: 100,
     },

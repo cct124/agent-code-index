@@ -57,6 +57,8 @@ export interface IndexingConfig {
   defaultTopK: number;
   /** 扫描仓库时默认忽略的路径模式。 */
   ignorePatterns: string[];
+  /** 扫描仓库时强制保留的路径模式，会覆盖 ignore 与 .gitignore 规则。 */
+  includePatterns: string[];
   /** 可选的根 .gitignore 绝对路径，会将其中的排除规则并入扫描忽略集合。 */
   gitignorePath?: string;
   /** native HNSW 路径的候选窗口倍数。 */
@@ -172,6 +174,7 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
         ".next",
         "*.tsbuildinfo",
       ]),
+      includePatterns: csvEnv(env, "DEFAULT_SCAN_INCLUDE_PATTERNS", []),
       gitignorePath: absolutePathEnv(env, "DEFAULT_SCAN_GITIGNORE_PATH"),
       nativeCandidateMultiplier: integerEnv(
         env,

@@ -114,4 +114,38 @@ describe("LocalFileScanner", () => {
       scannedFiles.map((filePath) => path.relative(rootPath, filePath)),
     ).toEqual(["src.ts"]);
   });
+
+  it("keeps files matched by include patterns even when ignore rules would exclude them", async () => {
+    const rootPath = await mkdtemp(path.join(os.tmpdir(), "scanner-test-"));
+    tempDirectories.push(rootPath);
+
+    await mkdir(path.join(rootPath, "dist"), { recursive: true });
+    await writeFile(
+      path.join(rootPath, ".gitignore"),
+      ["dist/", "*.generated.ts"].join("\n"),
+    );
+    await writeFile(
+      path.join(rootPath, "dist", "keep.ts"),
+      "export const keep = true;\n",
+    );
+    await writeFile(
+      path.join(rootPath, "dist", "skip.js"),
+      "console.log('skip');\n",
+    );
+    await writeFile(
+      path.join(rootPath, "api.generated.ts"),
+      "export const generated = true;\n",
+    );
+
+    const scanner = new LocalFileScanner(
+      ["dist"],
+      path.join(rootPath, ".gitignore"),
+      ["dist/keep.ts", "*.generated.ts"],
+    );
+    const scannedFiles = await scanner.scan(rootPath);
+
+    expect(
+      scannedFiles.map((filePath) => path.relative(rootPath, filePath)),
+    ).toEqual([".gitignore", "api.generated.ts", "dist/keep.ts"]);
+  });
 });

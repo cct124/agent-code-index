@@ -8,6 +8,7 @@ describe("resolveScanGitignorePath", () => {
       resolveScanGitignorePath({
         indexing: {
           ignorePatterns: [],
+          includePatterns: [],
           gitignorePath: "/workspace/repo/custom.gitignore",
           defaultTopK: 10,
           nativeCandidateMultiplier: 20,
@@ -25,6 +26,7 @@ describe("resolveScanGitignorePath", () => {
       resolveScanGitignorePath({
         indexing: {
           ignorePatterns: [],
+          includePatterns: [],
           gitignorePath: undefined,
           defaultTopK: 10,
           nativeCandidateMultiplier: 20,
@@ -42,6 +44,7 @@ describe("resolveScanGitignorePath", () => {
       resolveScanGitignorePath({
         indexing: {
           ignorePatterns: [],
+          includePatterns: [],
           gitignorePath: undefined,
           defaultTopK: 10,
           nativeCandidateMultiplier: 20,
