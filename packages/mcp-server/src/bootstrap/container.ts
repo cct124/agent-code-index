@@ -187,11 +187,11 @@ export function resolveScanGitignorePath(
     return config.indexing.gitignorePath;
   }
 
-  if (config.mcp.repositoryRoot === undefined) {
-    return undefined;
+  if (config.mcp.repositoryRoot !== undefined) {
+    return path.join(config.mcp.repositoryRoot, ".gitignore");
   }
 
-  return path.join(config.mcp.repositoryRoot, ".gitignore");
+  return path.join(process.cwd(), ".gitignore");
 }
 
 /**

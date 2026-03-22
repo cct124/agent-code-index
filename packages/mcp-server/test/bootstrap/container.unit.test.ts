@@ -37,7 +37,7 @@ describe("resolveScanGitignorePath", () => {
     ).toBe("/workspace/repo/.gitignore");
   });
 
-  it("returns undefined when neither explicit path nor repository root exists", () => {
+  it("falls back to process.cwd()/.gitignore when explicit path and repository root are absent", () => {
     expect(
       resolveScanGitignorePath({
         indexing: {
@@ -49,6 +49,6 @@ describe("resolveScanGitignorePath", () => {
         },
         mcp: {},
       }),
-    ).toBeUndefined();
+    ).toBe(`${process.cwd()}/.gitignore`);
   });
 });
