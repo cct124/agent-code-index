@@ -162,6 +162,8 @@ src/
 
 下面的示例体现的是“一个 server 对应一个项目配置”的推荐做法：
 
+仓库内也提供了一份可直接参考、可带注释的示例文件：[.vscode/mcp.example.jsonc](../../.vscode/mcp.example.jsonc)。
+
 ```json
 {
   "servers": {
@@ -228,6 +230,7 @@ src/
 1. 现在还没有真正的 MCP tool registration，所以这份约定描述的是“配置模型如何接入 MCP host”，不是“当前已经可直接启动的完整协议层”
 2. 当前更适合每个项目起一个独立 server 进程，而不是共享一个进程做多项目动态路由
 3. `mcp.json` 中不建议直接提交明文 API key、token 或数据库密码
+4. [.vscode/mcp.example.jsonc](../../.vscode/mcp.example.jsonc) 当前提供的是配置字段和项目隔离方式示例；真正可运行的 server entry 仍要等 MCP adapters / tools 落地后再收口
 
 ## 当前边界
 
