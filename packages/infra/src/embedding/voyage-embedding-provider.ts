@@ -6,6 +6,9 @@ import type {
 import { NOOP_LOGGER } from "@agent-code-index/core";
 
 const DEFAULT_VOYAGE_BASE_URL = "https://api.voyageai.com/v1";
+const MAX_RETRY_ATTEMPTS = 4;
+const INITIAL_RETRY_DELAY_MS = 1_000;
+const MAX_RETRY_DELAY_MS = 8_000;
 
 interface VoyageEmbeddingResponseItem {
   embedding: number[];
@@ -88,29 +91,7 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
       embeddingModel: this.model,
     });
 
-    const response = await fetch(`${this.baseUrl}/embeddings`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        input: input.values,
-        model: this.model,
-        input_type: input.purpose,
-      }),
-    });
-
-    if (!response.ok) {
-      this.logger.error("Voyage embedding request failed", {
-        status: response.status,
-        valueCount: input.values.length,
-        purpose: input.purpose,
-      });
-      throw new Error(
-        `Voyage embedding request failed with status ${response.status}`,
-      );
-    }
+    const response = await this.executeWithRetry(input);
 
     const payload = (await response.json()) as VoyageEmbeddingResponse;
     const embeddings = toEmbeddings(payload, input.values.length);
@@ -124,6 +105,58 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
     });
 
     return embeddings;
+  }
+
+  private async executeWithRetry(
+    input: GenerateEmbeddingsInput,
+  ): Promise<Response> {
+    let attempt = 1;
+    let delayMs = INITIAL_RETRY_DELAY_MS;
+
+    while (true) {
+      const response = await fetch(`${this.baseUrl}/embeddings`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          input: input.values,
+          model: this.model,
+          input_type: input.purpose,
+        }),
+      });
+
+      if (response.ok) {
+        return response;
+      }
+
+      const retryable = isRetryableStatus(response.status);
+
+      if (!retryable || attempt >= MAX_RETRY_ATTEMPTS) {
+        this.logger.error("Voyage embedding request failed", {
+          status: response.status,
+          valueCount: input.values.length,
+          purpose: input.purpose,
+          attempt,
+          retryable,
+        });
+        throw new Error(
+          `Voyage embedding request failed with status ${response.status}`,
+        );
+      }
+
+      this.logger.warn("Voyage embedding request hit retryable status", {
+        status: response.status,
+        valueCount: input.values.length,
+        purpose: input.purpose,
+        attempt,
+        nextDelayMs: delayMs,
+      });
+      await sleep(delayMs);
+      delayMs = Math.min(delayMs * 2, MAX_RETRY_DELAY_MS);
+      attempt += 1;
+    }
   }
 }
 
@@ -181,4 +214,14 @@ function assertEmbeddingDimensions(
       );
     }
   }
+}
+
+function isRetryableStatus(status: number): boolean {
+  return status === 429 || status >= 500;
+}
+
+function sleep(delayMs: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, delayMs);
+  });
 }

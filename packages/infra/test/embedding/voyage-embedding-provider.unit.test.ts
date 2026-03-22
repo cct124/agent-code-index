@@ -97,6 +97,42 @@ describe("VoyageEmbeddingProvider", () => {
     ).rejects.toThrow("Voyage embedding request failed with status 401");
   });
 
+  it("retries when Voyage returns 429 and eventually succeeds", async () => {
+    vi.useFakeTimers();
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [{ embedding: [1, 0, 0] }],
+        }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const provider = new VoyageEmbeddingProvider({
+      provider: "voyage",
+      model: "voyage-code-3",
+      vectorDimension: 3,
+      apiKey: "test-key",
+    });
+
+    const promise = provider.generateEmbeddings({
+      values: ["alpha"],
+      purpose: "document",
+    });
+
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    await expect(promise).resolves.toEqual([[1, 0, 0]]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("fails when Voyage returns an embedding with unexpected dimension", async () => {
     vi.stubGlobal(
       "fetch",

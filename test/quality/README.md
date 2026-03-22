@@ -19,6 +19,7 @@ corepack yarn quality:compare --left test/quality/results/qwen.json --right test
 说明：
 
 1. `queries.json` 是固定查询集，比较时两次运行必须保持不变。
-2. `--label` 决定输出文件名，默认会写到 `test/quality/results/<label>.json`。
-3. Qwen 与 Voyage 必须使用不同的 `PROJECT_SPACE`，否则会触发项目元数据锁定校验。
-4. 如果希望扩大评测范围，优先追加 `queries.json`，不要临时改查询文本。
+2. 评测脚本会自动把整个 `test/quality` 目录加入本次索引忽略列表，避免查询文本、结果文件和评测脚本本身污染召回结果。
+3. `--label` 决定输出文件名，默认会写到 `test/quality/results/<label>.json`。
+4. Qwen 与 Voyage 必须使用不同的 `PROJECT_SPACE`，否则会触发项目元数据锁定校验。
+5. 如果希望扩大评测范围，优先追加 `queries.json`，不要临时改查询文本。

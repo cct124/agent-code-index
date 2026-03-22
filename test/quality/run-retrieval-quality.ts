@@ -67,6 +67,7 @@ interface QualityRunReport {
 }
 
 const DEFAULT_TOP_K = 10;
+const QUALITY_INTERNAL_IGNORE_PATTERNS = ["test/quality"];
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
@@ -78,6 +79,11 @@ async function main(): Promise<void> {
   for (const [key, value] of Object.entries(envValues)) {
     process.env[key] = value;
   }
+
+  process.env.DEFAULT_SCAN_IGNORE_PATTERNS = mergeCsvPatterns(
+    process.env.DEFAULT_SCAN_IGNORE_PATTERNS,
+    QUALITY_INTERNAL_IGNORE_PATTERNS,
+  );
 
   const repositoryId =
     args.repositoryId ??
@@ -109,12 +115,14 @@ async function main(): Promise<void> {
 
     for (const spec of querySpecs) {
       const topK = spec.topK ?? DEFAULT_TOP_K;
-      const searchResult = await app.container.searchCodeContextService.execute({
-        repositoryId,
-        query: spec.query,
-        topK,
-        tokenBudget: spec.tokenBudget,
-      });
+      const searchResult = await app.container.searchCodeContextService.execute(
+        {
+          repositoryId,
+          query: spec.query,
+          topK,
+          tokenBudget: spec.tokenBudget,
+        },
+      );
 
       queries.push({
         id: spec.id,
@@ -312,6 +320,21 @@ function slugify(value: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/gu, "-")
     .replace(/^-+|-+$/gu, "");
+}
+
+function mergeCsvPatterns(
+  existingValue: string | undefined,
+  extraPatterns: string[],
+): string {
+  const values = [
+    ...(existingValue
+      ?.split(",")
+      .map((item) => item.trim())
+      .filter(Boolean) ?? []),
+    ...extraPatterns,
+  ];
+
+  return [...new Set(values)].join(",");
 }
 
 void main().catch((error: unknown) => {
