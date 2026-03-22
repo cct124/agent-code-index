@@ -10,6 +10,8 @@
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "mcp:dev": "tsx --conditions=development ./packages/mcp-server/src/index.ts",
+    "quality:run": "tsx ./test/quality/run-retrieval-quality.ts",
+    "quality:compare": "tsx ./test/quality/compare-retrieval-quality.ts",
     "test": "vitest run --config vitest.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:unit": "vitest run --config vitest.unit.config.ts",

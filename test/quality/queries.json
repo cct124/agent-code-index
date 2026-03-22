@@ -1,0 +1,50 @@
+[
+  {
+    "id": "mcp-tools-index-search",
+    "query": "index_repository search_code_context index_files delete_files get_file_context MCP tools",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "gitignore-include-patterns",
+    "query": "gitignore dynamic injection includePatterns DEFAULT_SCAN_INCLUDE_PATTERNS LocalFileScanner",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "context-packet-budget",
+    "query": "ContextPacket tokenBudget max_items truncation search_code_context richer context",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "surreal-native-search",
+    "query": "Surreal native HNSW candidate multiplier efSearch explain full KnnScan",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "openai-compatible-provider",
+    "query": "OpenAI-compatible embedding provider SiliconFlow Qwen3-Embedding-8B",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "voyage-provider",
+    "query": "Voyage embedding provider voyage-code-3 provider factory real integration",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "repository-indexing-concurrency",
+    "query": "embeddingConcurrency worker pool repository indexing batches concurrency",
+    "topK": 10,
+    "tokenBudget": 4000
+  },
+  {
+    "id": "file-context-delete-flows",
+    "query": "get_file_context delete_files file-level incremental indexing",
+    "topK": 10,
+    "tokenBudget": 4000
+  }
+]
