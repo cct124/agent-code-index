@@ -1,0 +1,303 @@
+{
+  "generatedAt": "2026-03-22T15:00:34.824Z",
+  "label": "qwen-v2",
+  "environment": {
+    "envFile": "/home/janex/project/ai-agent/agent-code-index/.env.development",
+    "projectSpace": "agent_code_index_dev",
+    "repositoryId": "agent-code-index",
+    "rootPath": "/home/janex/project/ai-agent/agent-code-index",
+    "provider": "openai-compatible",
+    "model": "Qwen/Qwen3-Embedding-8B",
+    "vectorDimension": 4096
+  },
+  "indexing": {
+    "embeddingBatchSize": 16,
+    "embeddingConcurrency": 8,
+    "scannedFileCount": 127,
+    "parsedFileCount": 127,
+    "skippedFileCount": 0,
+    "preparedChunkCount": 975,
+    "embeddedChunkCount": 975,
+    "storedChunkCount": 975,
+    "failedFileCount": 0
+  },
+  "queries": [
+    {
+      "id": "agent-find-mcp-index-entrypoint-v2",
+      "query": "我要排查仓库索引入口。请找出 MCP tool 是怎么把 index_repository 请求接到具体索引服务上的，优先返回真正执行注册和调用链的实现文件。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 10,
+      "files": [
+        "design/v1/mcp-tool-interface-design.md",
+        "packages/mcp-server/README.md",
+        "doc/progress/current-progress.md",
+        "doc/progress/milestones.md",
+        ".vscode/mcp.example.jsonc",
+        "design/v1/README.md"
+      ],
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.7751558100041152,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:773-784",
+          "language": "markdown",
+          "startLine": 773,
+          "endLine": 784,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "14. 结论",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "14. 结论"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 14. 结论 当前仓库已经具备把 `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context` 通过 MCP tool 暴露出去的核心 use case。 在单仓库部署场景下，建议进一步通过 `MCP_REPOSITORY_ROOT` 固定仓库根目录，使 `index_repository` 与 `index_fil"
+        },
+        {
+          "rank": 2,
+          "score": 0.7684935815102945,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:379-428",
+          "language": "markdown",
+          "startLine": 379,
+          "endLine": 428,
+          "metadata": {
+            "docType": "readme",
+            "heading": "2. 通过 MCP host 配置接入",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "本地启动与最小接入示例",
+              "2. 通过 MCP host 配置接入"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 2. 通过 MCP host 配置接入 如果使用支持 `mcp.json` 的 host，可配置一个最小条目。 开发态联调时，推荐直接运行源码入口： ```json { \"servers\": { \"agent-code-index-local\": { \"command\": \"corepack\", \"args\": [\"yarn\", \"mcp:dev\"], \"env\": { \"PROJECT_SPACE\": \"agent_code_"
+        },
+        {
+          "rank": 3,
+          "score": 0.7612358314269815,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:145-156",
+          "language": "markdown",
+          "startLine": 145,
+          "endLine": 156,
+          "metadata": {
+            "docType": "readme",
+            "heading": "4. MCP tools 暴露",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "当前已经实现的功能",
+              "4. MCP tools 暴露"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 4. MCP tools 暴露 已实现： 1. 通过官方 MCP TypeScript SDK 创建真实 `McpServer` 2. 通过 stdio transport 暴露当前 server 3. `index_repository` tool 注册 4. `search_code_context` tool 注册 5. `index_files` tool 注册 6. `delete_files` tool 注册 7. "
+        },
+        {
+          "rank": 4,
+          "score": 0.7583084710326934,
+          "reason": "surreal vector search",
+          "filePath": "doc/progress/current-progress.md",
+          "chunkId": "doc/progress/current-progress.md:108-121",
+          "language": "markdown",
+          "startLine": 108,
+          "endLine": 121,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "3.5 MCP tool 能力",
+            "headingPath": [
+              "agent-code-index 当前进度",
+              "3. 已完成能力",
+              "3.5 MCP tool 能力"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 3.5 MCP tool 能力 当前已经可验证： 1. `packages/mcp-server` 已接入官方 MCP TypeScript SDK 2. 已可创建真实 `McpServer` 并通过 stdio transport 启动 3. `index_repository` 已完成 adapter 注册与调用映射 4. `search_code_context` 已完成 adapter 注册与调用映射 5. `index"
+        },
+        {
+          "rank": 5,
+          "score": 0.757139843811982,
+          "reason": "surreal vector search",
+          "filePath": "doc/progress/milestones.md",
+          "chunkId": "doc/progress/milestones.md:265-290",
+          "language": "markdown",
+          "startLine": 265,
+          "endLine": 290,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "16. 里程碑十五：MCP tool server 与文件级增量索引能力落地",
+            "headingPath": [
+              "agent-code-index 开发里程碑",
+              "16. 里程碑十五：MCP tool server 与文件级增量索引能力落地"
+            ],
+            "sectionLevel": 2
+          },
+          "preview": "## 16. 里程碑十五：MCP tool server 与文件级增量索引能力落地 已完成： 1. `IndexFilesService` 已在 `core` 中落地 2. `DeleteFilesService` 已在 `core` 中落地 3. `ChunkRepository.deleteByFilePaths(...)` 已落地 4. `RepositoryFileChunkPreparationService` 已在 `inf"
+        },
+        {
+          "rank": 6,
+          "score": 0.74743433336862,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:98-108",
+          "language": "markdown",
+          "startLine": 98,
+          "endLine": 108,
+          "metadata": {
+            "docType": "readme",
+            "heading": "adapters/tools",
+            "headingPath": [
+              "@agent-code-index/mcp-server",
+              "当前目录结构",
+              "adapters/tools"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### adapters/tools 负责把 `core` use case 映射为真正的 MCP tools。 当前已实现并注册： 1. `index_repository` 2. `search_code_context` 3. `index_files` 4. `delete_files` 5. `get_file_context`"
+        },
+        {
+          "rank": 7,
+          "score": 0.7439954966169221,
+          "reason": "surreal vector search",
+          "filePath": "packages/mcp-server/README.md",
+          "chunkId": "packages/mcp-server/README.md:1-12",
+          "language": "markdown",
+          "startLine": 1,
+          "endLine": 12,
+          "metadata": {
+            "docType": "readme",
+            "heading": "@agent-code-index/mcp-server",
+            "headingPath": [
+              "@agent-code-index/mcp-server"
+            ],
+            "sectionLevel": 1
+          },
+          "preview": "# @agent-code-index/mcp-server `packages/mcp-server` 是当前项目的运行时装配与 MCP 协议接入模块，负责把 `core` 与 `infra` 组合成一个可启动、可通过 stdio 暴露 tools 的应用。 这一层的目标是： 1. 读取运行时配置 2. 创建并装配依赖容器 3. 在启动阶段执行必要校验 4. 注册并暴露当前可用的 MCP tools 当前阶段，`mcp-server`"
+        },
+        {
+          "rank": 8,
+          "score": 0.7422442075436231,
+          "reason": "surreal vector search",
+          "filePath": ".vscode/mcp.example.jsonc",
+          "chunkId": ".vscode/mcp.example.jsonc:1-80",
+          "language": "text",
+          "startLine": 1,
+          "endLine": 80,
+          "metadata": {},
+          "preview": "{ // 这是带注释的示例文件，用于说明 agent-code-index 的 MCP 配置约定。 // 在真实配置环境中，应使用 JSON 配置文件，例如 `.vscode/mcp.json`，而不是当前这个示例文件。 // 使用方式通常是：复制当前文件内容到真实的 `mcp.json`，删除注释，并替换为你的实际项目参数和密钥。 // 推荐一个 server 条目对应一个 PROJECT_SPACE，不要让一个进程动态路由多个项目。"
+        },
+        {
+          "rank": 9,
+          "score": 0.7417728466601873,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/mcp-tool-interface-design.md",
+          "chunkId": "design/v1/mcp-tool-interface-design.md:174-176",
+          "language": "markdown",
+          "startLine": 174,
+          "endLine": 176,
+          "metadata": {
+            "docType": "markdown",
+            "heading": "6.1 Tool 名称",
+            "headingPath": [
+              "agent-code-index MCP Tool Interface 设计",
+              "6. index_repository",
+              "6.1 Tool 名称"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 6.1 Tool 名称 `index_repository`"
+        },
+        {
+          "rank": 10,
+          "score": 0.7417227490472192,
+          "reason": "surreal vector search",
+          "filePath": "design/v1/README.md",
+          "chunkId": "design/v1/README.md:1076-1086",
+          "language": "markdown",
+          "startLine": 1076,
+          "endLine": 1086,
+          "metadata": {
+            "docType": "readme",
+            "heading": "10.2 index-repository-tool.ts",
+            "headingPath": [
+              "agent-code-index v1 设计文档",
+              "10. MCP 适配层设计",
+              "10.2 index-repository-tool.ts"
+            ],
+            "sectionLevel": 3
+          },
+          "preview": "### 10.2 index-repository-tool.ts 输入： 1. 仓库根路径 2. 可选过滤参数 输出： 1. 索引结果摘要 2. 失败文件统计"
+        }
+      ]
+    },
+    {
+      "id": "agent-debug-whitelist-override-v2",
+      "query": "用户说 .gitignore 里忽略的文件仍然需要进入索引。请定位扫描阶段里 includePatterns 覆盖 ignore 和 .gitignore 的实现，以及对应测试。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 0,
+      "files": [],
+      "results": []
+    },
+    {
+      "id": "agent-trace-context-budget-v2",
+      "query": "我要调 search_code_context 返回结果的 tokenBudget 行为。请找到控制上下文截断、打包和返回结构的核心实现，而不是只看 README。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 0,
+      "files": [],
+      "results": []
+    },
+    {
+      "id": "agent-debug-surreal-search-v2",
+      "query": "搜索召回不稳定，我想看 SurrealDB 原生向量检索参数是在哪里构造的。请找出 HNSW 或 KnnScan 相关查询实现和测试。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 0,
+      "files": [],
+      "results": []
+    },
+    {
+      "id": "agent-switch-embedding-provider-v2",
+      "query": "我要切换 embedding provider 并确认配置是怎么落到具体 provider 实现上的。请定位 provider factory、Qwen openai-compatible provider、Voyage provider 的关键代码。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 0,
+      "files": [],
+      "results": []
+    },
+    {
+      "id": "agent-fix-quality-run-hang-v2",
+      "query": "评测脚本执行完索引和搜索后没有退出。请找出质量评测脚本里资源清理和 Surreal client disconnect 的实现位置。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 0,
+      "files": [],
+      "results": []
+    },
+    {
+      "id": "agent-trace-incremental-file-ops-v2",
+      "query": "我要确认 get_file_context、index_files、delete_files 这几个增量文件操作分别走到哪些服务和存储层实现。请优先返回核心代码路径。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 0,
+      "files": [],
+      "results": []
+    },
+    {
+      "id": "agent-find-indexing-concurrency-v2",
+      "query": "仓库索引太慢，我想调 embeddingBatchSize 和 embeddingConcurrency。请找出这些参数在索引流程里如何传递、分批和并发执行。",
+      "topK": 10,
+      "tokenBudget": 4000,
+      "resultCount": 0,
+      "files": [],
+      "results": []
+    }
+  ]
+}
