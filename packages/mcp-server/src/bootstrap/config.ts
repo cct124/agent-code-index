@@ -57,6 +57,8 @@ export interface IndexingConfig {
   defaultTopK: number;
   /** 扫描仓库时默认忽略的路径模式。 */
   ignorePatterns: string[];
+  /** 可选的根 .gitignore 绝对路径，会将其中的排除规则并入扫描忽略集合。 */
+  gitignorePath?: string;
   /** native HNSW 路径的候选窗口倍数。 */
   nativeCandidateMultiplier: number;
   /** native HNSW 路径的最小 efSearch。 */
@@ -168,7 +170,9 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
         "dist",
         "build",
         ".next",
+        "*.tsbuildinfo",
       ]),
+      gitignorePath: absolutePathEnv(env, "DEFAULT_SCAN_GITIGNORE_PATH"),
       nativeCandidateMultiplier: integerEnv(
         env,
         "SEARCH_NATIVE_CANDIDATE_MULTIPLIER",
@@ -208,6 +212,23 @@ function requireEnv(env: EnvMap, key: string): string {
 function optionalEnv(env: EnvMap, key: string): string | undefined {
   const value = env[key]?.trim();
   return value ? value : undefined;
+}
+
+/**
+ * 读取可选绝对路径环境变量。
+ */
+function absolutePathEnv(env: EnvMap, key: string): string | undefined {
+  const value = optionalEnv(env, key);
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!value.startsWith("/")) {
+    throw new Error(`Environment variable ${key} must be an absolute path`);
+  }
+
+  return value;
 }
 
 /**

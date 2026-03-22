@@ -84,6 +84,9 @@
         // 扫描仓库时默认忽略的路径模式，使用逗号分隔。
         "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next",
 
+        // 可选的根 .gitignore 绝对路径；其中的排除规则会并入扫描忽略集合。
+        "DEFAULT_SCAN_GITIGNORE_PATH": "/workspace/repo-a/.gitignore",
+
         // native HNSW 路径的候选窗口倍数。
         "SEARCH_NATIVE_CANDIDATE_MULTIPLIER": "20",
 
@@ -168,6 +171,9 @@
 
         // 扫描仓库时默认忽略的路径模式，使用逗号分隔。
         "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next",
+
+        // 可选的根 .gitignore 绝对路径；其中的排除规则会并入扫描忽略集合。
+        "DEFAULT_SCAN_GITIGNORE_PATH": "/workspace/repo-b/.gitignore",
 
         // native HNSW 路径的候选窗口倍数。
         "SEARCH_NATIVE_CANDIDATE_MULTIPLIER": "20",

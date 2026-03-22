@@ -223,12 +223,13 @@ src/
 6. `MCP_DEFAULT_REPOSITORY_ID`
 7. `MCP_REPOSITORY_ROOT`
 8. `DEFAULT_SCAN_IGNORE_PATTERNS`
-9. `SEARCH_NATIVE_CANDIDATE_MULTIPLIER`
-10. `SEARCH_NATIVE_EF_SEARCH_MIN`
-11. `LOG_LEVEL`
-12. `LOG_PRETTY`
-13. `LOG_FILE_PATH`
-14. `LOG_FILE_PRETTY`
+9. `DEFAULT_SCAN_GITIGNORE_PATH`
+10. `SEARCH_NATIVE_CANDIDATE_MULTIPLIER`
+11. `SEARCH_NATIVE_EF_SEARCH_MIN`
+12. `LOG_LEVEL`
+13. `LOG_PRETTY`
+14. `LOG_FILE_PATH`
+15. `LOG_FILE_PRETTY`
 
 其中：
 
@@ -239,8 +240,11 @@ src/
 5. `rootPath` 的解析优先级应为：tool 输入值 > `MCP_REPOSITORY_ROOT` > 校验错误
 6. `LOG_FILE_PATH` 若配置，则当前 server 会额外把日志写入本地文件，默认写结构化 JSON
 7. `LOG_FILE_PRETTY=true` 时，文件日志会改为 pretty 文本格式，便于本地人工阅读
-8. 如果没有配置 `MCP_DEFAULT_REPOSITORY_ID`，且调用 MCP tool 时也没有传 `repositoryId`，adapter 应直接返回校验错误，而不是猜测仓库身份
-9. 如果没有配置 `MCP_REPOSITORY_ROOT`，且调用 `index_repository` / `index_files` 时也没有传 `rootPath`，adapter 应直接返回校验错误，而不是依赖工作目录推断仓库根目录
+8. `DEFAULT_SCAN_GITIGNORE_PATH` 若配置，则会读取该绝对路径指向的根 `.gitignore`，并将其中的排除规则并入扫描忽略集合
+9. 如果未配置 `DEFAULT_SCAN_GITIGNORE_PATH`，但配置了 `MCP_REPOSITORY_ROOT`，则启动时会自动尝试读取 `MCP_REPOSITORY_ROOT/.gitignore`
+10. 如果自动推导出的 `.gitignore` 文件不存在，则扫描器会忽略该步骤，不会导致启动失败
+11. 如果没有配置 `MCP_DEFAULT_REPOSITORY_ID`，且调用 MCP tool 时也没有传 `repositoryId`，adapter 应直接返回校验错误，而不是猜测仓库身份
+12. 如果没有配置 `MCP_REPOSITORY_ROOT`，且调用 `index_repository` / `index_files` 时也没有传 `rootPath`，adapter 应直接返回校验错误，而不是依赖工作目录推断仓库根目录
 
 ### 推荐的 mcp.json 形态
 
@@ -270,7 +274,8 @@ src/
         "DEFAULT_TOP_K": "10",
         "MCP_DEFAULT_REPOSITORY_ID": "repo-a",
         "MCP_REPOSITORY_ROOT": "/workspace/repo-a",
-        "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next",
+        "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next,*.tsbuildinfo",
+        "DEFAULT_SCAN_GITIGNORE_PATH": "/workspace/repo-a/.gitignore",
         "SEARCH_NATIVE_CANDIDATE_MULTIPLIER": "20",
         "SEARCH_NATIVE_EF_SEARCH_MIN": "100",
         "LOG_LEVEL": "info",
@@ -297,7 +302,8 @@ src/
         "DEFAULT_TOP_K": "10",
         "MCP_DEFAULT_REPOSITORY_ID": "repo-b",
         "MCP_REPOSITORY_ROOT": "/workspace/repo-b",
-        "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next",
+        "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next,*.tsbuildinfo",
+        "DEFAULT_SCAN_GITIGNORE_PATH": "/workspace/repo-b/.gitignore",
         "SEARCH_NATIVE_CANDIDATE_MULTIPLIER": "20",
         "SEARCH_NATIVE_EF_SEARCH_MIN": "100",
         "LOG_LEVEL": "info",

@@ -19,7 +19,8 @@ function createBaseEnv(): Record<string, string> {
     EMBEDDING_VECTOR_DIMENSION: "1024",
     EMBEDDING_API_KEY: "test-key",
     DEFAULT_TOP_K: "10",
-    DEFAULT_SCAN_IGNORE_PATTERNS: "node_modules,.git,dist",
+    DEFAULT_SCAN_IGNORE_PATTERNS: "node_modules,.git,dist,*.tsbuildinfo",
+    DEFAULT_SCAN_GITIGNORE_PATH: "/workspace/repo-a/.gitignore",
     LOG_LEVEL: "info",
     LOG_PRETTY: "true",
     LOG_FILE_PRETTY: "false",
@@ -57,7 +58,9 @@ describe("loadConfig", () => {
       "node_modules",
       ".git",
       "dist",
+      "*.tsbuildinfo",
     ]);
+    expect(config.indexing.gitignorePath).toBe("/workspace/repo-a/.gitignore");
     expect(config.indexing.nativeCandidateMultiplier).toBe(20);
     expect(config.indexing.nativeEfSearchMin).toBe(100);
     expect(config.mcp.defaultRepositoryId).toBe("repo-a");
@@ -112,6 +115,15 @@ describe("loadConfig", () => {
         PROJECT_SPACE: "bad.project",
       }),
     ).toThrow(/PROJECT_SPACE/);
+  });
+
+  it("fails when scan gitignore path is not absolute", () => {
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        DEFAULT_SCAN_GITIGNORE_PATH: ".gitignore",
+      }),
+    ).toThrow(/DEFAULT_SCAN_GITIGNORE_PATH/);
   });
 
   it("fails when embedding api key is missing", () => {

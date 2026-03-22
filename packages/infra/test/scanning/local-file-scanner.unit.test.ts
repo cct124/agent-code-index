@@ -43,4 +43,75 @@ describe("LocalFileScanner", () => {
       scannedFiles.map((filePath) => path.relative(rootPath, filePath)),
     ).toEqual(["docs/readme.md", "src/index.ts"]);
   });
+
+  it("skips files matched by suffix ignore patterns", async () => {
+    const rootPath = await mkdtemp(path.join(os.tmpdir(), "scanner-test-"));
+    tempDirectories.push(rootPath);
+
+    await mkdir(path.join(rootPath, "packages", "demo"), { recursive: true });
+
+    await writeFile(
+      path.join(rootPath, "packages", "demo", "tsconfig.tsbuildinfo"),
+      "binary-like-build-info\n",
+    );
+    await writeFile(
+      path.join(rootPath, "packages", "demo", "index.ts"),
+      "export {};\n",
+    );
+
+    const scanner = new LocalFileScanner();
+    const scannedFiles = await scanner.scan(rootPath);
+
+    expect(
+      scannedFiles.map((filePath) => path.relative(rootPath, filePath)),
+    ).toEqual(["packages/demo/index.ts"]);
+  });
+
+  it("merges root gitignore rules into scanner exclusions", async () => {
+    const rootPath = await mkdtemp(path.join(os.tmpdir(), "scanner-test-"));
+    tempDirectories.push(rootPath);
+
+    await mkdir(path.join(rootPath, "dist"), { recursive: true });
+    await mkdir(path.join(rootPath, ".logs"), { recursive: true });
+
+    await writeFile(
+      path.join(rootPath, ".gitignore"),
+      ["dist/", "*.log", ".env.*", "!.env.example", ".logs/"].join("\n"),
+    );
+    await writeFile(path.join(rootPath, "src.ts"), "export {};\n");
+    await writeFile(
+      path.join(rootPath, "dist", "bundle.js"),
+      "console.log('x');\n",
+    );
+    await writeFile(path.join(rootPath, ".logs", "agent.log"), "log\n");
+    await writeFile(path.join(rootPath, ".env.local"), "X=1\n");
+    await writeFile(path.join(rootPath, ".env.example"), "X=1\n");
+
+    const scanner = new LocalFileScanner(
+      undefined,
+      path.join(rootPath, ".gitignore"),
+    );
+    const scannedFiles = await scanner.scan(rootPath);
+
+    expect(
+      scannedFiles.map((filePath) => path.relative(rootPath, filePath)),
+    ).toEqual([".env.example", ".gitignore", "src.ts"]);
+  });
+
+  it("ignores a missing gitignore file path", async () => {
+    const rootPath = await mkdtemp(path.join(os.tmpdir(), "scanner-test-"));
+    tempDirectories.push(rootPath);
+
+    await writeFile(path.join(rootPath, "src.ts"), "export {};\n");
+
+    const scanner = new LocalFileScanner(
+      undefined,
+      path.join(rootPath, ".gitignore"),
+    );
+    const scannedFiles = await scanner.scan(rootPath);
+
+    expect(
+      scannedFiles.map((filePath) => path.relative(rootPath, filePath)),
+    ).toEqual(["src.ts"]);
+  });
 });

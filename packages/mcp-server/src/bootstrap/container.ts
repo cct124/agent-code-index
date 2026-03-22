@@ -1,6 +1,8 @@
 /**
  * 应用依赖容器的最小骨架定义。
  */
+import path from "node:path";
+
 import {
   DefaultDeleteFilesService,
   DefaultGetFileContextService,
@@ -112,7 +114,10 @@ export function createContainer(config: AppConfig): AppContainer {
     toSurrealSearchRepositoryOptions(config),
   );
   const chunkPreparationService = new DefaultRepositoryChunkPreparationService(
-    new LocalFileScanner(config.indexing.ignorePatterns),
+    new LocalFileScanner(
+      config.indexing.ignorePatterns,
+      resolveScanGitignorePath(config),
+    ),
     new ParserFactory({}, logger.child({ module: "parsing" })),
     logger.child({ module: "chunk-preparation" }),
   );
@@ -173,6 +178,20 @@ export function createContainer(config: AppConfig): AppContainer {
       surrealClient,
     ),
   };
+}
+
+export function resolveScanGitignorePath(
+  config: Pick<AppConfig, "indexing" | "mcp">,
+): string | undefined {
+  if (config.indexing.gitignorePath !== undefined) {
+    return config.indexing.gitignorePath;
+  }
+
+  if (config.mcp.repositoryRoot === undefined) {
+    return undefined;
+  }
+
+  return path.join(config.mcp.repositoryRoot, ".gitignore");
 }
 
 /**
