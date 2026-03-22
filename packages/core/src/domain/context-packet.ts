@@ -3,15 +3,19 @@
  */
 export interface ContextPacket {
   /** 当前上下文包的来源类型。 */
-  kind: "file";
+  kind: "file" | "search";
   /** 所属仓库标识。 */
   repositoryId: string;
+  /** 当上下文来自检索时，对应的原始查询。 */
+  query?: string;
   /** 文件级上下文条目。 */
   items: ContextPacketItem[];
   /** 文件维度摘要。 */
   files: ContextPacketFile[];
   /** 给上层 Agent 的消费提示。 */
   instructions: string[];
+  /** 去重策略与统计。 */
+  deduplication: ContextPacketDeduplication;
   /** 截断状态。 */
   truncation: ContextPacketTruncation;
 }
@@ -21,7 +25,9 @@ export interface ContextPacket {
  */
 export interface ContextPacketItem {
   /** 条目类型。 */
-  type: "file_chunk";
+  type: "file_chunk" | "search_match";
+  /** chunk 标识。 */
+  id?: string;
   /** 所属文件路径。 */
   filePath: string;
   /** 代码语言。 */
@@ -32,6 +38,10 @@ export interface ContextPacketItem {
   endLine: number;
   /** 原始内容。 */
   content: string;
+  /** 检索排序分数。 */
+  score?: number;
+  /** 检索命中原因。 */
+  reason?: string;
   /** 结构化元数据。 */
   metadata: Record<string, unknown>;
 }
@@ -53,13 +63,31 @@ export interface ContextPacketFile {
 }
 
 /**
+ * 上下文包的去重描述。
+ */
+export interface ContextPacketDeduplication {
+  /** 去重策略。 */
+  strategy: "none" | "chunk_id" | "file_path_line_range";
+  /** 去重前条目总数。 */
+  inputItems: number;
+  /** 被去掉的重复条目数。 */
+  removedItems: number;
+}
+
+/**
  * 上下文包的截断描述。
  */
 export interface ContextPacketTruncation {
   /** 是否发生截断。 */
   truncated: boolean;
+  /** 截断策略。 */
+  strategy: "none" | "top_k" | "max_items";
   /** 原始条目总数。 */
   totalItems: number;
   /** 实际返回条目总数。 */
   returnedItems: number;
+  /** 被截断掉的条目数。 */
+  omittedItems: number;
+  /** 当前截断上限。 */
+  limit?: number;
 }

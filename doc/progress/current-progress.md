@@ -228,9 +228,9 @@
 
 建议先完成：
 
-1. 将 `search_code_context` 结果逐步升级为更稳定的上下文包输出
-2. 在最小 `ContextPacket` 之上继续补 richer context builder
-3. 收敛 get_file_context 与 search_code_context 的统一上下文包策略
+1. 在现有 search/file 双 ContextPacket 输出之上继续补 richer context builder
+2. 收敛 get_file_context 与 search_code_context 的统一上下文包策略
+3. 继续增强检索后的重排、预算控制与上下文说明字段
 
 原因：
 

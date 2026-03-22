@@ -597,15 +597,16 @@ v1 建议采用分阶段策略：
 
 该服务负责检索链路总编排。
 
-当前状态：该 service 已在 `core` 落地，但当前实现的输出仍然是 `SearchResult[]`，尚未进入 `ContextPacket` 组装阶段。
+当前状态：该 service 已在 `core` 落地，当前实现已返回 `results + contextPacket` 双轨结果，并带有基础去重与截断信息。
 
 推荐流程：
 
 1. 接收自然语言查询和过滤条件
 2. 生成查询 embedding
 3. 调用 `SearchRepository.semanticSearch`
-4. 当前实现先直接返回 `SearchResult[]`
-5. 后续在引入 `ContextBuilder` 后，再做规则过滤、去重、简单重排与 `ContextPacket` 输出
+4. 当前实现返回原始 `results` 作为调试字段
+5. 当前实现同时返回最小 `ContextPacket`，并附带基础去重与截断信息
+6. 后续在引入 `ContextBuilder` 后，再做更复杂的规则过滤、去重、简单重排与 richer `ContextPacket` 输出
 
 第一版建议只做轻量重排：
 
@@ -1239,10 +1240,12 @@ Repository Root
 Natural Language Query
   -> EmbeddingProvider
   -> SearchRepository
-  -> SearchResult[]
+  -> SearchCodeContextResult
+      -> results
+      -> contextPacket
 ```
 
-当前实现已落地到 `SearchResult[]`；`ContextBuilder -> ContextPacket -> MCP Tool Response` 仍是下一阶段目标。
+当前实现已落地到 `SearchCodeContextResult`；更完整的 `ContextBuilder -> richer ContextPacket -> MCP Tool Response` 仍是下一阶段目标。
 
 ### 12.3 文件上下文流程
 

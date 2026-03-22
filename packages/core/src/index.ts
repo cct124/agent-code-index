@@ -48,6 +48,7 @@ export type {
   GetFileContextService,
 } from "./services/get-file-context-service.js";
 export type {
+  SearchCodeContextResult,
   SearchCodeContextInput,
   SearchCodeContextService,
 } from "./services/search-code-context-service.js";

@@ -81,7 +81,7 @@ if (
           rootPath: tempRoot,
           embeddingBatchSize: 2,
         });
-        const searchResults =
+        const searchResult =
           await app.container.searchCodeContextService.execute({
             repositoryId: context.projectSpace,
             query: "shipping quote service factory create method",
@@ -94,13 +94,15 @@ if (
         expect(indexResult.storedChunkCount).toBe(
           indexResult.embeddedChunkCount,
         );
-        expect(searchResults).toHaveLength(2);
-        expect(searchResults[0]?.chunk.filePath).toBe("shipping.ts");
-        expect(searchResults[0]?.chunk.embedding.length).toBe(
+        expect(searchResult.results).toHaveLength(2);
+        expect(searchResult.contextPacket.kind).toBe("search");
+        expect(searchResult.contextPacket.items).toHaveLength(2);
+        expect(searchResult.results[0]?.chunk.filePath).toBe("shipping.ts");
+        expect(searchResult.results[0]?.chunk.embedding.length).toBe(
           app.container.embeddingProvider.vectorDimension,
         );
-        expect(searchResults[0]?.score).toBeGreaterThan(
-          searchResults[1]?.score ?? 0,
+        expect(searchResult.results[0]?.score).toBeGreaterThan(
+          searchResult.results[1]?.score ?? 0,
         );
       } finally {
         await app?.container.surrealClient.disconnect();

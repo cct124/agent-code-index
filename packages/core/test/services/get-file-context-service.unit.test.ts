@@ -109,6 +109,7 @@ describe("DefaultGetFileContextService", () => {
         items: [
           {
             type: "file_chunk",
+            id: "chunk-1",
             filePath: "src/shipping.ts",
             language: "typescript",
             startLine: 1,
@@ -121,6 +122,7 @@ describe("DefaultGetFileContextService", () => {
           },
           {
             type: "file_chunk",
+            id: "chunk-2",
             filePath: "src/shipping.ts",
             language: "typescript",
             startLine: 3,
@@ -145,10 +147,17 @@ describe("DefaultGetFileContextService", () => {
           "Treat this packet as indexed repository context, not a live filesystem read.",
           "Prefer assembledContext for continuous reading and items for structured inspection.",
         ],
+        deduplication: {
+          strategy: "none",
+          inputItems: 2,
+          removedItems: 0,
+        },
         truncation: {
           truncated: false,
+          strategy: "none",
           totalItems: 2,
           returnedItems: 2,
+          omittedItems: 0,
         },
       },
     });

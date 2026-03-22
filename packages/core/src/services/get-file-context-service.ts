@@ -142,6 +142,7 @@ function buildContextPacket(
     repositoryId,
     items: chunks.map((chunk) => ({
       type: "file_chunk",
+      id: chunk.id,
       filePath: chunk.filePath,
       language: chunk.language,
       startLine: chunk.startLine,
@@ -154,10 +155,17 @@ function buildContextPacket(
       "Treat this packet as indexed repository context, not a live filesystem read.",
       "Prefer assembledContext for continuous reading and items for structured inspection.",
     ],
+    deduplication: {
+      strategy: "none",
+      inputItems: chunks.length,
+      removedItems: 0,
+    },
     truncation: {
       truncated: false,
+      strategy: "none",
       totalItems: chunks.length,
       returnedItems: chunks.length,
+      omittedItems: 0,
     },
   };
 }

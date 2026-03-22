@@ -303,7 +303,7 @@ src/
 ### 当前限制
 
 1. 当前已实现的 tools 包括 `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context`
-2. 更完整的 `ContextPacket` 组装与 `search_code_context` 输出升级仍未落地
+2. 更完整的 `ContextBuilder` 和更复杂的上下文重排仍未落地
 3. 当前更适合每个项目起一个独立 server 进程，而不是共享一个进程做多项目动态路由
 4. `mcp.json` 中不建议直接提交明文 API key、token 或数据库密码
 

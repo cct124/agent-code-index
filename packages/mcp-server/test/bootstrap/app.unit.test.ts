@@ -15,8 +15,8 @@ import type {
   RepositoryChunkPreparationService,
   SearchCodeContextService,
   SearchRepository,
-} from "../../../core/src/index.js";
-import type { ProjectMetadata } from "../../../core/src/domain/project-metadata.js";
+} from "@agent-code-index/core";
+import type { ProjectMetadata } from "@agent-code-index/core";
 
 import type { AppContainer } from "../../src/bootstrap/container.js";
 import type { AppConfig } from "../../src/bootstrap/config.js";
@@ -157,7 +157,34 @@ function createTestContainer(events: string[]): AppContainer {
       semanticSearch: vi.fn(async () => []),
     } as SearchRepository,
     searchCodeContextService: {
-      execute: vi.fn(async () => []),
+      execute: vi.fn(async () => ({
+        repositoryId: "repo-a",
+        query: "example",
+        topK: 10,
+        resultCount: 0,
+        results: [],
+        contextPacket: {
+          kind: "search",
+          repositoryId: "repo-a",
+          query: "example",
+          items: [],
+          files: [],
+          instructions: [],
+          deduplication: {
+            strategy: "none",
+            inputItems: 0,
+            removedItems: 0,
+          },
+          truncation: {
+            truncated: false,
+            strategy: "none",
+            totalItems: 0,
+            returnedItems: 0,
+            omittedItems: 0,
+            limit: 10,
+          },
+        },
+      })),
     } as SearchCodeContextService,
     indexRepositoryService: {
       execute: vi.fn(async () => ({
@@ -206,10 +233,17 @@ function createTestContainer(events: string[]): AppContainer {
           items: [],
           files: [],
           instructions: [],
+          deduplication: {
+            strategy: "none",
+            inputItems: 0,
+            removedItems: 0,
+          },
           truncation: {
             truncated: false,
+            strategy: "none",
             totalItems: 0,
             returnedItems: 0,
+            omittedItems: 0,
           },
         },
       })),

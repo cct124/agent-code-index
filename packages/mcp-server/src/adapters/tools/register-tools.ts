@@ -141,13 +141,14 @@ export function registerAgentCodeIndexTools(server: McpServer, app: App): void {
           repositoryId,
           query,
           topK,
-          resultCount: results.length,
-          results: results.map(toSearchToolResultItem),
+          resultCount: results.resultCount,
+          results: results.results.map(toSearchToolResultItem),
+          contextPacket: results.contextPacket,
         };
 
         return {
           content: createTextContent(
-            `Searched repository ${repositoryId}: returned ${results.length} results for query \"${query}\".`,
+            `Searched repository ${repositoryId}: returned ${results.resultCount} results for query "${query}".`,
           ),
           structuredContent,
         };

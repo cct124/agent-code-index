@@ -50,7 +50,80 @@ const app = {
       }),
     },
     searchCodeContextService: {
-      execute: async () => [],
+      execute: async () => ({
+        repositoryId: "repo-a",
+        query: "find value",
+        topK: 10,
+        resultCount: 1,
+        results: [
+          {
+            score: 0.95,
+            reason: "semantic_match",
+            chunk: {
+              id: "chunk-a",
+              repositoryId: "repo-a",
+              filePath: "src/index.ts",
+              language: "typescript",
+              content: "export const value = 1;",
+              searchText: "value",
+              startLine: 1,
+              endLine: 1,
+              hash: "hash-a",
+              embedding: [1, 0, 0],
+              metadata: {
+                symbolName: "value",
+              },
+            },
+          },
+        ],
+        contextPacket: {
+          kind: "search",
+          repositoryId: "repo-a",
+          query: "find value",
+          items: [
+            {
+              type: "search_match",
+              id: "chunk-a",
+              filePath: "src/index.ts",
+              language: "typescript",
+              content: "export const value = 1;",
+              startLine: 1,
+              endLine: 1,
+              score: 0.95,
+              reason: "semantic_match",
+              metadata: {
+                symbolName: "value",
+              },
+            },
+          ],
+          files: [
+            {
+              filePath: "src/index.ts",
+              language: "typescript",
+              chunkCount: 1,
+              startLine: 1,
+              endLine: 1,
+            },
+          ],
+          instructions: [
+            "Treat this packet as semantic retrieval output ranked by relevance.",
+            "Use items for exact excerpts and files for a de-duplicated coverage summary.",
+          ],
+          deduplication: {
+            strategy: "none",
+            inputItems: 1,
+            removedItems: 0,
+          },
+          truncation: {
+            truncated: false,
+            strategy: "none",
+            totalItems: 1,
+            returnedItems: 1,
+            omittedItems: 0,
+            limit: 10,
+          },
+        },
+      }),
     },
     indexFilesService: {
       execute: async () => ({
@@ -100,6 +173,7 @@ const app = {
           items: [
             {
               type: "file_chunk",
+              id: "chunk-a",
               filePath: "src/index.ts",
               language: "typescript",
               content: "export const value = 1;",
@@ -123,10 +197,17 @@ const app = {
             "Treat this packet as indexed repository context, not a live filesystem read.",
             "Prefer assembledContext for continuous reading and items for structured inspection.",
           ],
+          deduplication: {
+            strategy: "none",
+            inputItems: 1,
+            removedItems: 0,
+          },
           truncation: {
             truncated: false,
+            strategy: "none",
             totalItems: 1,
             returnedItems: 1,
+            omittedItems: 0,
           },
         },
       }),

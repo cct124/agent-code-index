@@ -7,8 +7,8 @@ import type {
   IndexRepositoryService,
   Logger,
   SearchCodeContextService,
-} from "../../../core/src/index.js";
-import type { SearchResult } from "../../../core/src/domain/search-result.js";
+  SearchResult,
+} from "@agent-code-index/core";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 
@@ -117,9 +117,47 @@ describe("registerAgentCodeIndexTools", () => {
           ]),
           truncation: {
             truncated: false,
+            strategy: "none",
             totalItems: 2,
             returnedItems: 2,
+            omittedItems: 0,
           },
+        }),
+      }),
+    );
+
+    const searchCodeContextResult = await client.callTool({
+      name: "search_code_context",
+      arguments: {
+        query: "find exported value",
+      },
+    });
+
+    expect(app.container.searchCodeContextService.execute).toHaveBeenCalledWith(
+      {
+        repositoryId: "repo-a",
+        query: "find exported value",
+        topK: 10,
+        filters: undefined,
+      },
+    );
+    expect(searchCodeContextResult.structuredContent).toEqual(
+      expect.objectContaining({
+        repositoryId: "repo-a",
+        query: "find exported value",
+        topK: 10,
+        resultCount: 1,
+        contextPacket: expect.objectContaining({
+          kind: "search",
+          deduplication: {
+            strategy: "none",
+            inputItems: 1,
+            removedItems: 0,
+          },
+          truncation: expect.objectContaining({
+            strategy: "none",
+            returnedItems: 1,
+          }),
         }),
       }),
     );
@@ -186,7 +224,7 @@ function createTestApp(): App {
       fileChunkPreparationService: {} as never,
       searchRepository: {} as never,
       searchCodeContextService: {
-        execute: vi.fn(async () => createSearchResults()),
+        execute: vi.fn(async () => createSearchCodeContextResult()),
       } as SearchCodeContextService,
       indexRepositoryService: {
         execute: vi.fn(async () => ({
@@ -260,6 +298,7 @@ function createTestApp(): App {
             items: [
               {
                 type: "file_chunk",
+                id: "chunk-a",
                 filePath: "src/index.ts",
                 language: "typescript",
                 content: "export const value = 1;",
@@ -271,6 +310,7 @@ function createTestApp(): App {
               },
               {
                 type: "file_chunk",
+                id: "chunk-b",
                 filePath: "src/index.ts",
                 language: "typescript",
                 content: "export function readValue() { return value; }",
@@ -295,10 +335,17 @@ function createTestApp(): App {
               "Treat this packet as indexed repository context, not a live filesystem read.",
               "Prefer assembledContext for continuous reading and items for structured inspection.",
             ],
+            deduplication: {
+              strategy: "none",
+              inputItems: 2,
+              removedItems: 0,
+            },
             truncation: {
               truncated: false,
+              strategy: "none",
               totalItems: 2,
               returnedItems: 2,
+              omittedItems: 0,
             },
           },
         })),
@@ -365,6 +412,63 @@ function createSearchResults(): SearchResult[] {
       },
     },
   ];
+}
+
+function createSearchCodeContextResult() {
+  return {
+    repositoryId: "repo-a",
+    query: "find exported value",
+    topK: 10,
+    resultCount: 1,
+    results: createSearchResults(),
+    contextPacket: {
+      kind: "search",
+      repositoryId: "repo-a",
+      query: "find exported value",
+      items: [
+        {
+          type: "search_match",
+          id: "chunk-a",
+          filePath: "src/index.ts",
+          language: "typescript",
+          content: "export const value = 1;",
+          startLine: 1,
+          endLine: 1,
+          score: 0.95,
+          reason: "semantic_match",
+          metadata: {
+            symbolName: "value",
+          },
+        },
+      ],
+      files: [
+        {
+          filePath: "src/index.ts",
+          language: "typescript",
+          chunkCount: 1,
+          startLine: 1,
+          endLine: 1,
+        },
+      ],
+      instructions: [
+        "Treat this packet as semantic retrieval output ranked by relevance.",
+        "Use items for exact excerpts and files for a de-duplicated coverage summary.",
+      ],
+      deduplication: {
+        strategy: "none",
+        inputItems: 1,
+        removedItems: 0,
+      },
+      truncation: {
+        truncated: false,
+        strategy: "none",
+        totalItems: 1,
+        returnedItems: 1,
+        omittedItems: 0,
+        limit: 10,
+      },
+    },
+  };
 }
 
 function createLogger(): Logger {

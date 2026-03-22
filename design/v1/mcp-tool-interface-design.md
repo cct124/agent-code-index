@@ -149,13 +149,13 @@ MCP `mcp.json` 中推荐通过不同 server 条目完成项目级隔离。
 
 ## 4. Tool 列表总览
 
-| Tool                  | 当前状态 | 核心依赖                          | v1 输出形态             |
-| --------------------- | -------- | --------------------------------- | ----------------------- |
-| `index_repository`    | 已实现   | `DefaultIndexRepositoryService`   | 索引摘要                |
-| `search_code_context` | 已实现   | `DefaultSearchCodeContextService` | `SearchResult[]` + 摘要 |
-| `index_files`         | 已实现   | `IndexFilesService`               | 文件级重建摘要          |
-| `delete_files`        | 已实现   | `DeleteFilesService`              | 删除摘要                |
-| `get_file_context`    | 已实现   | `GetFileContextService`           | 返回文件级连续上下文包  |
+| Tool                  | 当前状态 | 核心依赖                          | v1 输出形态               |
+| --------------------- | -------- | --------------------------------- | ------------------------- |
+| `index_repository`    | 已实现   | `DefaultIndexRepositoryService`   | 索引摘要                  |
+| `search_code_context` | 已实现   | `DefaultSearchCodeContextService` | `results + contextPacket` |
+| `index_files`         | 已实现   | `IndexFilesService`               | 文件级重建摘要            |
+| `delete_files`        | 已实现   | `DeleteFilesService`              | 删除摘要                  |
+| `get_file_context`    | 已实现   | `GetFileContextService`           | 返回文件级连续上下文包    |
 
 ## 5. 通用输入约束
 
@@ -319,9 +319,9 @@ interface SearchCodeContextToolInput {
 
 注意：adapter 在调用 `core` 前，必须先把最终解析后的 `repositoryId` 补齐为必填字段。
 
-### 7.5 v1 输出 schema
+### 7.5 当前输出 schema
 
-当前 `core` 返回的是 `SearchResult[]`，因此 v1 的 MCP 输出应先稳定为：
+当前 `core` 已返回 `results + contextPacket` 双轨结果，因此 MCP 输出稳定为：
 
 ```ts
 interface SearchCodeContextToolResult {
@@ -345,22 +345,61 @@ interface SearchCodeContextToolResult {
       metadata: Record<string, unknown>;
     };
   }>;
-  contextPacket?: never;
+  contextPacket: {
+    kind: "search";
+    repositoryId: string;
+    query: string;
+    items: Array<{
+      type: "search_match";
+      id?: string;
+      filePath: string;
+      language: string;
+      startLine: number;
+      endLine: number;
+      content: string;
+      score?: number;
+      reason?: string;
+      metadata: Record<string, unknown>;
+    }>;
+    files: Array<{
+      filePath: string;
+      language: string;
+      chunkCount: number;
+      startLine: number;
+      endLine: number;
+    }>;
+    instructions: string[];
+    deduplication: {
+      strategy: "none" | "chunk_id" | "file_path_line_range";
+      inputItems: number;
+      removedItems: number;
+    };
+    truncation: {
+      truncated: boolean;
+      strategy: "none" | "top_k" | "max_items";
+      totalItems: number;
+      returnedItems: number;
+      omittedItems: number;
+      limit?: number;
+    };
+  };
 }
 ```
 
 说明：
 
-1. v1 不要求 `ContextPacket`
-2. 输出中保留 `reason`，用于区分后续检索策略变化
-3. `chunk.embedding` 不建议默认暴露给 Agent，除非调试模式显式开启
+1. `results` 保留原始检索结果，便于调试与策略对比
+2. `contextPacket` 提供统一的 Agent 消费出口
+3. `contextPacket.deduplication` 明确去重策略与去重数量
+4. `contextPacket.truncation` 明确截断策略、截断上限与省略数量
+5. `chunk.embedding` 不建议默认暴露给 Agent，除非调试模式显式开启
 
-### 7.6 v2 演进方向
+### 7.6 后续演进方向
 
 待 `ContextBuilder` 落地后，可演进为：
 
 1. `results` 保留为调试字段或次级字段
-2. 主输出升级为 `contextPacket`
+2. `contextPacket` 增加更复杂的预算控制、相邻 chunk 合并和重排说明
 
 ## 8. index_files
 
@@ -654,13 +693,13 @@ interface ToolErrorPayload {
 
 ## 12. Tool 与 Core 映射总表
 
-| Tool                  | Core service                      | 当前状态 | 备注                            |
-| --------------------- | --------------------------------- | -------- | ------------------------------- |
-| `index_repository`    | `DefaultIndexRepositoryService`   | 已可接入 | 可直接落 adapter                |
-| `search_code_context` | `DefaultSearchCodeContextService` | 已可接入 | 当前输出先保持 `SearchResult[]` |
-| `index_files`         | `IndexFilesService`               | 已实现   | 覆盖式重建                      |
-| `delete_files`        | `DeleteFilesService`              | 已实现   | 处理文件删除与旧路径清理        |
-| `get_file_context`    | `GetFileContextService`           | 已实现   | 当前为最小连续文本组装          |
+| Tool                  | Core service                      | 当前状态 | 备注                                 |
+| --------------------- | --------------------------------- | -------- | ------------------------------------ |
+| `index_repository`    | `DefaultIndexRepositoryService`   | 已可接入 | 可直接落 adapter                     |
+| `search_code_context` | `DefaultSearchCodeContextService` | 已可接入 | 当前输出为 `results + contextPacket` |
+| `index_files`         | `IndexFilesService`               | 已实现   | 覆盖式重建                           |
+| `delete_files`        | `DeleteFilesService`              | 已实现   | 处理文件删除与旧路径清理             |
+| `get_file_context`    | `GetFileContextService`           | 已实现   | 当前为最小连续文本组装               |
 
 ## 13. 示例
 
@@ -732,4 +771,4 @@ interface ToolErrorPayload {
 2. 进一步统一多 tool 的错误码与错误详情模型
 3. 继续补充更多上下文提取与检索后处理能力
 4. 再补 `get_file_context` service 与 tool
-5. 最后把 `search_code_context` 从 `SearchResult[]` 升级到 `ContextPacket`
+5. 最后继续把 `search_code_context` 的 `contextPacket` 升级到 richer ContextBuilder 产物
