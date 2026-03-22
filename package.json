@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "build": "tsc -b tsconfig.json",
+    "mcp:dev": "tsx ./packages/mcp-server/src/index.ts",
     "test": "vitest run --config vitest.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:unit": "vitest run --config vitest.unit.config.ts",
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@types/node": "^22.13.11",
     "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.8.2",
     "vitest": "^4.1.0"
   }

@@ -11,11 +11,19 @@
       // MCP server 类型。当前示例按 stdio 方式启动子进程。
       "type": "stdio",
 
-      // 启动命令。这里假设通过 node 直接运行构建产物。
-      "command": "node",
+      // 启动命令。
+      // 正式使用时，推荐先构建再通过 node 运行 dist 产物。
+      // 本地联调时，也可以直接用 corepack + yarn + tsx 运行 TypeScript 源码入口，
+      // 这样通常更容易定位启动时报错与堆栈。
+      // 当前示例默认展示“直接运行 TS 源码”的开发态配置。
+      "command": "corepack",
 
-      // 启动参数。这里指向 mcp-server 的构建输出入口。
-      "args": ["./packages/mcp-server/dist/index.js"],
+      // 启动参数。
+      // 开发态联调：
+      "args": ["yarn", "mcp:dev"],
+      // 如果你想切换为构建产物运行，可改为：
+      // "command": "node",
+      // "args": ["./packages/mcp-server/dist/index.js"],
 
       // 传给 agent-code-index 进程的环境变量。
       "env": {
@@ -87,17 +95,26 @@
 
         // 是否启用 pretty 日志输出；必须是字符串 "true" 或 "false"。
         "LOG_PRETTY": "true",
+
+        // 可选的本地日志文件路径；设置后会额外将日志写入本地文件。
+        "LOG_FILE_PATH": "/tmp/agent-code-index/project-a.log",
+
+        // 文件日志是否使用 pretty 格式；默认建议 false，保留结构化 JSON 更适合排查。
+        "LOG_FILE_PRETTY": "false",
       },
     },
     "agent-code-index-voyage": {
       // MCP server 类型。当前示例按 stdio 方式启动子进程。
       "type": "stdio",
 
-      // 启动命令。这里假设通过 node 直接运行构建产物。
-      "command": "node",
+      // 启动命令。当前示例默认展示开发态联调配置，直接运行 TypeScript 源码入口。
+      "command": "corepack",
 
-      // 启动参数。这里指向 mcp-server 的构建输出入口。
-      "args": ["./packages/mcp-server/dist/index.js"],
+      // 启动参数。开发态联调：
+      "args": ["yarn", "mcp:dev"],
+      // 构建产物运行可改为：
+      // "command": "node",
+      // "args": ["./packages/mcp-server/dist/index.js"],
 
       // 传给 agent-code-index 进程的环境变量。
       "env": {
@@ -163,6 +180,12 @@
 
         // 是否启用 pretty 日志输出；必须是字符串 "true" 或 "false"。
         "LOG_PRETTY": "true",
+
+        // 可选的本地日志文件路径；设置后会额外将日志写入本地文件。
+        "LOG_FILE_PATH": "/tmp/agent-code-index/project-b.log",
+
+        // 文件日志是否使用 pretty 格式；默认建议 false，保留结构化 JSON 更适合排查。
+        "LOG_FILE_PRETTY": "false",
       },
     },
   },

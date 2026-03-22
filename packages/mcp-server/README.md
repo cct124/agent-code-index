@@ -345,16 +345,37 @@ yarn build
 ./packages/mcp-server/dist/index.js
 ```
 
+### 1.1 开发态直接运行 TypeScript 源码
+
+为了本地联调和更容易定位启动时报错，当前仓库也支持直接运行 TypeScript 源码入口：
+
+```bash
+corepack yarn mcp:dev
+```
+
+这个命令实际会通过 `tsx` 运行：
+
+```text
+./packages/mcp-server/src/index.ts
+```
+
+建议：
+
+1. 本地排查配置、启动和 stack trace 时，优先用源码入口
+2. 稳定使用或对外共享配置时，优先用构建产物入口
+
 ### 2. 通过 MCP host 配置接入
 
-如果使用支持 `mcp.json` 的 host，可配置一个最小条目：
+如果使用支持 `mcp.json` 的 host，可配置一个最小条目。
+
+开发态联调时，推荐直接运行源码入口：
 
 ```json
 {
   "servers": {
     "agent-code-index-local": {
-      "command": "node",
-      "args": ["./packages/mcp-server/dist/index.js"],
+      "command": "corepack",
+      "args": ["yarn", "mcp:dev"],
       "env": {
         "PROJECT_SPACE": "agent_code_index_local",
         "SURREAL_URL": "ws://127.0.0.1:8100/rpc",
@@ -369,7 +390,9 @@ yarn build
         "EMBEDDING_API_KEY": "<your-api-key>",
         "EMBEDDING_BASE_URL": "https://api.siliconflow.cn/v1",
         "MCP_DEFAULT_REPOSITORY_ID": "agent-code-index",
-        "MCP_REPOSITORY_ROOT": "/home/janex/project/ai-agent/agent-code-index"
+        "MCP_REPOSITORY_ROOT": "/home/janex/project/ai-agent/agent-code-index",
+        "LOG_FILE_PATH": "/tmp/agent-code-index/local.log",
+        "LOG_FILE_PRETTY": "false"
       }
     }
   }
@@ -378,9 +401,19 @@ yarn build
 
 这条配置的含义是：
 
-1. host 会以子进程方式启动 `node ./packages/mcp-server/dist/index.js`
+1. host 会以子进程方式启动 `corepack yarn mcp:dev`
 2. server 通过标准输入输出与 host 通信，而不是监听 HTTP 端口
 3. `repositoryId` 与 `rootPath` 可在单仓场景下通过环境变量提供默认值
+4. 日志会额外写入本地文件，便于联调时排查启动和运行问题
+
+如果你更希望使用构建产物运行，可把上面的启动方式替换为：
+
+```json
+{
+  "command": "node",
+  "args": ["./packages/mcp-server/dist/index.js"]
+}
+```
 
 ### 3. 最小调用示例
 
