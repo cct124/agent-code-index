@@ -1,5 +1,6 @@
 import type { ChunkRepository } from "../contracts/chunk-repository.js";
 import { NOOP_LOGGER, type Logger } from "../contracts/logger.js";
+import type { ContextPacket } from "../domain/context-packet.js";
 
 /**
  * 文件上下文读取输入。
@@ -52,6 +53,8 @@ export interface GetFileContextResult {
     /** 当前实现暂不截断，因此固定为 false。 */
     truncated: boolean;
   };
+  /** 标准化后的最小上下文包。 */
+  contextPacket: ContextPacket;
 }
 
 /**
@@ -117,6 +120,7 @@ export class DefaultGetFileContextService implements GetFileContextService {
         content: assembleContext(contextChunks),
         truncated: false,
       },
+      contextPacket: buildContextPacket(input.repositoryId, contextChunks),
     };
 
     logger.info("Get file context completed", {
@@ -125,6 +129,53 @@ export class DefaultGetFileContextService implements GetFileContextService {
 
     return result;
   }
+}
+
+function buildContextPacket(
+  repositoryId: string,
+  chunks: FileContextChunk[],
+): ContextPacket {
+  const fileSummary = summarizeFile(chunks);
+
+  return {
+    kind: "file",
+    repositoryId,
+    items: chunks.map((chunk) => ({
+      type: "file_chunk",
+      filePath: chunk.filePath,
+      language: chunk.language,
+      startLine: chunk.startLine,
+      endLine: chunk.endLine,
+      content: chunk.content,
+      metadata: { ...chunk.metadata },
+    })),
+    files: fileSummary ? [fileSummary] : [],
+    instructions: [
+      "Treat this packet as indexed repository context, not a live filesystem read.",
+      "Prefer assembledContext for continuous reading and items for structured inspection.",
+    ],
+    truncation: {
+      truncated: false,
+      totalItems: chunks.length,
+      returnedItems: chunks.length,
+    },
+  };
+}
+
+function summarizeFile(
+  chunks: FileContextChunk[],
+): ContextPacket["files"][number] | null {
+  if (chunks.length === 0) {
+    return null;
+  }
+
+  return {
+    filePath: chunks[0].filePath,
+    language: chunks[0].language,
+    chunkCount: chunks.length,
+    startLine: Math.min(...chunks.map((chunk) => chunk.startLine)),
+    endLine: Math.max(...chunks.map((chunk) => chunk.endLine)),
+  };
 }
 
 function normalizeFilePath(filePath: string): string {

@@ -162,7 +162,8 @@ src/
 2. 返回结构化 `chunks[]`
 3. 同时返回一个面向 Agent 的 `assembledContext.content`
 4. 当前实现不做截断，因此 `assembledContext.truncated = false`
-5. `assembledContext` 只是已索引 chunk 的连续文本视图，不等价于直接重读磁盘原文件
+5. 同时返回最小可用的 `contextPacket`
+6. `assembledContext` 只是已索引 chunk 的连续文本视图，不等价于直接重读磁盘原文件
 
 ### 5. 启动与索引链验证
 
@@ -171,6 +172,7 @@ src/
 1. `createApp()` 单元测试
 2. `createApp()` 真实 SurrealDB 集成测试
 3. 真实整链路测试，验证 `prepare -> embed -> upsert -> search`
+4. 基于子进程 stdio 的 MCP smoke test，验证真实 transport 接入
 
 ## MCP JSON 配置约定
 
@@ -301,7 +303,7 @@ src/
 ### 当前限制
 
 1. 当前已实现的 tools 包括 `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context`
-2. 更完整的 `ContextPacket` 组装仍未落地
+2. 更完整的 `ContextPacket` 组装与 `search_code_context` 输出升级仍未落地
 3. 当前更适合每个项目起一个独立 server 进程，而不是共享一个进程做多项目动态路由
 4. `mcp.json` 中不建议直接提交明文 API key、token 或数据库密码
 

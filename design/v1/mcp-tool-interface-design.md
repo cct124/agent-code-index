@@ -535,7 +535,7 @@ interface DeleteFilesToolResult {
 
 ### 10.3 当前状态
 
-当前已落地最小可用版本：`core` service 与 MCP tool 已实现，可返回结构化 `chunks[]` 和 `assembledContext`。
+当前已落地最小可用版本：`core` service 与 MCP tool 已实现，可返回结构化 `chunks[]`、`assembledContext` 和最小 `contextPacket`。
 
 ### 10.4 输入 schema
 
@@ -571,6 +571,32 @@ interface GetFileContextToolResult {
     content: string;
     truncated: boolean;
   };
+  contextPacket: {
+    kind: "file";
+    repositoryId: string;
+    items: Array<{
+      type: "file_chunk";
+      filePath: string;
+      language: string;
+      startLine: number;
+      endLine: number;
+      content: string;
+      metadata: Record<string, unknown>;
+    }>;
+    files: Array<{
+      filePath: string;
+      language: string;
+      chunkCount: number;
+      startLine: number;
+      endLine: number;
+    }>;
+    instructions: string[];
+    truncation: {
+      truncated: boolean;
+      totalItems: number;
+      returnedItems: number;
+    };
+  };
 }
 ```
 
@@ -578,7 +604,8 @@ interface GetFileContextToolResult {
 
 1. `chunks` 提供结构化来源
 2. `assembledContext` 提供对 Agent 更友好的连续文本
-3. 当前实现不截断，因此 `truncated = false`；后续可在 `GetFileContextService` 内扩展截断策略
+3. `contextPacket` 提供稳定的最小上下文包结构，便于后续统一多类上下文输出
+4. 当前实现不截断，因此 `truncated = false`；后续可在 `GetFileContextService` 内扩展截断策略
 
 ## 11. 错误模型
 

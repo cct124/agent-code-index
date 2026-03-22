@@ -106,6 +106,21 @@ describe("registerAgentCodeIndexTools", () => {
           content: expect.stringContaining("export const value = 1;"),
           truncated: false,
         },
+        contextPacket: expect.objectContaining({
+          kind: "file",
+          repositoryId: "repo-a",
+          items: expect.arrayContaining([
+            expect.objectContaining({
+              type: "file_chunk",
+              filePath: "src/index.ts",
+            }),
+          ]),
+          truncation: {
+            truncated: false,
+            totalItems: 2,
+            returnedItems: 2,
+          },
+        }),
       }),
     );
 
@@ -238,6 +253,53 @@ function createTestApp(): App {
             content:
               "[chunk 1 | lines 1-1 | symbol value]\nexport const value = 1;\n\n[chunk 2 | lines 3-3 | function readValue]\nexport function readValue() { return value; }",
             truncated: false,
+          },
+          contextPacket: {
+            kind: "file",
+            repositoryId: "repo-a",
+            items: [
+              {
+                type: "file_chunk",
+                filePath: "src/index.ts",
+                language: "typescript",
+                content: "export const value = 1;",
+                startLine: 1,
+                endLine: 1,
+                metadata: {
+                  symbolName: "value",
+                },
+              },
+              {
+                type: "file_chunk",
+                filePath: "src/index.ts",
+                language: "typescript",
+                content: "export function readValue() { return value; }",
+                startLine: 3,
+                endLine: 3,
+                metadata: {
+                  symbolName: "readValue",
+                  symbolKind: "function",
+                },
+              },
+            ],
+            files: [
+              {
+                filePath: "src/index.ts",
+                language: "typescript",
+                chunkCount: 2,
+                startLine: 1,
+                endLine: 3,
+              },
+            ],
+            instructions: [
+              "Treat this packet as indexed repository context, not a live filesystem read.",
+              "Prefer assembledContext for continuous reading and items for structured inspection.",
+            ],
+            truncation: {
+              truncated: false,
+              totalItems: 2,
+              returnedItems: 2,
+            },
           },
         })),
       } as GetFileContextService,

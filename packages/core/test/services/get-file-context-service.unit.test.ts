@@ -103,6 +103,54 @@ describe("DefaultGetFileContextService", () => {
           "[chunk 1 | lines 1-1 | class ShippingService]\nexport class ShippingService {}\n\n[chunk 2 | lines 3-3 | function createShippingService]\nexport function createShippingService() {}",
         truncated: false,
       },
+      contextPacket: {
+        kind: "file",
+        repositoryId: "repo-a",
+        items: [
+          {
+            type: "file_chunk",
+            filePath: "src/shipping.ts",
+            language: "typescript",
+            startLine: 1,
+            endLine: 1,
+            content: "export class ShippingService {}",
+            metadata: {
+              symbolName: "ShippingService",
+              symbolKind: "class",
+            },
+          },
+          {
+            type: "file_chunk",
+            filePath: "src/shipping.ts",
+            language: "typescript",
+            startLine: 3,
+            endLine: 3,
+            content: "export function createShippingService() {}",
+            metadata: {
+              symbolName: "createShippingService",
+              symbolKind: "function",
+            },
+          },
+        ],
+        files: [
+          {
+            filePath: "src/shipping.ts",
+            language: "typescript",
+            chunkCount: 2,
+            startLine: 1,
+            endLine: 3,
+          },
+        ],
+        instructions: [
+          "Treat this packet as indexed repository context, not a live filesystem read.",
+          "Prefer assembledContext for continuous reading and items for structured inspection.",
+        ],
+        truncation: {
+          truncated: false,
+          totalItems: 2,
+          returnedItems: 2,
+        },
+      },
     });
     expect(logger.info).toHaveBeenCalledWith(
       "Get file context completed",

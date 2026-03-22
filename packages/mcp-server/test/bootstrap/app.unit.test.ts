@@ -200,6 +200,18 @@ function createTestContainer(events: string[]): AppContainer {
           content: "",
           truncated: false,
         },
+        contextPacket: {
+          kind: "file",
+          repositoryId: "repo-a",
+          items: [],
+          files: [],
+          instructions: [],
+          truncation: {
+            truncated: false,
+            totalItems: 0,
+            returnedItems: 0,
+          },
+        },
       })),
     } as GetFileContextService,
     projectMetadataRepository: {

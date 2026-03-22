@@ -228,18 +228,18 @@
 
 建议先完成：
 
-1. `get-file-context-service`
-2. 最小可用的 ContextPacket 组装逻辑
-3. 将 `search_code_context` 结果逐步升级为更稳定的上下文包输出
+1. 将 `search_code_context` 结果逐步升级为更稳定的上下文包输出
+2. 在最小 `ContextPacket` 之上继续补 richer context builder
+3. 收敛 get_file_context 与 search_code_context 的统一上下文包策略
 
 原因：
 
-1. 当前索引写入主流程、provider、存储、parser 和 5 个 MCP tools 都已经落地
+1. 当前索引写入主流程、provider、存储、parser、5 个 MCP tools 和最小 `ContextPacket` 都已经落地
 2. 项目当前最大的缺口已经收敛为“更完整的上下文包组装与检索后处理仍未对外暴露”
 
 建议交付物：
 
-1. 一个补齐更完整上下文包组装的 MCP server
+1. 一个继续补齐 richer ContextPacket 组装的 MCP server
 2. 至少 5 个已注册并可调用的工具：index repository、search、index files、delete files、get-file-context
 3. 一条从 query 到上下文包返回的最小演示链路
 

@@ -277,6 +277,7 @@ export function registerAgentCodeIndexTools(server: McpServer, app: App): void {
           chunkCount: result.chunkCount,
           chunks: result.chunks.map(toFileContextToolChunk),
           assembledContext: result.assembledContext,
+          contextPacket: result.contextPacket,
         };
 
         return {

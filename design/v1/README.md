@@ -8,7 +8,7 @@
 
 1. `core`、`infra`、`mcp-server/bootstrap` 三层结构已经落地
 2. 索引、embedding、Surreal 原生检索、`search-code-context-service` 已经落地并通过真实集成测试验证
-3. `get-file-context-service`、`ContextPacket` 组装、MCP adapters 与 tools 仍属于设计目标，尚未落地
+3. `get-file-context-service`、最小 `ContextPacket` 组装和 MCP tools 已落地；更完整的上下文组装仍属于下一阶段目标
 4. 文中凡涉及“下一步优先新增 OpenAI-compatible provider”“保留应用侧 cosine fallback”之类表述，均应以当前代码为准，不再视为最新实施状态
 
 相关专项实施文档：
@@ -236,7 +236,7 @@ agent-code-index/
 说明：
 
 1. 上述目录结构已经按当前仓库现状对齐，而不是保留最初的纯规划态草图
-2. `ContextBuilder`、`ContextPacket`、`get-file-context-service` 和 MCP adapters 仍属于计划中的下一批增量
+2. 更完整的 `ContextBuilder` 与 richer `ContextPacket` 仍属于计划中的下一批增量
 
 ## 5. 分层设计
 

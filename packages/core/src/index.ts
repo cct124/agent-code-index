@@ -2,6 +2,12 @@
  * core 包的公共导出入口。
  */
 export type { Chunk, ChunkMetadata, PreparedChunk } from "./domain/chunk.js";
+export type {
+  ContextPacket,
+  ContextPacketFile,
+  ContextPacketItem,
+  ContextPacketTruncation,
+} from "./domain/context-packet.js";
 export type { ProjectMetadata } from "./domain/project-metadata.js";
 export type { SearchResult } from "./domain/search-result.js";
 export { NOOP_LOGGER, STANDARD_LOG_FIELDS } from "./contracts/logger.js";
