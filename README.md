@@ -24,11 +24,10 @@
 
 当前仍未落地的主要能力包括：
 
-1. `get-file-context-service`
-2. `ContextPacket` 组装
-3. provider 级重试、超时、限流与统一错误码
+1. provider 级重试、超时、限流与统一错误码
+2. richer `ContextBuilder` 的下一阶段能力，例如跨文件重排与 query-aware summarization
 
-也就是说，当前最大的缺口已经不是底层索引与检索能力，而是对外暴露层和运行稳定性收口。
+也就是说，当前最大的缺口已经不是底层索引、检索或 MCP 对外暴露能力，而是运行稳定性收口和检索质量继续增强。
 
 ## 仓库结构
 

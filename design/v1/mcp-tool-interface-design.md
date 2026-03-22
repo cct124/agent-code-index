@@ -32,12 +32,12 @@
 3. `DefaultSearchCodeContextService` 已通过 `search_code_context` tool 对外暴露
 4. `IndexFilesService` 已落地，并已通过 `index_files` tool 对外暴露
 5. `DeleteFilesService` 已落地，并已通过 `delete_files` tool 对外暴露
-6. `get-file-context-service` 尚未落地
+6. `GetFileContextService` 已落地，并已通过 `get_file_context` tool 对外暴露
 
 因此，本文档中的接口分为两类：
 
-1. `index_repository` / `search_code_context` / `index_files` / `delete_files`：已实现并已通过 MCP adapter 暴露
-2. `get_file_context`：已按最小可用契约落地，后续再扩展更强的上下文包组装
+1. 五个 v1 tools 都已实现并已通过 MCP adapter 暴露
+2. `get_file_context` 已按最小可用契约落地，`search_code_context` 已进一步升级为 richer `ContextPacket` 输出
 
 ## 3. 设计原则
 

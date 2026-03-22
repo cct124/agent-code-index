@@ -22,6 +22,7 @@
 12. OpenAI-compatible 与 Voyage 两条 provider 路径都已具备本地 SurrealDB 端到端索引与检索验证
 13. `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context` 已通过 MCP tool server 对外暴露
 14. `search_code_context` 已升级为 `results + richer ContextPacket` 双轨输出，并具备相邻 chunk 合并、文件聚合和 token budget 驱动的 `max_items` 截断
+15. 以“索引、检索、文件级更新、文件上下文读取、MCP 暴露”作为 v1 功能闭环来看，当前实现已经达到可定版状态
 
 ## 2. 当前项目结构
 
@@ -176,9 +177,9 @@
 13. VoyageAI 真实 embedding 兼容性测试已通过，document/query 两类向量生成均正常
 14. Voyage + Surreal 的真实 `prepare -> real embed -> upsert -> query embed -> search` 端到端测试已补齐
 
-## 4. 当前仍未完成内容
+## 4. 当前未纳入 v1 定版阻塞的增强项
 
-以下能力仍未真正落地：
+以下能力仍值得继续做，但当前判断不属于 v1 定版阻塞项：
 
 1. 更多语言的 tree-sitter 语义解析支持，例如 Go / Java / Rust
 2. 原生向量检索路径的进一步调优，例如更复杂过滤组合验证、`EF` 参数调优与候选窗口默认值调优
@@ -225,11 +226,45 @@
 2. 真正进入存储与检索主链路的 chunk 必须具备 embedding
 3. 解析阶段与检索阶段使用不同类型，能够避免长期保持领域语义模糊
 
-## 6. 下一步开发建议
+## 6. v1 定版判断与后续建议
+
+### 6.1 是否可以定版 v1
+
+当前结论：可以定版 v1。
+
+判断依据：
+
+1. 核心主链路已经闭环：扫描、切块、embedding、存储、检索、MCP tool 暴露都已落地
+2. v1 对外最重要的 5 个 tools 已实现并可调用：`index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context`
+3. `search_code_context` 与 `get_file_context` 已形成统一的 `ContextPacket` 出口，不再只是临时返回结构
+4. `voyage` 与 `openai-compatible` 两条 provider 路径都已具备真实环境验证
+5. SurrealDB `3.0.4` 下的 native HNSW 检索已经成为单一路径，并通过真实测试回归
+6. 当前全量 `typecheck` 已通过，最近一次全量 unit tests 也已通过
+
+因此，如果 v1 的目标是“功能完整、架构稳定、可本地接入 MCP 的第一版”，当前已经满足。
+
+但如果目标是“生产级 v1”，仍建议在发布标签前至少补一轮 provider 稳定性和错误模型收口。
+
+### 6.2 后续建议
 
 建议按以下顺序继续推进。
 
-### 6.1 第一优先级：实现 MCP tool 层与上下文服务
+### 6.2 第一优先级：provider 稳定性与工程化收口
+
+如果已经定版 v1，下一阶段更建议转入 v1.1，而不是继续扩大 v1 范围。
+
+建议内容：
+
+1. provider 重试、超时和限流策略验证
+2. provider 级错误分类与日志字段统一
+3. `.env.development.*` 使用说明与本地测试手册
+
+原因：
+
+1. 当前底层索引、检索与两条 provider 路径都已闭环，最大的次级风险已经从“能力缺失”转成“运行稳定性不足”
+2. 这类问题会直接影响 v1 的可运维性，但不要求继续扩张 v1 的功能边界
+
+### 6.3 第二优先级：增强检索质量与上下文后处理
 
 建议先完成：
 
@@ -244,24 +279,10 @@
 
 建议交付物：
 
-1. 一个继续补齐 richer ContextPacket 组装的 MCP server
-2. 至少 5 个已注册并可调用的工具：index repository、search、index files、delete files、get-file-context
-3. 一条从 query 到上下文包返回的最小演示链路
+1. 一版跨文件重排或 query-aware summarization 策略
+2. 一组更稳定的 ContextPacket 主输出契约约束
 
-### 6.2 第二优先级：provider 稳定性与工程化收口
-
-建议内容：
-
-1. provider 重试、超时和限流策略验证
-2. provider 级错误分类与日志字段统一
-3. `.env.development.*` 使用说明与本地测试手册
-
-原因：
-
-1. 当前底层索引、检索与两条 provider 路径都已闭环，最大的次级风险已经从“能力缺失”转成“运行稳定性不足”
-2. 如果 provider 侧没有重试、超时和一致化错误诊断，后续即使 MCP tool 暴露出去，也缺乏生产可用性
-
-### 6.3 第三优先级：增强检索质量与 native 路径调优
+### 6.4 第三优先级：增强检索质量与 native 路径调优
 
 建议内容：
 
@@ -274,7 +295,7 @@
 1. 一组基于真实数据分布的候选窗口与 `EF` 调优结论
 2. 至少一版轻量去重或重排策略验证
 
-### 6.4 第四优先级：扩展更多语言 parser 与 metadata 深度
+### 6.5 第四优先级：扩展更多语言 parser 与 metadata 深度
 
 建议内容：
 
@@ -302,7 +323,7 @@
 
 当前最合理的开发重点是：
 
-1. 先把剩余的上下文包组装与检索后处理补齐
-2. 再优先补齐 provider 稳定性、错误分类与本地测试手册
-3. 然后增强检索排序、过滤能力与 native 参数调优
+1. 以当前实现定版 v1
+2. 后续按 v1.1 优先补齐 provider 稳定性、错误分类与本地测试手册
+3. 然后增强上下文后处理、检索排序、过滤能力与 native 参数调优
 4. 最后扩展更多语言 parser 与 metadata 深度

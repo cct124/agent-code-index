@@ -151,18 +151,16 @@ agent-code-index/
           chunk.ts
           project-metadata.ts
           search-result.ts
+          context-packet.ts
 
         services/
           index-repository-service.ts
           search-code-context-service.ts
+          get-file-context-service.ts
+          context-builder.ts
 
       test/
         services/
-
-      未来可新增：
-        contracts/context-builder.ts
-        domain/context-packet.ts
-        services/get-file-context-service.ts
 
     infra/
       package.json
@@ -618,13 +616,14 @@ v1 建议采用分阶段策略：
 
 该服务面向“按文件取上下文”的场景。
 
-当前状态：该服务尚未落地，仍是设计目标。
+当前状态：该服务已在 `core` 落地，并已通过 `get_file_context` MCP tool 对外暴露。
 
 推荐流程：
 
 1. 根据 `repositoryId + filePath` 查询 chunk
 2. 重新按行号排序与合并
 3. 输出适合 Agent 阅读的文件上下文包
+4. 当前实现同时返回结构化 `chunks`、连续 `assembledContext` 与统一 `ContextPacket`
 
 典型用途：
 
@@ -1278,10 +1277,10 @@ RepositoryId + FilePath
 5. OpenAI-compatible 与 Voyage provider 的真实 embedding 集成测试
 6. `prepare -> embed -> upsert -> search` 的真实 SurrealDB 端到端测试
 
-当前尚未覆盖但后续应补齐：
+当前已覆盖或已落地：
 
-1. `context-builder` 的截断与聚合测试
-2. `get-file-context-service` 与 MCP tool 层测试
+1. `context-builder` 的截断与聚合测试已补齐
+2. `get-file-context-service` 与 MCP tool 层测试已补齐
 
 ### 13.3 配置与环境变量
 

@@ -5,7 +5,7 @@
 1. [里程碑](./milestones.md)：记录阶段性完成事项，适合回顾“已经完成了什么”
 2. [当前进度](./current-progress.md)：记录当前可运行能力、剩余缺口、风险和下一步建议
 
-截至 2026-03-21，仓库的最新状态是：
+截至 2026-03-22，仓库的最新状态是：
 
 1. v1 架构设计、三包 workspace 骨架、配置模型和项目元数据锁定已经完成
 2. `project_metadata` 启动链路、真实 SurrealDB 验证、chunk/search 存储与检索已经完成
@@ -14,7 +14,8 @@
 5. TypeScript、JavaScript、Python 的 tree-sitter 语义切块与 Markdown 结构化章节切块已经完成
 6. Surreal 原生 HNSW 检索、`3.0.4` 开发基线验证、候选窗口参数配置化与 `EXPLAIN FULL` 真实验证已经完成
 7. VoyageAI 真实 embedding 兼容性验证，以及 OpenAI-compatible / Voyage + Surreal 的真实端到端索引验证已经完成
-8. 当前最大的缺口已转为 MCP tool 层、上下文组装服务与 provider 稳定性，而不是底层解析和索引能力
+8. 当前 5 个 MCP tools 与 search/file 双 `ContextPacket` 已经落地，功能性 v1 可以定版
+9. 后续更适合作为 v1.1 继续增强 provider 稳定性、上下文后处理和检索质量
 
 建议阅读顺序：
 

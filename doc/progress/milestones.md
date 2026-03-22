@@ -304,8 +304,15 @@
 14. VoyageAI 真实 embedding 兼容性验证已落地
 15. 真实 embedding provider 与 Surreal 端到端索引闭环验证已落地
 16. MCP tool server 与文件级增量索引能力已落地
+17. 以当前范围定义的 v1 功能闭环已完成，可进入定版状态
 
-下一阶段不再是补工程骨架，而是先将现有检索能力收敛为正式 use case：
+这意味着：
 
-1. 将 richer 上下文包能力通过 MCP tool 与上下文服务对外暴露
-2. 再增强 provider 稳定性、排序、更复杂过滤组合验证与候选窗口调优
+1. v1 不再缺少必须补齐的核心功能
+2. 后续工作更适合作为 v1.1 的质量增强与能力扩展
+
+下一阶段建议不再继续扩大 v1 范围，而是转入 v1.1：
+
+1. 优先增强 provider 稳定性、错误分类和本地测试手册
+2. 再继续做 richer ContextBuilder 的跨文件重排、query-aware summarization 和更复杂的检索后处理
+3. 最后继续做更复杂过滤组合验证、候选窗口调优与更多语言 parser 扩展

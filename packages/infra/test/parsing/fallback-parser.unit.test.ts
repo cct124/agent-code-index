@@ -29,7 +29,7 @@ describe("FallbackParser", () => {
         language: "typescript",
         startLine: 1,
         endLine: 3,
-        searchText: "export function alpha() { return 1; }",
+        searchText: "typescript export function alpha() { return 1; }",
       }),
       expect.objectContaining({
         id: "src/example.ts:3-5",
@@ -38,7 +38,7 @@ describe("FallbackParser", () => {
         language: "typescript",
         startLine: 3,
         endLine: 5,
-        searchText: "} export function beta() { return 2;",
+        searchText: "typescript } export function beta() { return 2;",
       }),
     ]);
     expect(chunks[0]?.hash).toMatch(/^[a-f0-9]{40}$/);
