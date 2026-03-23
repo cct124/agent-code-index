@@ -1,6 +1,10 @@
 /**
  * app.ts 的单元测试。
  */
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
@@ -37,7 +41,11 @@ vi.mock("../../src/bootstrap/container.js", () => ({
 
 import { createApp } from "../../src/bootstrap/app.js";
 
+const temporaryDirectories: string[] = [];
+
 function createConfig(): AppConfig {
+  const repositoryRoot = createRepositoryRoot();
+
   return {
     projectSpace: "demo-project",
     surreal: {
@@ -61,13 +69,13 @@ function createConfig(): AppConfig {
       defaultEmbeddingConcurrency: 4,
       ignorePatterns: ["node_modules", ".git"],
       includePatterns: [".env.example", ".logs/runtime.log"],
-      gitignorePath: "/workspace/repo-a/.gitignore",
+      gitignorePath: join(repositoryRoot, ".gitignore"),
       nativeCandidateMultiplier: 20,
       nativeEfSearchMin: 100,
     },
     mcp: {
       defaultRepositoryId: "repo-a",
-      repositoryRoot: "/workspace/repo-a",
+      repositoryRoot,
     },
     logging: {
       level: "info",
@@ -76,6 +84,17 @@ function createConfig(): AppConfig {
       filePretty: false,
     },
   };
+}
+
+function createRepositoryRoot(): string {
+  const directory = mkdtempSync(join(tmpdir(), "agent-code-index-app-"));
+  temporaryDirectories.push(directory);
+  writeFileSync(
+    join(directory, ".gitignore"),
+    [".venv/", "*.log", "!.env.example"].join("\n"),
+    "utf8",
+  );
+  return directory;
 }
 
 function createMetadata(
@@ -296,6 +315,9 @@ describe("createApp", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.clearAllMocks();
+    for (const directory of temporaryDirectories.splice(0)) {
+      rmSync(directory, { recursive: true, force: true });
+    }
   });
 
   it("initializes project metadata when none exists", async () => {
@@ -359,11 +381,15 @@ describe("createApp", () => {
         defaultEmbeddingConcurrency: 4,
         ignorePatterns: ["node_modules", ".git"],
         includePatterns: [".env.example", ".logs/runtime.log"],
-        gitignorePath: "/workspace/repo-a/.gitignore",
+        gitignorePath: join(container.config.mcp.repositoryRoot!, ".gitignore"),
+        resolvedGitignorePath: join(
+          container.config.mcp.repositoryRoot!,
+          ".gitignore",
+        ),
         nativeCandidateMultiplier: 20,
         nativeEfSearchMin: 100,
         defaultRepositoryId: "repo-a",
-        repositoryRoot: "/workspace/repo-a",
+        repositoryRoot: container.config.mcp.repositoryRoot,
       }),
     );
   });

@@ -3,7 +3,11 @@
  */
 import type { LogFields, ProjectMetadata } from "@agent-code-index/core";
 
-import { createContainer, type AppContainer } from "./container.js";
+import {
+  createContainer,
+  resolveScanGitignorePath,
+  type AppContainer,
+} from "./container.js";
 import { loadConfig, type AppConfig } from "./config.js";
 
 /**
@@ -63,6 +67,8 @@ export async function createApp(): Promise<App> {
 }
 
 function buildStartupSummary(config: AppConfig): LogFields {
+  const resolvedGitignorePath = resolveScanGitignorePath(config);
+
   return {
     provider: config.embedding.provider,
     embeddingModel: config.embedding.model,
@@ -77,6 +83,7 @@ function buildStartupSummary(config: AppConfig): LogFields {
     ignorePatterns: config.indexing.ignorePatterns,
     includePatterns: config.indexing.includePatterns,
     gitignorePath: config.indexing.gitignorePath,
+    resolvedGitignorePath,
     nativeCandidateMultiplier: config.indexing.nativeCandidateMultiplier,
     nativeEfSearchMin: config.indexing.nativeEfSearchMin,
     defaultRepositoryId: config.mcp.defaultRepositoryId,
