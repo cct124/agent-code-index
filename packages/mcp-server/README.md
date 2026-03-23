@@ -341,16 +341,17 @@ src/
 3. 它不会改变 `core` 层 use case 仍要求显式 `repositoryId` / `rootPath` 的事实；adapter 只是做默认值解析
 4. 如果未来一个 server 要服务多个仓库，仍建议在每次 tool 调用时显式传入 `repositoryId`
 5. `rootPath` 的解析优先级应为：tool 输入值 > `MCP_REPOSITORY_ROOT` > 校验错误
-6. `embeddingBatchSize` 的解析优先级应为：tool 输入值 > `DEFAULT_EMBEDDING_BATCH_SIZE` > core 默认值
-7. `embeddingConcurrency` 的解析优先级应为：tool 输入值 > `DEFAULT_EMBEDDING_CONCURRENCY` > core 默认值
-8. `LOG_FILE_PATH` 若配置，则当前 server 会额外把日志写入本地文件，默认写结构化 JSON
-9. `LOG_FILE_PRETTY=true` 时，文件日志会改为 pretty 文本格式，便于本地人工阅读
-10. `DEFAULT_SCAN_INCLUDE_PATTERNS` 用于补充扫描阶段的白名单规则，采用逗号分隔；一旦命中，会覆盖 `DEFAULT_SCAN_IGNORE_PATTERNS` 与 `.gitignore` 的排除结果
-11. `DEFAULT_SCAN_GITIGNORE_PATH` 若配置，则会读取该绝对路径指向的根 `.gitignore`，并将其中的排除规则并入扫描忽略集合
-12. 如果未配置 `DEFAULT_SCAN_GITIGNORE_PATH`，但配置了 `MCP_REPOSITORY_ROOT`，则启动时会自动尝试读取 `MCP_REPOSITORY_ROOT/.gitignore`
-13. 如果自动推导出的 `.gitignore` 文件不存在，则扫描器会忽略该步骤，不会导致启动失败
-14. 如果没有配置 `MCP_DEFAULT_REPOSITORY_ID`，且调用 MCP tool 时也没有传 `repositoryId`，adapter 应直接返回校验错误，而不是猜测仓库身份
-15. 如果没有配置 `MCP_REPOSITORY_ROOT`，且调用 `index_repository` / `index_files` 时也没有传 `rootPath`，adapter 应直接返回校验错误，而不是依赖工作目录推断仓库根目录
+6. 如果配置了 `MCP_REPOSITORY_ROOT`，它必须是一个已存在的绝对目录；否则 server 会在启动阶段直接失败，避免把错配拖到首次索引请求时才暴露
+7. `embeddingBatchSize` 的解析优先级应为：tool 输入值 > `DEFAULT_EMBEDDING_BATCH_SIZE` > core 默认值
+8. `embeddingConcurrency` 的解析优先级应为：tool 输入值 > `DEFAULT_EMBEDDING_CONCURRENCY` > core 默认值
+9. `LOG_FILE_PATH` 若配置，则当前 server 会额外把日志写入本地文件，默认写结构化 JSON
+10. `LOG_FILE_PRETTY=true` 时，文件日志会改为 pretty 文本格式，便于本地人工阅读
+11. `DEFAULT_SCAN_INCLUDE_PATTERNS` 用于补充扫描阶段的白名单规则，采用逗号分隔；一旦命中，会覆盖 `DEFAULT_SCAN_IGNORE_PATTERNS` 与 `.gitignore` 的排除结果
+12. `DEFAULT_SCAN_GITIGNORE_PATH` 若配置，则会读取该绝对路径指向的根 `.gitignore`，并将其中的排除规则并入扫描忽略集合
+13. 如果未配置 `DEFAULT_SCAN_GITIGNORE_PATH`，但配置了 `MCP_REPOSITORY_ROOT`，则启动时会自动尝试读取 `MCP_REPOSITORY_ROOT/.gitignore`
+14. 如果自动推导出的 `.gitignore` 文件不存在，则扫描器会忽略该步骤，不会导致启动失败
+15. 如果没有配置 `MCP_DEFAULT_REPOSITORY_ID`，且调用 MCP tool 时也没有传 `repositoryId`，adapter 应直接返回校验错误，而不是猜测仓库身份
+16. 如果没有配置 `MCP_REPOSITORY_ROOT`，且调用 `index_repository` / `index_files` 时也没有传 `rootPath`，adapter 应直接返回校验错误，而不是依赖工作目录推断仓库根目录
 
 ### 推荐的 mcp.json 形态
 
@@ -614,6 +615,7 @@ corepack yarn mcp:dev
 7. `index_repository` 可以在不显式传 `repositoryId` / `rootPath` 的情况下运行
 8. `get_file_context` 可以在不显式传 `repositoryId` 的情况下返回目标文件的已索引上下文
 9. 如果漏配 `MCP_DEFAULT_REPOSITORY_ID` 或 `MCP_REPOSITORY_ROOT`，server 会返回明确的校验错误，而不是猜测默认值
+10. 如果 `MCP_REPOSITORY_ROOT` 指向不存在的目录，server 会在启动阶段直接失败，而不是带着错误配置继续启动
 
 ## 当前边界
 

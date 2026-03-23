@@ -30,7 +30,7 @@ const publishedManifest = {
   main: "./index.js",
   files: ["index.js", "cli.js", "README.md", "LICENSE"],
   bin: {
-    "agent-code-index-mcp": "./cli.js",
+    "agent-code-index-mcp": "cli.js",
   },
   exports: {
     ".": {

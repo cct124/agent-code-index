@@ -1,9 +1,15 @@
 /**
  * config.ts 的单元测试。
  */
-import { describe, expect, it } from "vitest";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import { afterEach, describe, expect, it } from "vitest";
 
 import { loadConfig } from "../../src/bootstrap/config.js";
+
+const temporaryDirectories: string[] = [];
 
 function createBaseEnv(): Record<string, string> {
   return {
@@ -30,7 +36,19 @@ function createBaseEnv(): Record<string, string> {
   };
 }
 
+function createExistingDirectory(): string {
+  const directory = mkdtempSync(join(tmpdir(), "agent-code-index-config-"));
+  temporaryDirectories.push(directory);
+  return directory;
+}
+
 describe("loadConfig", () => {
+  afterEach(() => {
+    for (const directory of temporaryDirectories.splice(0)) {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   it("loads valid openai-compatible embedding config", () => {
     const config = loadConfig({
       ...createBaseEnv(),
@@ -47,11 +65,13 @@ describe("loadConfig", () => {
   });
 
   it("loads valid config and derives namespace from project space", () => {
+    const repositoryRoot = createExistingDirectory();
+
     const config = loadConfig({
       ...createBaseEnv(),
       PROJECT_SPACE: "Demo-Project",
       MCP_DEFAULT_REPOSITORY_ID: "repo-a",
-      MCP_REPOSITORY_ROOT: "/workspace/repo-a",
+      MCP_REPOSITORY_ROOT: repositoryRoot,
     });
 
     expect(config.projectSpace).toBe("demo-project");
@@ -73,7 +93,7 @@ describe("loadConfig", () => {
     expect(config.indexing.nativeCandidateMultiplier).toBe(20);
     expect(config.indexing.nativeEfSearchMin).toBe(100);
     expect(config.mcp.defaultRepositoryId).toBe("repo-a");
-    expect(config.mcp.repositoryRoot).toBe("/workspace/repo-a");
+    expect(config.mcp.repositoryRoot).toBe(repositoryRoot);
     expect(config.logging).toEqual({
       level: "info",
       pretty: true,
@@ -87,6 +107,24 @@ describe("loadConfig", () => {
 
     expect(config.mcp.defaultRepositoryId).toBeUndefined();
     expect(config.mcp.repositoryRoot).toBeUndefined();
+  });
+
+  it("fails when MCP_REPOSITORY_ROOT is not absolute", () => {
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        MCP_REPOSITORY_ROOT: "workspace/repo-a",
+      }),
+    ).toThrow(/MCP_REPOSITORY_ROOT/);
+  });
+
+  it("fails when MCP_REPOSITORY_ROOT points to a missing path", () => {
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        MCP_REPOSITORY_ROOT: "/definitely/missing/repo-root",
+      }),
+    ).toThrow(/MCP_REPOSITORY_ROOT/);
   });
 
   it("loads native search tuning configuration", () => {

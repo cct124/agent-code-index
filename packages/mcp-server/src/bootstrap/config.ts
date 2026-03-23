@@ -1,6 +1,8 @@
 /**
  * 运行时配置模型与环境变量加载逻辑。
  */
+import { statSync } from "node:fs";
+
 /**
  * SurrealDB 的部署模式。
  */
@@ -197,7 +199,7 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
     },
     mcp: {
       defaultRepositoryId: optionalEnv(env, "MCP_DEFAULT_REPOSITORY_ID"),
-      repositoryRoot: optionalEnv(env, "MCP_REPOSITORY_ROOT"),
+      repositoryRoot: repositoryRootEnv(env, "MCP_REPOSITORY_ROOT"),
     },
     logging: {
       level: logLevelEnv(env, "LOG_LEVEL", "info"),
@@ -241,6 +243,35 @@ function absolutePathEnv(env: EnvMap, key: string): string | undefined {
 
   if (!value.startsWith("/")) {
     throw new Error(`Environment variable ${key} must be an absolute path`);
+  }
+
+  return value;
+}
+
+/**
+ * 读取并校验仓库根目录环境变量。
+ */
+function repositoryRootEnv(env: EnvMap, key: string): string | undefined {
+  const value = absolutePathEnv(env, key);
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  let stats;
+
+  try {
+    stats = statSync(value);
+  } catch {
+    throw new Error(
+      `Environment variable ${key} points to a missing path: ${value}`,
+    );
+  }
+
+  if (!stats.isDirectory()) {
+    throw new Error(
+      `Environment variable ${key} must point to a directory: ${value}`,
+    );
   }
 
   return value;
