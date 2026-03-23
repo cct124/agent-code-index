@@ -208,6 +208,7 @@ export function registerAgentCodeIndexTools(server: McpServer, app: App): void {
         const structuredContent = {
           repositoryId,
           requestedFileCount: result.requestedFileCount,
+          skippedFileCount: result.skippedFileCount,
           indexedFileCount: result.indexedFileCount,
           deletedChunkCount: result.deletedChunkCount,
           preparedChunkCount: result.preparedChunkCount,
@@ -219,7 +220,7 @@ export function registerAgentCodeIndexTools(server: McpServer, app: App): void {
 
         return {
           content: createTextContent(
-            `Indexed ${result.indexedFileCount}/${result.requestedFileCount} files for ${repositoryId}: stored ${result.storedChunkCount} chunks, failed ${result.failedFileCount} files.`,
+            `Indexed ${result.indexedFileCount}/${result.requestedFileCount} files for ${repositoryId}: skipped ${result.skippedFileCount} files, stored ${result.storedChunkCount} chunks, failed ${result.failedFileCount} files.`,
           ),
           structuredContent,
         };

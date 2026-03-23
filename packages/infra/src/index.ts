@@ -30,6 +30,7 @@ export {
   DEFAULT_SCAN_IGNORE_PATTERNS,
   LocalFileScanner,
 } from "./scanning/local-file-scanner.js";
+export { ScanPathPolicy } from "./scanning/scan-path-policy.js";
 export { SurrealChunkRepository } from "./storage/surreal/surreal-chunk-repository.js";
 export { SurrealChunkSchema } from "./storage/surreal/surreal-chunk-schema.js";
 export { SurrealProjectMetadataRepository } from "./storage/surreal/surreal-project-metadata-repository.js";

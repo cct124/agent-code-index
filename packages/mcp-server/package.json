@@ -1,6 +1,6 @@
 {
   "name": "@agent-code-index/mcp-server",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "description": "MCP server for indexing repositories and retrieving code context with SurrealDB-backed semantic search.",
   "type": "module",

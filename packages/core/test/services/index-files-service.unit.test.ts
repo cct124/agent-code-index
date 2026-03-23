@@ -108,6 +108,7 @@ describe("DefaultIndexFilesService", () => {
     ]);
     expect(result).toEqual({
       requestedFileCount: 3,
+      skippedFileCount: 0,
       indexedFileCount: 2,
       deletedChunkCount: 2,
       preparedChunkCount: 1,
@@ -157,6 +158,7 @@ describe("DefaultIndexFilesService", () => {
     expect(chunkRepository.upsertMany).not.toHaveBeenCalled();
     expect(result.failedFileCount).toBe(1);
     expect(result.indexedFileCount).toBe(0);
+    expect(result.skippedFileCount).toBe(0);
   });
 
   it("runs file embedding batches concurrently when embeddingConcurrency is set", async () => {

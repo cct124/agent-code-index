@@ -1,5 +1,11 @@
 # @agent-code-index/mcp-server
 
+## 0.1.6
+
+### Patch Changes
+
+- Expose `skippedFileCount` in `index_files` responses so callers can see when explicitly requested files were skipped by ignore rules, `.gitignore`, binary detection, or empty chunk results.
+
 ## 0.1.5
 
 ### Patch Changes

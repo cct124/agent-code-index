@@ -347,7 +347,7 @@ src/
 9. `LOG_FILE_PATH` 若配置，则当前 server 会额外把日志写入本地文件，默认写结构化 JSON
 10. `LOG_FILE_PRETTY=true` 时，文件日志会改为 pretty 文本格式，便于本地人工阅读
 11. `DEFAULT_SCAN_IGNORE_PATTERNS` 用于在内置默认排除列表之后追加自定义规则；内置列表始终包含 `node_modules`、`.git`、`dist`、`build`、`.next`、`.yarn` 与 `*.tsbuildinfo`
-12. `DEFAULT_SCAN_INCLUDE_PATTERNS` 用于补充扫描阶段的白名单规则，采用逗号分隔；一旦命中，会覆盖 `DEFAULT_SCAN_IGNORE_PATTERNS` 与 `.gitignore` 的排除结果
+12. `DEFAULT_SCAN_INCLUDE_PATTERNS` 用于补充扫描阶段的白名单规则，采用逗号分隔；一旦命中，会覆盖 `DEFAULT_SCAN_IGNORE_PATTERNS` 与 `.gitignore` 的排除结果；该规则同时作用于 `index_repository` 与 `index_files`
 13. `DEFAULT_SCAN_GITIGNORE_PATH` 若配置，则会读取该绝对路径指向的根 `.gitignore`，并将其中的排除规则并入扫描忽略集合
 14. 如果未配置 `DEFAULT_SCAN_GITIGNORE_PATH`，但配置了 `MCP_REPOSITORY_ROOT`，则启动时会自动尝试读取 `MCP_REPOSITORY_ROOT/.gitignore`
 15. 如果自动推导出的 `.gitignore` 文件不存在，则扫描器会忽略该步骤，不会导致启动失败
@@ -443,9 +443,10 @@ src/
 ### 当前限制
 
 1. 当前已实现的 tools 包括 `index_repository`、`search_code_context`、`index_files`、`delete_files`、`get_file_context`
-2. `search_code_context` 已具备 richer `ContextBuilder`、相邻 chunk 合并和 token budget 驱动的 `max_items` 截断，但跨文件重排与更复杂的 query-aware summarization 仍未落地
-3. 当前更适合每个项目起一个独立 server 进程，而不是共享一个进程做多项目动态路由
-4. `mcp.json` 中不建议直接提交明文 API key、token 或数据库密码
+2. `index_files` 的返回结果会显式带出 `skippedFileCount`，用于提示哪些显式传入文件因 ignore 规则、`.gitignore`、二进制内容或空 chunk 而未被重建
+3. `search_code_context` 已具备 richer `ContextBuilder`、相邻 chunk 合并和 token budget 驱动的 `max_items` 截断，但跨文件重排与更复杂的 query-aware summarization 仍未落地
+4. 当前更适合每个项目起一个独立 server 进程，而不是共享一个进程做多项目动态路由
+5. `mcp.json` 中不建议直接提交明文 API key、token 或数据库密码
 
 ## 本地启动与最小接入示例
 

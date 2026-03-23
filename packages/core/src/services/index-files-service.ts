@@ -75,6 +75,8 @@ export interface IndexFilesInput {
 export interface IndexFilesResult {
   /** 请求处理的文件总数。 */
   requestedFileCount: number;
+  /** 被规则或内容判定跳过的文件数。 */
+  skippedFileCount: number;
   /** 成功完成覆盖式重建的文件数。 */
   indexedFileCount: number;
   /** 删除旧 chunk 的数量。 */
@@ -179,6 +181,7 @@ export class DefaultIndexFilesService implements IndexFilesService {
 
       const result = {
         requestedFileCount: prepared.requestedFileCount,
+        skippedFileCount: prepared.skippedFileCount,
         indexedFileCount: prepared.files.length,
         deletedChunkCount,
         preparedChunkCount: preparedChunks.length,
@@ -190,7 +193,6 @@ export class DefaultIndexFilesService implements IndexFilesService {
 
       logger.info("File indexing completed", {
         ...result,
-        skippedFileCount: prepared.skippedFileCount,
         durationMs: Date.now() - startedAt,
       });
 

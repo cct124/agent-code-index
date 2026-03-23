@@ -10,6 +10,10 @@ import type {
 import { NOOP_LOGGER } from "@agent-code-index/core";
 
 import { ParserFactory } from "../parsing/parser-factory.js";
+import {
+  DEFAULT_SCAN_IGNORE_PATTERNS,
+  ScanPathPolicy,
+} from "../scanning/scan-path-policy.js";
 
 /**
  * 基于文件列表的 chunk 准备服务。
@@ -19,10 +23,16 @@ import { ParserFactory } from "../parsing/parser-factory.js";
 export class RepositoryFileChunkPreparationService implements FileChunkPreparationServiceContract {
   private readonly parserFactory: ParserFactory;
   private readonly logger: Logger;
+  private readonly ignorePatterns: string[];
+  private readonly includePatterns: string[];
+  private readonly gitignorePath?: string;
 
   public constructor(
     parserFactory: ParserFactory,
     logger: Logger = NOOP_LOGGER,
+    ignorePatterns = DEFAULT_SCAN_IGNORE_PATTERNS,
+    gitignorePath?: string,
+    includePatterns: string[] = [],
   ) {
     this.parserFactory = parserFactory;
     this.logger = logger.child({
@@ -30,6 +40,9 @@ export class RepositoryFileChunkPreparationService implements FileChunkPreparati
       module: "repository-file-chunk-preparation-service",
       component: "RepositoryFileChunkPreparationService",
     });
+    this.ignorePatterns = ignorePatterns;
+    this.gitignorePath = gitignorePath;
+    this.includePatterns = includePatterns;
   }
 
   public async prepareFiles(
@@ -44,10 +57,24 @@ export class RepositoryFileChunkPreparationService implements FileChunkPreparati
     const files: PrepareFilesResult["files"] = [];
     const failedFiles: PrepareFilesResult["failedFiles"] = [];
     let skippedFileCount = 0;
+    const pathPolicy = await ScanPathPolicy.create(
+      this.ignorePatterns,
+      this.gitignorePath,
+      this.includePatterns,
+    );
 
     for (const relativePath of dedupeFilePaths(input.filePaths)) {
       try {
         const normalizedPath = normalizeRelativePath(relativePath);
+
+        if (pathPolicy.isIgnored(normalizedPath)) {
+          skippedFileCount += 1;
+          logger.info("Skipping file preparation because path is ignored", {
+            filePath: normalizedPath,
+          });
+          continue;
+        }
+
         const absolutePath = path.resolve(input.rootPath, normalizedPath);
         const content = await readFile(absolutePath, "utf8");
 

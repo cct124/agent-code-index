@@ -65,7 +65,18 @@ describe("registerAgentCodeIndexTools", () => {
       expect.objectContaining({
         repositoryId: "repo-a",
         requestedFileCount: 2,
+        skippedFileCount: 1,
         indexedFileCount: 2,
+      }),
+    );
+    const indexFilesContent = indexFilesResult.content as Array<{
+      type: string;
+      text?: string;
+    }>;
+    expect(indexFilesContent[0]).toEqual(
+      expect.objectContaining({
+        type: "text",
+        text: expect.stringContaining("skipped 1 files"),
       }),
     );
 
@@ -320,6 +331,7 @@ function createTestApp(): App {
       indexFilesService: {
         execute: vi.fn(async () => ({
           requestedFileCount: 2,
+          skippedFileCount: 1,
           indexedFileCount: 2,
           deletedChunkCount: 5,
           preparedChunkCount: 7,

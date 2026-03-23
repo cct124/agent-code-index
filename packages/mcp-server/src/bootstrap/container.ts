@@ -125,6 +125,9 @@ export function createContainer(config: AppConfig): AppContainer {
   const fileChunkPreparationService = new RepositoryFileChunkPreparationService(
     new ParserFactory({}, logger.child({ module: "parsing" })),
     logger.child({ module: "file-chunk-preparation" }),
+    config.indexing.ignorePatterns,
+    resolveScanGitignorePath(config),
+    config.indexing.includePatterns,
   );
   const indexRepositoryService = new DefaultIndexRepositoryService(
     chunkPreparationService,
