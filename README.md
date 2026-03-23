@@ -79,6 +79,10 @@ doc/
 根目录可直接执行：
 
 ```bash
+yarn changeset
+yarn changeset:status
+yarn version:packages
+yarn release:prepare
 yarn build
 yarn typecheck
 yarn test
@@ -94,6 +98,8 @@ yarn format
 建议从仓库根目录按以下顺序执行发布流程：
 
 ```bash
+yarn changeset
+yarn version:packages
 yarn workspace @agent-code-index/mcp-server build:package
 yarn workspace @agent-code-index/mcp-server check:release
 cd packages/mcp-server/package-dist
@@ -102,9 +108,11 @@ npm publish --access public
 
 这套流程的含义是：
 
-1. `build:package` 生成真正用于发布的 `package-dist/` 目录
-2. `check:release` 校验源码版本、发布产物版本和 dry-run 打包结果
-3. 最终只从 `packages/mcp-server/package-dist` 发布，而不是直接从 workspace 源码目录发布
+1. `changeset` 记录这次准备发布的包和变更说明
+2. `version:packages` 应用版本变更，并同步 `packages/mcp-server/src/server.ts` 中的版本常量
+3. `build:package` 生成真正用于发布的 `package-dist/` 目录
+4. `check:release` 校验源码版本、发布产物版本和 dry-run 打包结果
+5. 最终只从 `packages/mcp-server/package-dist` 发布，而不是直接从 workspace 源码目录发布
 
 如果你关心发布细节、发布前检查项或 npm 运行方式，优先看 [packages/mcp-server/README.md](packages/mcp-server/README.md)。
 

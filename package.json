@@ -9,17 +9,22 @@
   ],
   "scripts": {
     "build": "tsc -b tsconfig.json",
+    "changeset": "changeset",
+    "changeset:status": "changeset status --verbose",
     "mcp:dev": "tsx --conditions=development ./packages/mcp-server/src/index.ts",
     "quality:run": "tsx ./test/quality/run-retrieval-quality.ts",
     "quality:compare": "tsx ./test/quality/compare-retrieval-quality.ts",
+    "release:prepare": "yarn version:packages && yarn workspace @agent-code-index/mcp-server build:package && yarn workspace @agent-code-index/mcp-server check:release",
     "test": "vitest run --config vitest.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:unit": "vitest run --config vitest.unit.config.ts",
     "typecheck": "tsc -b tsconfig.json --force",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "version:packages": "changeset version && node ./scripts/sync-release-versions.mjs"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.30.0",
     "@types/node": "^22.13.11",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
