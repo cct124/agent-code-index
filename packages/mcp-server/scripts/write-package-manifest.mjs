@@ -28,6 +28,7 @@ const publishedManifest = {
   type: mcpPackage.type,
   private: false,
   main: "./index.js",
+  files: ["index.js", "cli.js", "README.md", "LICENSE"],
   bin: {
     "agent-code-index-mcp": "./cli.js",
   },
