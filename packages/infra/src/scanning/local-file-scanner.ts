@@ -6,7 +6,7 @@ import type { FileScanner } from "@agent-code-index/core";
 /**
  * 扫描仓库时默认忽略的目录名称。
  */
-const DEFAULT_IGNORE_PATTERNS = [
+export const DEFAULT_SCAN_IGNORE_PATTERNS = [
   "node_modules",
   ".git",
   "dist",
@@ -35,7 +35,7 @@ export class LocalFileScanner implements FileScanner {
    * @param ignorePatterns 扫描过程中需要跳过的目录名称或路径前缀。
    */
   public constructor(
-    ignorePatterns = DEFAULT_IGNORE_PATTERNS,
+    ignorePatterns = DEFAULT_SCAN_IGNORE_PATTERNS,
     gitignorePath?: string,
     includePatterns: string[] = [],
   ) {

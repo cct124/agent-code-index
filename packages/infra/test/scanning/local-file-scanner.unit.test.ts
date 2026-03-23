@@ -4,7 +4,10 @@ import path from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { LocalFileScanner } from "../../src/scanning/local-file-scanner.js";
+import {
+  DEFAULT_SCAN_IGNORE_PATTERNS,
+  LocalFileScanner,
+} from "../../src/scanning/local-file-scanner.js";
 
 describe("LocalFileScanner", () => {
   const tempDirectories: string[] = [];
@@ -15,6 +18,11 @@ describe("LocalFileScanner", () => {
         await rm(dirPath, { recursive: true, force: true });
       }),
     );
+  });
+
+  it("exposes built-in ignore patterns including git metadata directories", () => {
+    expect(DEFAULT_SCAN_IGNORE_PATTERNS).toContain(".git");
+    expect(DEFAULT_SCAN_IGNORE_PATTERNS).toContain(".yarn");
   });
 
   it("scans files recursively and skips ignored directories", async () => {

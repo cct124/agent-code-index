@@ -81,6 +81,9 @@ describe("loadConfig", () => {
       "node_modules",
       ".git",
       "dist",
+      "build",
+      ".next",
+      ".yarn",
       "*.tsbuildinfo",
     ]);
     expect(config.indexing.defaultEmbeddingBatchSize).toBe(16);
@@ -107,6 +110,25 @@ describe("loadConfig", () => {
 
     expect(config.mcp.defaultRepositoryId).toBeUndefined();
     expect(config.mcp.repositoryRoot).toBeUndefined();
+  });
+
+  it("appends custom scan ignore patterns after built-in defaults", () => {
+    const config = loadConfig({
+      ...createBaseEnv(),
+      DEFAULT_SCAN_IGNORE_PATTERNS: ".cache,coverage",
+    });
+
+    expect(config.indexing.ignorePatterns).toEqual([
+      "node_modules",
+      ".git",
+      "dist",
+      "build",
+      ".next",
+      ".yarn",
+      "*.tsbuildinfo",
+      ".cache",
+      "coverage",
+    ]);
   });
 
   it("fails when MCP_REPOSITORY_ROOT is not absolute", () => {

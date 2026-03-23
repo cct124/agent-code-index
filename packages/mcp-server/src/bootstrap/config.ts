@@ -3,6 +3,8 @@
  */
 import { statSync } from "node:fs";
 
+import { DEFAULT_SCAN_IGNORE_PATTERNS } from "@agent-code-index/infra";
+
 /**
  * SurrealDB 的部署模式。
  */
@@ -180,14 +182,11 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
         env,
         "DEFAULT_EMBEDDING_CONCURRENCY",
       ),
-      ignorePatterns: csvEnv(env, "DEFAULT_SCAN_IGNORE_PATTERNS", [
-        "node_modules",
-        ".git",
-        "dist",
-        "build",
-        ".next",
-        "*.tsbuildinfo",
-      ]),
+      ignorePatterns: csvEnvWithDefaults(
+        env,
+        "DEFAULT_SCAN_IGNORE_PATTERNS",
+        DEFAULT_SCAN_IGNORE_PATTERNS,
+      ),
       includePatterns: csvEnv(env, "DEFAULT_SCAN_INCLUDE_PATTERNS", []),
       gitignorePath: absolutePathEnv(env, "DEFAULT_SCAN_GITIGNORE_PATH"),
       nativeCandidateMultiplier: integerEnv(
@@ -229,6 +228,19 @@ function requireEnv(env: EnvMap, key: string): string {
 function optionalEnv(env: EnvMap, key: string): string | undefined {
   const value = env[key]?.trim();
   return value ? value : undefined;
+}
+
+/**
+ * 读取逗号分隔配置，并在内置默认值后追加用户自定义项。
+ */
+function csvEnvWithDefaults(
+  env: EnvMap,
+  key: string,
+  defaults: string[],
+): string[] {
+  const configured = csvEnv(env, key, []);
+
+  return Array.from(new Set([...defaults, ...configured]));
 }
 
 /**

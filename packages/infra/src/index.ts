@@ -26,7 +26,10 @@ export { PythonTreeSitterParser } from "./parsing/tree-sitter/languages/python-p
 export { RepositoryChunkPreparationService } from "./services/repository-chunk-preparation-service.js";
 export { RepositoryFileChunkPreparationService } from "./services/repository-file-chunk-preparation-service.js";
 export { TypeScriptTreeSitterParser } from "./parsing/tree-sitter/languages/typescript-parser.js";
-export { LocalFileScanner } from "./scanning/local-file-scanner.js";
+export {
+  DEFAULT_SCAN_IGNORE_PATTERNS,
+  LocalFileScanner,
+} from "./scanning/local-file-scanner.js";
 export { SurrealChunkRepository } from "./storage/surreal/surreal-chunk-repository.js";
 export { SurrealChunkSchema } from "./storage/surreal/surreal-chunk-schema.js";
 export { SurrealProjectMetadataRepository } from "./storage/surreal/surreal-project-metadata-repository.js";
