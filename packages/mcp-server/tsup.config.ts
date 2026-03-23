@@ -1,0 +1,32 @@
+import { defineConfig } from "tsup";
+
+export default defineConfig({
+  entry: ["src/index.ts", "src/cli.ts"],
+  format: ["esm"],
+  platform: "node",
+  target: "node20",
+  dts: false,
+  outDir: "package-dist",
+  clean: true,
+  splitting: false,
+  sourcemap: false,
+  noExternal: ["@agent-code-index/core", "@agent-code-index/infra"],
+  external: [
+    "@modelcontextprotocol/sdk",
+    "@modelcontextprotocol/sdk/*",
+    "mdast-util-to-string",
+    "pino",
+    "pino-pretty",
+    "remark-frontmatter",
+    "remark-parse",
+    "surrealdb",
+    "tree-sitter",
+    "tree-sitter-javascript",
+    "tree-sitter-python",
+    "tree-sitter-typescript",
+    "tslib",
+    "unified",
+    "unist-util-visit",
+    "zod",
+  ],
+});

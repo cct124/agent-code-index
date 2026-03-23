@@ -11,6 +11,94 @@
 
 当前阶段，`mcp-server` 已经具备完整的启动装配能力，并已真正对外暴露 MCP tools。
 
+## 作为 npm 包使用
+
+当前仓库采用双轨模式：
+
+1. 开发态继续保留 Yarn workspace 依赖，方便在 monorepo 内联调 `core / infra / mcp-server`
+2. 发布态通过单独的打包脚本生成 `package-dist/`，产出依赖闭合的 npm 包内容
+
+也就是说，仓库里的 `packages/mcp-server/package.json` 仍然面向开发，而真正用于 npm 发布的是打包后生成的 `package-dist/package.json`。
+
+### 生成发布产物
+
+在仓库根目录执行：
+
+```bash
+yarn workspace @agent-code-index/mcp-server build:package
+```
+
+执行后会生成：
+
+```text
+packages/mcp-server/package-dist/
+```
+
+该目录包含：
+
+1. 打包后的 CLI 和 ESM 入口
+2. 用于发布的 `package.json`
+3. `README.md`
+4. `LICENSE`
+
+当前 `package-dist` 的首要目标是提供稳定可安装的 CLI 产物，因此它优先保证运行时闭合与可执行性；开发态类型系统仍以 monorepo 内的 workspace 包为准。
+
+如需本地验包，可继续执行：
+
+```bash
+yarn workspace @agent-code-index/mcp-server pack:package:dry-run
+```
+
+### 安装
+
+```bash
+npm install -g @agent-code-index/mcp-server
+```
+
+或通过 `npx` 直接运行：
+
+```bash
+npx @agent-code-index/mcp-server
+```
+
+安装后可执行命令名为：
+
+```bash
+agent-code-index-mcp
+```
+
+### 运行
+
+这个 CLI 会启动一个基于 stdio transport 的 MCP server，因此通常由 MCP host 以子进程方式拉起，而不是手工长期在终端前台运行。
+
+最小运行前提仍然是提供完整环境变量，例如：
+
+```bash
+PROJECT_SPACE=demo \
+SURREAL_URL=http://127.0.0.1:8000/rpc \
+SURREAL_DATABASE=agent_code_index \
+SURREAL_USERNAME=root \
+SURREAL_PASSWORD=root \
+EMBEDDING_PROVIDER=openai-compatible \
+EMBEDDING_API_KEY=your-key \
+EMBEDDING_VECTOR_DIMENSION=1024 \
+agent-code-index-mcp
+```
+
+如果通过 MCP host 配置，推荐直接在 server 条目的 `command` 中使用 `agent-code-index-mcp`，并通过 `env` 注入项目级配置。
+
+### 发布说明
+
+为避免破坏当前 monorepo 开发流程，不建议直接从 `packages/mcp-server` 根目录执行 `npm publish`。
+
+推荐流程是：
+
+```bash
+yarn workspace @agent-code-index/mcp-server build:package
+cd packages/mcp-server/package-dist
+npm publish
+```
+
 ## 模块职责
 
 当前 `mcp-server` 主要承担四类职责：

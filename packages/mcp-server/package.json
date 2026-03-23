@@ -2,9 +2,13 @@
   "name": "@agent-code-index/mcp-server",
   "version": "0.1.0",
   "private": true,
+  "description": "MCP server for indexing repositories and retrieving code context with SurrealDB-backed semantic search.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "agent-code-index-mcp": "dist/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -19,8 +23,38 @@
     "pino-pretty": "^13.1.2",
     "zod": "^4.3.6"
   },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "rag",
+    "code-search",
+    "surrealdb"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/cct124/agent-code-index#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cct124/agent-code-index.git",
+    "directory": "packages/mcp-server"
+  },
+  "bugs": {
+    "url": "https://github.com/cct124/agent-code-index/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.8.2"
+  },
   "scripts": {
     "build": "tsc -b tsconfig.json",
+    "build:package": "tsc -b ../../tsconfig.json && tsup --config tsup.config.ts && node ./scripts/write-package-manifest.mjs",
+    "pack:package": "cd package-dist && npm pack",
+    "pack:package:dry-run": "cd package-dist && npm pack --dry-run",
     "typecheck": "tsc -b tsconfig.json --force"
   }
 }
