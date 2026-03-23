@@ -53,6 +53,7 @@
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "build:package": "tsc -b ../../tsconfig.json && tsup --config tsup.config.ts && node ./scripts/write-package-manifest.mjs",
+    "check:release": "node ./scripts/check-release-readiness.mjs",
     "pack:package": "cd package-dist && npm pack",
     "pack:package:dry-run": "cd package-dist && npm pack --dry-run",
     "typecheck": "tsc -b tsconfig.json --force"

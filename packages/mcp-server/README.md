@@ -49,6 +49,17 @@ packages/mcp-server/package-dist/
 yarn workspace @agent-code-index/mcp-server pack:package:dry-run
 ```
 
+如需在真正发布前执行一次完整的发布前检查，可执行：
+
+```bash
+yarn workspace @agent-code-index/mcp-server check:release
+```
+
+这条命令当前会做两件事：
+
+1. 校验 `packages/mcp-server/package.json`、`src/server.ts` 与 `package-dist/package.json` 的版本号一致
+2. 在 `package-dist/` 内执行 `npm pack --dry-run`，确认最终会发布到 npm 的文件集合
+
 ### 安装
 
 ```bash
@@ -95,8 +106,9 @@ agent-code-index-mcp
 
 ```bash
 yarn workspace @agent-code-index/mcp-server build:package
+yarn workspace @agent-code-index/mcp-server check:release
 cd packages/mcp-server/package-dist
-npm publish
+npm publish --access public
 ```
 
 ## 模块职责

@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-截至 2026-03-22，仓库已经进入“索引与检索主链路可运行、真实存储与真实 embedding provider 端到端可验证，并可通过 MCP stdio 暴露核心工具”的阶段。
+截至 2026-03-23，仓库已经进入“索引与检索主链路可运行、真实存储与真实 embedding provider 端到端可验证，并可通过 MCP stdio 暴露核心工具”的阶段。
 
 已经落地并验证的能力包括：
 
@@ -86,6 +86,27 @@ yarn test:unit
 yarn test:integration
 yarn format
 ```
+
+## 发布 MCP npm 包
+
+当前 `@agent-code-index/mcp-server` 采用“开发态 workspace、发布态 package-dist”的双轨模式。
+
+建议从仓库根目录按以下顺序执行发布流程：
+
+```bash
+yarn workspace @agent-code-index/mcp-server build:package
+yarn workspace @agent-code-index/mcp-server check:release
+cd packages/mcp-server/package-dist
+npm publish --access public
+```
+
+这套流程的含义是：
+
+1. `build:package` 生成真正用于发布的 `package-dist/` 目录
+2. `check:release` 校验源码版本、发布产物版本和 dry-run 打包结果
+3. 最终只从 `packages/mcp-server/package-dist` 发布，而不是直接从 workspace 源码目录发布
+
+如果你关心发布细节、发布前检查项或 npm 运行方式，优先看 [packages/mcp-server/README.md](packages/mcp-server/README.md)。
 
 ## 说明
 
