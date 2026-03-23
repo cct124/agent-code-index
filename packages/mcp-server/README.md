@@ -606,13 +606,14 @@ corepack yarn mcp:dev
 如果 stdio 接入正确，通常会观察到：
 
 1. 启动日志中会出现 `Application startup completed`
-2. `index_repository` / `index_files` 的日志中会带出 `batchSize` 与 `embeddingConcurrency`
-3. 当日志字段中包含 `error: Error` 时，当前 logger 已会序列化 `name / message / stack`
-4. 如果启动失败发生在 `project_metadata` 校验阶段，日志中应能直接看到类似 `Project metadata mismatch: expected ... received ...` 的完整错误信息，而不是只有空对象
-5. host 能成功列出 5 个 tools
-6. `index_repository` 可以在不显式传 `repositoryId` / `rootPath` 的情况下运行
-7. `get_file_context` 可以在不显式传 `repositoryId` 的情况下返回目标文件的已索引上下文
-8. 如果漏配 `MCP_DEFAULT_REPOSITORY_ID` 或 `MCP_REPOSITORY_ROOT`，server 会返回明确的校验错误，而不是猜测默认值
+2. `Application startup started` 会带出 provider、embeddingModel、embeddingVectorDimension、logLevel、默认 batch/concurrency、ignore/include 列表以及 native search 调优参数，便于快速确认当前实例实际加载的运行时配置
+3. `index_repository` / `index_files` 的日志中会带出 `batchSize` 与 `embeddingConcurrency`
+4. 当日志字段中包含 `error: Error` 时，当前 logger 已会序列化 `name / message / stack`
+5. 如果启动失败发生在 `project_metadata` 校验阶段，日志中应能直接看到类似 `Project metadata mismatch: expected ... received ...` 的完整错误信息，而不是只有空对象
+6. host 能成功列出 5 个 tools
+7. `index_repository` 可以在不显式传 `repositoryId` / `rootPath` 的情况下运行
+8. `get_file_context` 可以在不显式传 `repositoryId` 的情况下返回目标文件的已索引上下文
+9. 如果漏配 `MCP_DEFAULT_REPOSITORY_ID` 或 `MCP_REPOSITORY_ROOT`，server 会返回明确的校验错误，而不是猜测默认值
 
 ## 当前边界
 

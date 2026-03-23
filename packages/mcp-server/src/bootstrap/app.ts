@@ -1,7 +1,7 @@
 /**
  * 应用装配入口，负责连接配置加载与容器初始化。
  */
-import type { ProjectMetadata } from "@agent-code-index/core";
+import type { LogFields, ProjectMetadata } from "@agent-code-index/core";
 
 import { createContainer, type AppContainer } from "./container.js";
 import { loadConfig, type AppConfig } from "./config.js";
@@ -28,10 +28,7 @@ export async function createApp(): Promise<App> {
     projectSpace: config.projectSpace,
   });
 
-  logger.info("Application startup started", {
-    provider: config.embedding.provider,
-    embeddingModel: config.embedding.model,
-  });
+  logger.info("Application startup started", buildStartupSummary(config));
 
   const startedAt = Date.now();
 
@@ -63,6 +60,28 @@ export async function createApp(): Promise<App> {
     });
     throw error;
   }
+}
+
+function buildStartupSummary(config: AppConfig): LogFields {
+  return {
+    provider: config.embedding.provider,
+    embeddingModel: config.embedding.model,
+    embeddingVectorDimension: config.embedding.vectorDimension,
+    logLevel: config.logging.level,
+    logPretty: config.logging.pretty,
+    logFilePath: config.logging.filePath,
+    logFilePretty: config.logging.filePretty,
+    defaultTopK: config.indexing.defaultTopK,
+    defaultEmbeddingBatchSize: config.indexing.defaultEmbeddingBatchSize,
+    defaultEmbeddingConcurrency: config.indexing.defaultEmbeddingConcurrency,
+    ignorePatterns: config.indexing.ignorePatterns,
+    includePatterns: config.indexing.includePatterns,
+    gitignorePath: config.indexing.gitignorePath,
+    nativeCandidateMultiplier: config.indexing.nativeCandidateMultiplier,
+    nativeEfSearchMin: config.indexing.nativeEfSearchMin,
+    defaultRepositoryId: config.mcp.defaultRepositoryId,
+    repositoryRoot: config.mcp.repositoryRoot,
+  };
 }
 
 /**

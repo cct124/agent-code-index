@@ -57,8 +57,11 @@ function createConfig(): AppConfig {
     },
     indexing: {
       defaultTopK: 10,
+      defaultEmbeddingBatchSize: 16,
+      defaultEmbeddingConcurrency: 4,
       ignorePatterns: ["node_modules", ".git"],
-      includePatterns: [],
+      includePatterns: [".env.example", ".logs/runtime.log"],
+      gitignorePath: "/workspace/repo-a/.gitignore",
       nativeCandidateMultiplier: 20,
       nativeEfSearchMin: 100,
     },
@@ -329,6 +332,38 @@ describe("createApp", () => {
         embeddingVectorDimension: 1024,
         createdAt: "2026-03-20T10:00:00.000Z",
         updatedAt: "2026-03-20T10:00:00.000Z",
+      }),
+    );
+  });
+
+  it("logs startup summary fields for runtime diagnosis", async () => {
+    const container = createTestContainer([]);
+
+    loadConfigMock.mockReturnValue(container.config);
+    createContainerMock.mockReturnValue(container);
+
+    await createApp();
+
+    expect(container.logger.info).toHaveBeenCalledWith(
+      "Application startup started",
+      expect.objectContaining({
+        provider: "voyage",
+        embeddingModel: "voyage-code-3",
+        embeddingVectorDimension: 1024,
+        logLevel: "info",
+        logPretty: true,
+        logFilePath: undefined,
+        logFilePretty: false,
+        defaultTopK: 10,
+        defaultEmbeddingBatchSize: 16,
+        defaultEmbeddingConcurrency: 4,
+        ignorePatterns: ["node_modules", ".git"],
+        includePatterns: [".env.example", ".logs/runtime.log"],
+        gitignorePath: "/workspace/repo-a/.gitignore",
+        nativeCandidateMultiplier: 20,
+        nativeEfSearchMin: 100,
+        defaultRepositoryId: "repo-a",
+        repositoryRoot: "/workspace/repo-a",
       }),
     );
   });
