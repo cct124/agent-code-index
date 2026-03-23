@@ -37,6 +37,13 @@ vi.mock("../../src/bootstrap/config.js", () => ({
 
 vi.mock("../../src/bootstrap/container.js", () => ({
   createContainer: createContainerMock,
+  resolveScanGitignorePath: vi.fn(
+    (config: Pick<AppConfig, "indexing" | "mcp">) =>
+      config.indexing.gitignorePath ??
+      (config.mcp.repositoryRoot
+        ? join(config.mcp.repositoryRoot, ".gitignore")
+        : join(process.cwd(), ".gitignore")),
+  ),
 }));
 
 import { createApp } from "../../src/bootstrap/app.js";
