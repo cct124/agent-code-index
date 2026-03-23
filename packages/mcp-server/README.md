@@ -369,7 +369,7 @@ src/
         "MCP_DEFAULT_REPOSITORY_ID": "repo-a",
         "MCP_REPOSITORY_ROOT": "/workspace/repo-a",
         "DEFAULT_EMBEDDING_BATCH_SIZE": "16",
-        "DEFAULT_EMBEDDING_CONCURRENCY": "4",
+        "DEFAULT_EMBEDDING_CONCURRENCY": "8",
         "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next,*.tsbuildinfo",
         "DEFAULT_SCAN_INCLUDE_PATTERNS": ".env.example,dist/schema.json",
         "DEFAULT_SCAN_GITIGNORE_PATH": "/workspace/repo-a/.gitignore",
@@ -400,7 +400,7 @@ src/
         "MCP_DEFAULT_REPOSITORY_ID": "repo-b",
         "MCP_REPOSITORY_ROOT": "/workspace/repo-b",
         "DEFAULT_EMBEDDING_BATCH_SIZE": "16",
-        "DEFAULT_EMBEDDING_CONCURRENCY": "4",
+        "DEFAULT_EMBEDDING_CONCURRENCY": "8",
         "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next,*.tsbuildinfo",
         "DEFAULT_SCAN_INCLUDE_PATTERNS": ".env.example,dist/schema.json",
         "DEFAULT_SCAN_GITIGNORE_PATH": "/workspace/repo-b/.gitignore",
@@ -500,7 +500,7 @@ corepack yarn mcp:dev
         "MCP_DEFAULT_REPOSITORY_ID": "agent-code-index",
         "MCP_REPOSITORY_ROOT": "/home/janex/project/ai-agent/agent-code-index",
         "DEFAULT_EMBEDDING_BATCH_SIZE": "16",
-        "DEFAULT_EMBEDDING_CONCURRENCY": "4",
+        "DEFAULT_EMBEDDING_CONCURRENCY": "8",
         "LOG_FILE_PATH": "/tmp/agent-code-index/local.log",
         "LOG_FILE_PRETTY": "false"
       }
@@ -537,7 +537,7 @@ corepack yarn mcp:dev
   "arguments": {
     "mode": "full",
     "embeddingBatchSize": 16,
-    "embeddingConcurrency": 4
+    "embeddingConcurrency": 8
   }
 }
 ```
@@ -546,6 +546,31 @@ corepack yarn mcp:dev
 
 1. `embeddingBatchSize`：单次请求携带的 chunk 数量
 2. `embeddingConcurrency`：允许同时并发的批次数量，默认 `1`
+
+### 3.1 已验证的默认值与覆盖规则
+
+截至 2026-03-23，当前仓库已经在本地开发态配置下完成过一轮 live 验证，验证场景为：
+
+1. MCP host 通过 `corepack yarn mcp:dev` 直接启动 TypeScript 源码入口
+2. embedding provider 使用 `openai-compatible`
+3. embedding model 使用 `Qwen/Qwen3-Embedding-8B`
+4. `PROJECT_SPACE` 使用独立的 `agent_code_index_qwen`，避免与旧的 Voyage 元数据冲突
+5. `DEFAULT_EMBEDDING_BATCH_SIZE=16`
+6. `DEFAULT_EMBEDDING_CONCURRENCY=8`
+
+已确认的行为如下：
+
+1. 当 `index_files` 或 `index_repository` 不显式传 `embeddingBatchSize` / `embeddingConcurrency` 时，adapter 会优先回填 `DEFAULT_EMBEDDING_BATCH_SIZE` 与 `DEFAULT_EMBEDDING_CONCURRENCY`
+2. 当前 live 验证中，不显式传参时，日志已确认实际生效值为 `batchSize=16`、`embeddingConcurrency=8`
+3. 当 tool 调用显式传入参数时，显式值会覆盖环境默认值
+4. 当前 live 验证中，显式传 `embeddingBatchSize=4`、`embeddingConcurrency=2` 后，日志已确认实际生效值变为 `4 / 2`
+5. 在 `16 / 8` 的默认配置下，已完成一次真实 `index_repository` 全量索引，结果为：`scannedFileCount=156`、`parsedFileCount=156`、`preparedChunkCount=1340`、`storedChunkCount=1340`、`failedFileCount=0`
+
+因此，当前默认值优先级可以明确写成：
+
+1. tool 显式输入
+2. `DEFAULT_EMBEDDING_BATCH_SIZE` / `DEFAULT_EMBEDDING_CONCURRENCY`
+3. `core` 层保守默认值 `32 / 1`
 
 然后读取某个文件的已索引上下文：
 
@@ -568,10 +593,14 @@ corepack yarn mcp:dev
 
 如果 stdio 接入正确，通常会观察到：
 
-1. host 能成功列出 5 个 tools
-2. `index_repository` 可以在不显式传 `repositoryId` / `rootPath` 的情况下运行
-3. `get_file_context` 可以在不显式传 `repositoryId` 的情况下返回目标文件的已索引上下文
-4. 如果漏配 `MCP_DEFAULT_REPOSITORY_ID` 或 `MCP_REPOSITORY_ROOT`，server 会返回明确的校验错误，而不是猜测默认值
+1. 启动日志中会出现 `Application startup completed`
+2. `index_repository` / `index_files` 的日志中会带出 `batchSize` 与 `embeddingConcurrency`
+3. 当日志字段中包含 `error: Error` 时，当前 logger 已会序列化 `name / message / stack`
+4. 如果启动失败发生在 `project_metadata` 校验阶段，日志中应能直接看到类似 `Project metadata mismatch: expected ... received ...` 的完整错误信息，而不是只有空对象
+5. host 能成功列出 5 个 tools
+6. `index_repository` 可以在不显式传 `repositoryId` / `rootPath` 的情况下运行
+7. `get_file_context` 可以在不显式传 `repositoryId` 的情况下返回目标文件的已索引上下文
+8. 如果漏配 `MCP_DEFAULT_REPOSITORY_ID` 或 `MCP_REPOSITORY_ROOT`，server 会返回明确的校验错误，而不是猜测默认值
 
 ## 当前边界
 

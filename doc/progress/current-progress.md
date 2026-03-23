@@ -4,7 +4,7 @@
 
 ## 1. 当前结论
 
-截至 2026-03-22，当前项目已经从“可验证启动骨架”推进到“索引与检索主链路可运行、真实存储与真实 embedding provider 端到端可验证、代码与 Markdown 智能 chunk 已落地，并已通过 MCP stdio 暴露核心工具”的阶段。
+截至 2026-03-23，当前项目已经从“可验证启动骨架”推进到“索引与检索主链路可运行、真实存储与真实 embedding provider 端到端可验证、代码与 Markdown 智能 chunk 已落地，并已通过 MCP stdio 暴露核心工具”的阶段。
 
 当前状态可以概括为：
 
@@ -26,6 +26,8 @@
 16. `index_repository` 与 `index_files` 已支持 `embeddingConcurrency`，索引阶段已从串行批处理演进到固定 worker pool 并发批处理
 17. 扫描链路已支持通过 `DEFAULT_SCAN_GITIGNORE_PATH` 注入根 `.gitignore` 规则，并可在未显式配置时自动从 `MCP_REPOSITORY_ROOT/.gitignore` 或 `process.cwd()/.gitignore` 发现排除规则，减少构建产物与日志文件对 RAG 数据库的污染
 18. 以“索引、检索、文件级更新、文件上下文读取、MCP 暴露”作为 v1 功能闭环来看，当前实现已经达到可定版状态
+19. 本地开发态 `mcp:dev + openai-compatible + Qwen/Qwen3-Embedding-8B` 配置已完成 live 验证，`index_files` 与 `index_repository` 均已确认支持 `DEFAULT_EMBEDDING_BATCH_SIZE / DEFAULT_EMBEDDING_CONCURRENCY` 默认值回填与显式参数覆盖
+20. logger 已修正 `Error` 字段序列化行为，启动或 tool 异常现在可直接在日志中看到 `message` 与 `stack`
 
 ## 2. 当前项目结构
 
@@ -119,6 +121,7 @@
 8. `get_file_context` 已完成 adapter 注册与调用映射，并返回最小 `ContextPacket`
 9. `search_code_context` 已接入 `ContextBuilder`，统一产出 richer `ContextPacket`
 10. tool 输入校验、参数清洗和错误结果映射已形成第一版实现
+11. `embeddingBatchSize` / `embeddingConcurrency` 已支持通过 `DEFAULT_EMBEDDING_BATCH_SIZE / DEFAULT_EMBEDDING_CONCURRENCY` 以环境变量方式配置 tool 默认值
 
 ### 3.6 可观测性能力
 
@@ -130,6 +133,7 @@
 4. 已支持通过 `LOG_FILE_PATH` 额外将日志落盘到本地文件，默认写结构化 JSON，并可用 `LOG_FILE_PRETTY=true` 切换为 pretty 文件日志
 5. 启动、索引、embedding、parser、Surreal client、chunk repository、search repository 已使用统一 child logger 模式
 6. 日志默认避免输出 token、password、apiKey 等敏感字段
+7. 当日志字段中出现 `Error` 时，当前 logger 会稳定序列化 `name / message / stack`，便于定位启动失败与 provider 调用异常
 
 ### 3.7 索引主链路能力
 
@@ -186,6 +190,9 @@
 13. VoyageAI 真实 embedding 兼容性测试已通过，document/query 两类向量生成均正常
 14. Voyage + Surreal 的真实 `prepare -> real embed -> upsert -> query embed -> search` 端到端测试已补齐
 15. 自动发现 `.gitignore` 的 live 配置下，完整 `index_repository` 已重新验证通过，且语义检索结果中已不再混入 `.logs/agent-code-index.log`
+16. 本地开发态 `corepack yarn mcp:dev` 配置下，`index_files` 已 live 验证默认使用 `DEFAULT_EMBEDDING_BATCH_SIZE=16` 与 `DEFAULT_EMBEDDING_CONCURRENCY=8`
+17. 同一环境下，显式传入 `embeddingBatchSize=4` 与 `embeddingConcurrency=2` 已验证会覆盖环境默认值
+18. 同一环境下，`index_repository` 已在 `16 / 8` 默认配置下完成一次全量索引，结果为 `scannedFileCount=156`、`parsedFileCount=156`、`preparedChunkCount=1340`、`storedChunkCount=1340`、`failedFileCount=0`
 
 ## 4. 当前未纳入 v1 定版阻塞的增强项
 
@@ -211,6 +218,7 @@
 6. `createApp()` 已经是异步启动流程，当前 stdio MCP server 已正确 await；后续新增 transport 时仍需保持这一约束
 7. 当前 embedding provider 已支持 `voyage` 与 `openai-compatible`，但 provider 级重试、超时、限流和并发控制仍未形成正式策略
 8. 当前错误分类已覆盖第一版日志诊断需求，但尚未形成跨 provider / MCP / storage 的统一错误码文档
+9. `PROJECT_SPACE` 一旦已绑定某组 embedding 元数据，切换到新的 provider/model/vectorDimension 时仍需使用新的 `PROJECT_SPACE` 或主动清理旧元数据；这一保护行为本周已在 live 启动验证中再次确认
 
 ### 5.2 开发注意事项
 
@@ -251,6 +259,7 @@
 5. SurrealDB `3.0.4` 下的 native HNSW 检索已经成为单一路径，并通过真实测试回归
 6. 索引批次并发能力与 `.gitignore` 动态注入/自动发现能力都已落地，并通过单元测试与 live MCP 验证
 7. 当前全量 `typecheck` 已通过，最近一次全量 unit tests 也已通过
+8. 本地开发态 `mcp:dev`、Qwen embedding 路径、默认并发参数回填以及显式覆盖行为均已完成 live 验证
 
 因此，如果 v1 的目标是“功能完整、架构稳定、可本地接入 MCP 的第一版”，当前已经满足。
 

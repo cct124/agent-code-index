@@ -4,7 +4,7 @@
 
 ## 1. 里程碑概览
 
-截至 2026-03-22，当前已完成的主要里程碑包括：
+截至 2026-03-23，当前已完成的主要里程碑包括：
 
 1. v1 架构设计与工程骨架完成
 2. 配置模型与项目级元数据锁定落地
@@ -22,6 +22,7 @@
 14. 真实 embedding provider 与 Surreal 端到端索引闭环验证落地
 15. MCP tool server 与文件级增量索引能力落地
 16. 索引批次并发能力与 `.gitignore` 动态注入落地
+17. 本地开发态 Qwen 配置、默认 embedding 参数回填与错误日志可观测性验证落地
 
 ## 2. 里程碑一：架构设计与工程骨架完成
 
@@ -177,6 +178,7 @@
 5. Surreal 存储主链路已具备 `errCode / retryable / httpStatus` 错误分类
 6. token、password、apiKey 等敏感字段已纳入统一脱敏策略
 7. 日志、错误分类与脱敏相关单元测试已补齐
+8. logger 已支持对 `Error` 字段统一序列化输出 `name / message / stack`
 
 该里程碑的意义是：
 
@@ -309,7 +311,25 @@
 2. RAG 数据库的语料边界已经从静态忽略列表升级为“静态规则 + `.gitignore` 动态注入 + 自动发现”的组合机制
 3. 本地构建产物、日志文件和 `.tsbuildinfo` 导致的索引污染与 provider 400 风险已得到实质性收敛
 
-## 18. 当前里程碑结论
+## 18. 里程碑十七：本地开发态 Qwen 配置与默认参数 live 验证落地
+
+已完成：
+
+1. `.vscode/mcp.json` 已切换为 `corepack yarn mcp:dev` 直接运行 TypeScript 源码入口
+2. 本地开发态配置已验证 `openai-compatible + Qwen/Qwen3-Embedding-8B + SurrealDB 3.0.4` 可以正常完成索引调用
+3. `MCP_DEFAULT_REPOSITORY_ID` 与 `MCP_REPOSITORY_ROOT` 已在 live MCP 调用中验证可正常回填默认仓库身份与根目录
+4. `DEFAULT_EMBEDDING_BATCH_SIZE=16` 与 `DEFAULT_EMBEDDING_CONCURRENCY=8` 已在 `index_files` live 调用中验证会作为默认值生效
+5. 显式传入 `embeddingBatchSize=4` 与 `embeddingConcurrency=2` 已在 `index_files` live 调用中验证可覆盖环境默认值
+6. `index_repository` 已在 `16 / 8` 默认配置下完成一次真实全量索引，结果为 `scannedFileCount=156`、`parsedFileCount=156`、`preparedChunkCount=1340`、`storedChunkCount=1340`、`failedFileCount=0`
+7. 启动阶段 `project_metadata` 冲突已在 live 环境中复现，并确认 logger 修复后日志可直接输出完整 `message / stack`
+
+该里程碑的意义是：
+
+1. 发布态 npm 包之外，仓库已经具备稳定的本地源码联调路径
+2. MCP adapter 的“环境默认值 + 显式覆盖”行为已经不再只停留在单元测试，而是经过 live 工具调用确认
+3. 当前日志可观测性已经足以直接定位启动期元数据冲突和常见 provider 调用问题
+
+## 19. 当前里程碑结论
 
 截至当前，可以将阶段成果概括为：
 
@@ -330,7 +350,8 @@
 15. 真实 embedding provider 与 Surreal 端到端索引闭环验证已落地
 16. MCP tool server 与文件级增量索引能力已落地
 17. 索引批次并发能力与 `.gitignore` 动态注入能力已落地
-18. 以当前范围定义的 v1 功能闭环已完成，可进入定版状态
+18. 本地开发态 Qwen 配置、默认参数回填与错误日志可观测性验证已落地
+19. 以当前范围定义的 v1 功能闭环已完成，可进入定版状态
 
 这意味着：
 
