@@ -51,6 +51,26 @@ describe("createLogger", () => {
       .poll(() => readFileSync(filePath, "utf8"))
       .toContain("Pretty file logging works");
   });
+
+  it("serializes error fields with message and stack", async () => {
+    const directory = mkdtempSync(join(tmpdir(), "agent-code-index-logger-"));
+    temporaryDirectories.push(directory);
+
+    const filePath = join(directory, "logs", "agent-code-index.error.log");
+    const logger = createLogger(createLoggingConfig(filePath, false));
+
+    logger.error("Application startup failed", {
+      module: "logger-test",
+      error: new Error("metadata mismatch"),
+    });
+
+    await expect
+      .poll(() => readFileSync(filePath, "utf8"))
+      .toContain('"message":"metadata mismatch"');
+    await expect
+      .poll(() => readFileSync(filePath, "utf8"))
+      .toContain('"stack":"Error: metadata mismatch');
+  });
 });
 
 function createLoggingConfig(

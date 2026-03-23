@@ -8,7 +8,7 @@ import pino, {
 } from "pino";
 import pretty from "pino-pretty";
 
-import type { LogFields, Logger } from "@agent-code-index/core";
+import type { LogFields, LogValue, Logger } from "@agent-code-index/core";
 
 import type { LoggingConfig } from "./config.js";
 
@@ -121,7 +121,9 @@ class PinoLoggerAdapter implements Logger {
   }
 
   public child(bindings: LogFields): Logger {
-    return new PinoLoggerAdapter(this.logger.child(bindings));
+    return new PinoLoggerAdapter(
+      this.logger.child(normalizeLogFields(bindings)),
+    );
   }
 }
 
@@ -135,5 +137,68 @@ function write(
     return;
   }
 
-  method(fields, message);
+  method(normalizeLogFields(fields), message);
+}
+
+function normalizeLogFields(fields: LogFields): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(fields).map(([key, value]) => [
+      key,
+      normalizeLogValue(value),
+    ]),
+  );
+}
+
+function normalizeLogValue(value: LogValue): unknown {
+  if (value instanceof Error) {
+    return serializeError(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeLogValue(item));
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nestedValue]) => [
+        key,
+        normalizeLogValue(nestedValue),
+      ]),
+    );
+  }
+
+  return value;
+}
+
+function serializeError(error: Error): Record<string, unknown> {
+  const serialized: Record<string, unknown> = {
+    name: error.name,
+    message: error.message,
+    stack: error.stack,
+  };
+
+  const cause = (error as Error & { cause?: unknown }).cause;
+
+  if (cause instanceof Error) {
+    serialized.cause = serializeError(cause);
+  } else if (cause !== undefined) {
+    serialized.cause = cause;
+  }
+
+  for (const key of Object.getOwnPropertyNames(error)) {
+    if (
+      key === "name" ||
+      key === "message" ||
+      key === "stack" ||
+      key === "cause"
+    ) {
+      continue;
+    }
+
+    serialized[key] = normalizeLogValue(
+      (error as Error & Record<string, LogValue>)[key],
+    );
+  }
+
+  return serialized;
 }
