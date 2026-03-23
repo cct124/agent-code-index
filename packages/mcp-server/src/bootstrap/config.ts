@@ -55,6 +55,10 @@ export interface EmbeddingConfig {
 export interface IndexingConfig {
   /** 默认检索返回数量。 */
   defaultTopK: number;
+  /** 默认 embedding 批量大小。 */
+  defaultEmbeddingBatchSize?: number;
+  /** 默认 embedding 并发批次数。 */
+  defaultEmbeddingConcurrency?: number;
   /** 扫描仓库时默认忽略的路径模式。 */
   ignorePatterns: string[];
   /** 扫描仓库时强制保留的路径模式，会覆盖 ignore 与 .gitignore 规则。 */
@@ -166,6 +170,14 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
     embedding,
     indexing: {
       defaultTopK: integerEnv(env, "DEFAULT_TOP_K", 10),
+      defaultEmbeddingBatchSize: optionalIntegerEnv(
+        env,
+        "DEFAULT_EMBEDDING_BATCH_SIZE",
+      ),
+      defaultEmbeddingConcurrency: optionalIntegerEnv(
+        env,
+        "DEFAULT_EMBEDDING_CONCURRENCY",
+      ),
       ignorePatterns: csvEnv(env, "DEFAULT_SCAN_IGNORE_PATTERNS", [
         "node_modules",
         ".git",
@@ -291,6 +303,19 @@ function integerEnv(env: EnvMap, key: string, fallback?: number): number {
   }
 
   return parsed;
+}
+
+/**
+ * 将环境变量解析为可选正整数。
+ */
+function optionalIntegerEnv(env: EnvMap, key: string): number | undefined {
+  const value = optionalEnv(env, key);
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return integerEnv(env, key);
 }
 
 /**

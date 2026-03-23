@@ -75,12 +75,12 @@ export function registerAgentCodeIndexTools(server: McpServer, app: App): void {
       try {
         const repositoryId = resolveRepositoryId(app.config, args.repositoryId);
         const rootPath = resolveRootPath(app.config, args.rootPath);
-        const embeddingBatchSize = normalizeOptionalPositiveInteger(
-          "embeddingBatchSize",
+        const embeddingBatchSize = resolveEmbeddingBatchSize(
+          app,
           args.embeddingBatchSize,
         );
-        const embeddingConcurrency = normalizeOptionalPositiveInteger(
-          "embeddingConcurrency",
+        const embeddingConcurrency = resolveEmbeddingConcurrency(
+          app,
           args.embeddingConcurrency,
         );
         const result = await app.container.indexRepositoryService.execute({
@@ -190,12 +190,12 @@ export function registerAgentCodeIndexTools(server: McpServer, app: App): void {
         const repositoryId = resolveRepositoryId(app.config, args.repositoryId);
         const rootPath = resolveRootPath(app.config, args.rootPath);
         const filePaths = normalizeFilePaths(args.filePaths);
-        const embeddingBatchSize = normalizeOptionalPositiveInteger(
-          "embeddingBatchSize",
+        const embeddingBatchSize = resolveEmbeddingBatchSize(
+          app,
           args.embeddingBatchSize,
         );
-        const embeddingConcurrency = normalizeOptionalPositiveInteger(
-          "embeddingConcurrency",
+        const embeddingConcurrency = resolveEmbeddingConcurrency(
+          app,
           args.embeddingConcurrency,
         );
         const result = await app.container.indexFilesService.execute({
@@ -344,6 +344,26 @@ function toFileContextToolChunk(
     endLine: chunk.endLine,
     metadata: chunk.metadata,
   };
+}
+
+function resolveEmbeddingBatchSize(
+  app: App,
+  value: number | undefined,
+): number | undefined {
+  return (
+    normalizeOptionalPositiveInteger("embeddingBatchSize", value) ??
+    app.config.indexing.defaultEmbeddingBatchSize
+  );
+}
+
+function resolveEmbeddingConcurrency(
+  app: App,
+  value: number | undefined,
+): number | undefined {
+  return (
+    normalizeOptionalPositiveInteger("embeddingConcurrency", value) ??
+    app.config.indexing.defaultEmbeddingConcurrency
+  );
 }
 
 function createToolErrorResult(

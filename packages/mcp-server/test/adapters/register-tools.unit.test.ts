@@ -57,7 +57,7 @@ describe("registerAgentCodeIndexTools", () => {
       repositoryId: "repo-a",
       rootPath: "/workspace/repo-a",
       filePaths: ["src/a.ts", "src/b.ts"],
-      embeddingBatchSize: undefined,
+      embeddingBatchSize: 16,
       embeddingConcurrency: 3,
     });
     expect(indexFilesResult.isError).toBeUndefined();
@@ -193,6 +193,53 @@ describe("registerAgentCodeIndexTools", () => {
         }),
       }),
     );
+
+    await client.close();
+    await server.close();
+  });
+
+  it("falls back to configured embedding defaults when indexing args are omitted", async () => {
+    const app = createTestApp();
+    const server = createMcpServer(app);
+    const client = new Client(
+      { name: "test-client", version: "1.0.0" },
+      { capabilities: {} },
+    );
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair();
+
+    await Promise.all([
+      server.connect(serverTransport),
+      client.connect(clientTransport),
+    ]);
+
+    await client.callTool({
+      name: "index_repository",
+      arguments: {},
+    });
+
+    expect(app.container.indexRepositoryService.execute).toHaveBeenCalledWith({
+      repositoryId: "repo-a",
+      rootPath: "/workspace/repo-a",
+      mode: "full",
+      embeddingBatchSize: 16,
+      embeddingConcurrency: 2,
+    });
+
+    await client.callTool({
+      name: "index_files",
+      arguments: {
+        filePaths: ["src/a.ts"],
+      },
+    });
+
+    expect(app.container.indexFilesService.execute).toHaveBeenCalledWith({
+      repositoryId: "repo-a",
+      rootPath: "/workspace/repo-a",
+      filePaths: ["src/a.ts"],
+      embeddingBatchSize: 16,
+      embeddingConcurrency: 2,
+    });
 
     await client.close();
     await server.close();
@@ -411,7 +458,10 @@ function createConfig(): AppConfig {
     },
     indexing: {
       defaultTopK: 10,
+      defaultEmbeddingBatchSize: 16,
+      defaultEmbeddingConcurrency: 2,
       ignorePatterns: [],
+      includePatterns: [],
       nativeCandidateMultiplier: 20,
       nativeEfSearchMin: 100,
     },

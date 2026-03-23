@@ -19,6 +19,8 @@ function createBaseEnv(): Record<string, string> {
     EMBEDDING_VECTOR_DIMENSION: "1024",
     EMBEDDING_API_KEY: "test-key",
     DEFAULT_TOP_K: "10",
+    DEFAULT_EMBEDDING_BATCH_SIZE: "16",
+    DEFAULT_EMBEDDING_CONCURRENCY: "2",
     DEFAULT_SCAN_IGNORE_PATTERNS: "node_modules,.git,dist,*.tsbuildinfo",
     DEFAULT_SCAN_INCLUDE_PATTERNS: ".env.example,dist/schema.json",
     DEFAULT_SCAN_GITIGNORE_PATH: "/workspace/repo-a/.gitignore",
@@ -61,6 +63,8 @@ describe("loadConfig", () => {
       "dist",
       "*.tsbuildinfo",
     ]);
+    expect(config.indexing.defaultEmbeddingBatchSize).toBe(16);
+    expect(config.indexing.defaultEmbeddingConcurrency).toBe(2);
     expect(config.indexing.includePatterns).toEqual([
       ".env.example",
       "dist/schema.json",
@@ -94,6 +98,17 @@ describe("loadConfig", () => {
 
     expect(config.indexing.nativeCandidateMultiplier).toBe(12);
     expect(config.indexing.nativeEfSearchMin).toBe(180);
+  });
+
+  it("leaves indexing defaults undefined when embedding defaults are not configured", () => {
+    const env = createBaseEnv();
+    delete env.DEFAULT_EMBEDDING_BATCH_SIZE;
+    delete env.DEFAULT_EMBEDDING_CONCURRENCY;
+
+    const config = loadConfig(env);
+
+    expect(config.indexing.defaultEmbeddingBatchSize).toBeUndefined();
+    expect(config.indexing.defaultEmbeddingConcurrency).toBeUndefined();
   });
 
   it("loads logging configuration", () => {
@@ -173,6 +188,20 @@ describe("loadConfig", () => {
         SEARCH_NATIVE_EF_SEARCH_MIN: "-1",
       }),
     ).toThrow(/SEARCH_NATIVE_EF_SEARCH_MIN/);
+
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        DEFAULT_EMBEDDING_BATCH_SIZE: "0",
+      }),
+    ).toThrow(/DEFAULT_EMBEDDING_BATCH_SIZE/);
+
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        DEFAULT_EMBEDDING_CONCURRENCY: "-1",
+      }),
+    ).toThrow(/DEFAULT_EMBEDDING_CONCURRENCY/);
   });
 
   it("accepts surreal token auth without username and password", () => {

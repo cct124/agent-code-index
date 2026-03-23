@@ -310,15 +310,17 @@ src/
 5. `DEFAULT_TOP_K`
 6. `MCP_DEFAULT_REPOSITORY_ID`
 7. `MCP_REPOSITORY_ROOT`
-8. `DEFAULT_SCAN_IGNORE_PATTERNS`
-9. `DEFAULT_SCAN_INCLUDE_PATTERNS`
-10. `DEFAULT_SCAN_GITIGNORE_PATH`
-11. `SEARCH_NATIVE_CANDIDATE_MULTIPLIER`
-12. `SEARCH_NATIVE_EF_SEARCH_MIN`
-13. `LOG_LEVEL`
-14. `LOG_PRETTY`
-15. `LOG_FILE_PATH`
-16. `LOG_FILE_PRETTY`
+8. `DEFAULT_EMBEDDING_BATCH_SIZE`
+9. `DEFAULT_EMBEDDING_CONCURRENCY`
+10. `DEFAULT_SCAN_IGNORE_PATTERNS`
+11. `DEFAULT_SCAN_INCLUDE_PATTERNS`
+12. `DEFAULT_SCAN_GITIGNORE_PATH`
+13. `SEARCH_NATIVE_CANDIDATE_MULTIPLIER`
+14. `SEARCH_NATIVE_EF_SEARCH_MIN`
+15. `LOG_LEVEL`
+16. `LOG_PRETTY`
+17. `LOG_FILE_PATH`
+18. `LOG_FILE_PRETTY`
 
 其中：
 
@@ -327,14 +329,16 @@ src/
 3. 它不会改变 `core` 层 use case 仍要求显式 `repositoryId` / `rootPath` 的事实；adapter 只是做默认值解析
 4. 如果未来一个 server 要服务多个仓库，仍建议在每次 tool 调用时显式传入 `repositoryId`
 5. `rootPath` 的解析优先级应为：tool 输入值 > `MCP_REPOSITORY_ROOT` > 校验错误
-6. `LOG_FILE_PATH` 若配置，则当前 server 会额外把日志写入本地文件，默认写结构化 JSON
-7. `LOG_FILE_PRETTY=true` 时，文件日志会改为 pretty 文本格式，便于本地人工阅读
-8. `DEFAULT_SCAN_INCLUDE_PATTERNS` 用于补充扫描阶段的白名单规则，采用逗号分隔；一旦命中，会覆盖 `DEFAULT_SCAN_IGNORE_PATTERNS` 与 `.gitignore` 的排除结果
-9. `DEFAULT_SCAN_GITIGNORE_PATH` 若配置，则会读取该绝对路径指向的根 `.gitignore`，并将其中的排除规则并入扫描忽略集合
-10. 如果未配置 `DEFAULT_SCAN_GITIGNORE_PATH`，但配置了 `MCP_REPOSITORY_ROOT`，则启动时会自动尝试读取 `MCP_REPOSITORY_ROOT/.gitignore`
-11. 如果自动推导出的 `.gitignore` 文件不存在，则扫描器会忽略该步骤，不会导致启动失败
-12. 如果没有配置 `MCP_DEFAULT_REPOSITORY_ID`，且调用 MCP tool 时也没有传 `repositoryId`，adapter 应直接返回校验错误，而不是猜测仓库身份
-13. 如果没有配置 `MCP_REPOSITORY_ROOT`，且调用 `index_repository` / `index_files` 时也没有传 `rootPath`，adapter 应直接返回校验错误，而不是依赖工作目录推断仓库根目录
+6. `embeddingBatchSize` 的解析优先级应为：tool 输入值 > `DEFAULT_EMBEDDING_BATCH_SIZE` > core 默认值
+7. `embeddingConcurrency` 的解析优先级应为：tool 输入值 > `DEFAULT_EMBEDDING_CONCURRENCY` > core 默认值
+8. `LOG_FILE_PATH` 若配置，则当前 server 会额外把日志写入本地文件，默认写结构化 JSON
+9. `LOG_FILE_PRETTY=true` 时，文件日志会改为 pretty 文本格式，便于本地人工阅读
+10. `DEFAULT_SCAN_INCLUDE_PATTERNS` 用于补充扫描阶段的白名单规则，采用逗号分隔；一旦命中，会覆盖 `DEFAULT_SCAN_IGNORE_PATTERNS` 与 `.gitignore` 的排除结果
+11. `DEFAULT_SCAN_GITIGNORE_PATH` 若配置，则会读取该绝对路径指向的根 `.gitignore`，并将其中的排除规则并入扫描忽略集合
+12. 如果未配置 `DEFAULT_SCAN_GITIGNORE_PATH`，但配置了 `MCP_REPOSITORY_ROOT`，则启动时会自动尝试读取 `MCP_REPOSITORY_ROOT/.gitignore`
+13. 如果自动推导出的 `.gitignore` 文件不存在，则扫描器会忽略该步骤，不会导致启动失败
+14. 如果没有配置 `MCP_DEFAULT_REPOSITORY_ID`，且调用 MCP tool 时也没有传 `repositoryId`，adapter 应直接返回校验错误，而不是猜测仓库身份
+15. 如果没有配置 `MCP_REPOSITORY_ROOT`，且调用 `index_repository` / `index_files` 时也没有传 `rootPath`，adapter 应直接返回校验错误，而不是依赖工作目录推断仓库根目录
 
 ### 推荐的 mcp.json 形态
 
@@ -364,6 +368,8 @@ src/
         "DEFAULT_TOP_K": "10",
         "MCP_DEFAULT_REPOSITORY_ID": "repo-a",
         "MCP_REPOSITORY_ROOT": "/workspace/repo-a",
+        "DEFAULT_EMBEDDING_BATCH_SIZE": "16",
+        "DEFAULT_EMBEDDING_CONCURRENCY": "4",
         "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next,*.tsbuildinfo",
         "DEFAULT_SCAN_INCLUDE_PATTERNS": ".env.example,dist/schema.json",
         "DEFAULT_SCAN_GITIGNORE_PATH": "/workspace/repo-a/.gitignore",
@@ -393,6 +399,8 @@ src/
         "DEFAULT_TOP_K": "10",
         "MCP_DEFAULT_REPOSITORY_ID": "repo-b",
         "MCP_REPOSITORY_ROOT": "/workspace/repo-b",
+        "DEFAULT_EMBEDDING_BATCH_SIZE": "16",
+        "DEFAULT_EMBEDDING_CONCURRENCY": "4",
         "DEFAULT_SCAN_IGNORE_PATTERNS": "node_modules,.git,dist,build,.next,*.tsbuildinfo",
         "DEFAULT_SCAN_INCLUDE_PATTERNS": ".env.example,dist/schema.json",
         "DEFAULT_SCAN_GITIGNORE_PATH": "/workspace/repo-b/.gitignore",
@@ -491,6 +499,8 @@ corepack yarn mcp:dev
         "EMBEDDING_BASE_URL": "https://api.siliconflow.cn/v1",
         "MCP_DEFAULT_REPOSITORY_ID": "agent-code-index",
         "MCP_REPOSITORY_ROOT": "/home/janex/project/ai-agent/agent-code-index",
+        "DEFAULT_EMBEDDING_BATCH_SIZE": "16",
+        "DEFAULT_EMBEDDING_CONCURRENCY": "4",
         "LOG_FILE_PATH": "/tmp/agent-code-index/local.log",
         "LOG_FILE_PRETTY": "false"
       }
