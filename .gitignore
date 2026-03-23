@@ -140,3 +140,4 @@ packages/mcp-server/package-dist/
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vscode/mcp.json
+.vscode/mcp*.backup.json
