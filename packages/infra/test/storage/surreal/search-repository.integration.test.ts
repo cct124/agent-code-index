@@ -60,6 +60,26 @@ function createStoredChunk(
   };
 }
 
+function createPassthroughClient(
+  driver: Record<string, unknown>,
+  connect = vi.fn(async () => undefined),
+) {
+  return {
+    config: {} as never,
+    connect,
+    disconnect: vi.fn(async () => undefined),
+    execute: async <T>(
+      _operationName: string,
+      operation: (connectedDriver: never) => Promise<T>,
+    ) => {
+      await connect();
+      return operation(driver as never);
+    },
+    driver: driver as never,
+    healthCheck: vi.fn(async () => ({}) as never),
+  };
+}
+
 describe("SurrealSearchRepository", () => {
   function createLogger(): Logger {
     return {
@@ -95,15 +115,14 @@ describe("SurrealSearchRepository", () => {
       ],
     ]);
 
-    const repository = new SurrealSearchRepository({
-      config: {} as never,
-      connect,
-      disconnect: vi.fn(async () => undefined),
-      driver: {
-        query,
-      } as never,
-      healthCheck: vi.fn(async () => ({}) as never),
-    });
+    const repository = new SurrealSearchRepository(
+      createPassthroughClient(
+        {
+          query,
+        },
+        connect,
+      ),
+    );
 
     const results = await repository.semanticSearch({
       repositoryId: "repo-a",
@@ -150,15 +169,14 @@ describe("SurrealSearchRepository", () => {
         }),
       ],
     ]);
-    const repository = new SurrealSearchRepository({
-      config: {} as never,
-      connect,
-      disconnect: vi.fn(async () => undefined),
-      driver: {
-        query,
-      } as never,
-      healthCheck: vi.fn(async () => ({}) as never),
-    });
+    const repository = new SurrealSearchRepository(
+      createPassthroughClient(
+        {
+          query,
+        },
+        connect,
+      ),
+    );
 
     const arrayTagResults = await repository.semanticSearch({
       repositoryId: "repo-a",
@@ -202,15 +220,14 @@ describe("SurrealSearchRepository", () => {
         new Error("Parse error: unsupported KNN operator"),
       );
 
-    const repository = new SurrealSearchRepository({
-      config: {} as never,
-      connect,
-      disconnect: vi.fn(async () => undefined),
-      driver: {
-        query,
-      } as never,
-      healthCheck: vi.fn(async () => ({}) as never),
-    });
+    const repository = new SurrealSearchRepository(
+      createPassthroughClient(
+        {
+          query,
+        },
+        connect,
+      ),
+    );
 
     await expect(
       repository.semanticSearch({
@@ -248,15 +265,12 @@ describe("SurrealSearchRepository", () => {
     ]);
 
     const repository = new SurrealSearchRepository(
-      {
-        config: {} as never,
-        connect,
-        disconnect: vi.fn(async () => undefined),
-        driver: {
+      createPassthroughClient(
+        {
           query,
-        } as never,
-        healthCheck: vi.fn(async () => ({}) as never),
-      },
+        },
+        connect,
+      ),
       undefined,
       {
         nativeCandidateMultiplier: 7,
@@ -303,15 +317,14 @@ describe("SurrealSearchRepository", () => {
       ],
     ]);
 
-    const repository = new SurrealSearchRepository({
-      config: {} as never,
-      connect,
-      disconnect: vi.fn(async () => undefined),
-      driver: {
-        query,
-      } as never,
-      healthCheck: vi.fn(async () => ({}) as never),
-    });
+    const repository = new SurrealSearchRepository(
+      createPassthroughClient(
+        {
+          query,
+        },
+        connect,
+      ),
+    );
 
     const results = await repository.semanticSearch({
       repositoryId: "repo-a",
@@ -346,15 +359,11 @@ describe("SurrealSearchRepository", () => {
 
   it("rejects unsupported filters before querying the database", async () => {
     const query = vi.fn(async () => [[]]);
-    const repository = new SurrealSearchRepository({
-      config: {} as never,
-      connect: vi.fn(async () => undefined),
-      disconnect: vi.fn(async () => undefined),
-      driver: {
+    const repository = new SurrealSearchRepository(
+      createPassthroughClient({
         query,
-      } as never,
-      healthCheck: vi.fn(async () => ({}) as never),
-    });
+      }),
+    );
 
     await expect(
       repository.semanticSearch({
@@ -371,15 +380,11 @@ describe("SurrealSearchRepository", () => {
 
   it("rejects invalid tag filters before querying the database", async () => {
     const query = vi.fn(async () => [[]]);
-    const repository = new SurrealSearchRepository({
-      config: {} as never,
-      connect: vi.fn(async () => undefined),
-      disconnect: vi.fn(async () => undefined),
-      driver: {
+    const repository = new SurrealSearchRepository(
+      createPassthroughClient({
         query,
-      } as never,
-      healthCheck: vi.fn(async () => ({}) as never),
-    });
+      }),
+    );
 
     await expect(
       repository.semanticSearch({
@@ -397,17 +402,11 @@ describe("SurrealSearchRepository", () => {
   it("logs classified error fields when the database query fails", async () => {
     const logger = createLogger();
     const repository = new SurrealSearchRepository(
-      {
-        config: {} as never,
-        connect: vi.fn(async () => undefined),
-        disconnect: vi.fn(async () => undefined),
-        driver: {
-          query: vi.fn(async () => {
-            throw new Error("query failed with status 503");
-          }),
-        } as never,
-        healthCheck: vi.fn(async () => ({}) as never),
-      },
+      createPassthroughClient({
+        query: vi.fn(async () => {
+          throw new Error("query failed with status 503");
+        }),
+      }),
       logger,
     );
 
@@ -437,15 +436,9 @@ describe("SurrealSearchRepository", () => {
     expect(
       () =>
         new SurrealSearchRepository(
-          {
-            config: {} as never,
-            connect: vi.fn(async () => undefined),
-            disconnect: vi.fn(async () => undefined),
-            driver: {
-              query: vi.fn(async () => [[]]),
-            } as never,
-            healthCheck: vi.fn(async () => ({}) as never),
-          },
+          createPassthroughClient({
+            query: vi.fn(async () => [[]]),
+          }),
           createLogger(),
           {
             nativeCandidateMultiplier: 0,
@@ -456,15 +449,9 @@ describe("SurrealSearchRepository", () => {
     expect(
       () =>
         new SurrealSearchRepository(
-          {
-            config: {} as never,
-            connect: vi.fn(async () => undefined),
-            disconnect: vi.fn(async () => undefined),
-            driver: {
-              query: vi.fn(async () => [[]]),
-            } as never,
-            healthCheck: vi.fn(async () => ({}) as never),
-          },
+          createPassthroughClient({
+            query: vi.fn(async () => [[]]),
+          }),
           createLogger(),
           {
             nativeEfSearchMin: 0,

@@ -40,7 +40,8 @@ export class SurrealProjectMetadataSchema {
    * 确保 project_metadata 表及字段定义已经存在。
    */
   public async ensure(): Promise<void> {
-    await this.client.connect();
-    await this.client.driver.query(PROJECT_METADATA_SCHEMA);
+    await this.client.execute("project-metadata-schema-ensure", (driver) =>
+      driver.query(PROJECT_METADATA_SCHEMA),
+    );
   }
 }

@@ -5,6 +5,7 @@ import { NOOP_LOGGER, type Logger } from "@agent-code-index/core";
 import { Surreal } from "surrealdb";
 
 import {
+  classifySurrealError,
   createSurrealErrorLogFields,
   sanitizeSurrealConnectionConfig,
 } from "./surreal-log-utils.js";
@@ -65,6 +66,11 @@ export interface SurrealClient {
   connect(): Promise<void>;
   /** 关闭当前连接。 */
   disconnect(): Promise<void>;
+  /** 在需要时自动重连，并执行一次数据库操作。 */
+  execute<T>(
+    operationName: string,
+    operation: (driver: Surreal) => Promise<T>,
+  ): Promise<T>;
   /** 执行最小健康检查。 */
   healthCheck(): Promise<SurrealClientHealthStatus>;
 }
@@ -165,14 +171,46 @@ export class DefaultSurrealClient implements SurrealClient {
   }
 
   /**
+   * 在连接可用的前提下执行数据库操作，并在检测到会话失效时自动重连后重试一次。
+   */
+  public async execute<T>(
+    operationName: string,
+    operation: (driver: Surreal) => Promise<T>,
+  ): Promise<T> {
+    await this.connect();
+
+    try {
+      return await operation(this.driver);
+    } catch (error) {
+      if (!this.shouldReconnectAfterOperationError(error)) {
+        throw error;
+      }
+
+      this.logger.warn(
+        "SurrealDB operation lost authenticated session, reconnecting and retrying once",
+        createSurrealErrorLogFields(error, {
+          operationName,
+          ...sanitizeSurrealConnectionConfig(this.config),
+        }),
+      );
+
+      await this.resetConnection();
+      await this.connect();
+
+      return operation(this.driver);
+    }
+  }
+
+  /**
    * 检查当前连接是否可用。
    */
   public async healthCheck(): Promise<SurrealClientHealthStatus> {
     this.logger.debug("Running SurrealDB health check");
 
     try {
-      await this.connect();
-      await this.driver.query("RETURN true;");
+      await this.execute("health-check", (driver) =>
+        driver.query("RETURN true;"),
+      );
 
       const status = {
         ok: true,
@@ -222,6 +260,88 @@ export class DefaultSurrealClient implements SurrealClient {
       "SurrealDB authentication requires either a token or username/password credentials.",
     );
   }
+
+  /**
+   * 在本地已认为连接可用时，仅对明显的会话失效错误执行一次恢复。
+   */
+  private shouldReconnectAfterOperationError(error: unknown): boolean {
+    if (!this.isConnected) {
+      return false;
+    }
+
+    const classified = classifySurrealError(error);
+    const hasAnonymousAuthDetails = this.hasAnonymousAuthDetails(error);
+
+    if (hasAnonymousAuthDetails) {
+      return true;
+    }
+
+    if (classified.errCode !== "surreal_auth_error") {
+      return false;
+    }
+
+    const message = classified.error.message.toLowerCase();
+
+    if (
+      /anonymous access not allowed|session expired|token expired|not signed in/.test(
+        message,
+      )
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * 从 Surreal RPC 错误对象中识别“匿名 actor 执行 query”这一类会话丢失信号。
+   */
+  private hasAnonymousAuthDetails(error: unknown): boolean {
+    if (!isRecord(error)) {
+      return false;
+    }
+
+    const details = error.details;
+
+    if (!isRecord(details) || !isRecord(details.details)) {
+      return false;
+    }
+
+    const authDetails = details.details;
+
+    if (authDetails.kind !== "NotAllowed" || !isRecord(authDetails.details)) {
+      return false;
+    }
+
+    const permissionDetails = authDetails.details;
+
+    return (
+      permissionDetails.actor === "anonymous" &&
+      permissionDetails.resource === "query"
+    );
+  }
+
+  /**
+   * 清理本地连接状态，并尽量关闭已有连接，避免后续继续复用失效会话。
+   */
+  private async resetConnection(): Promise<void> {
+    this.isConnected = false;
+
+    try {
+      await this.driver.close();
+    } catch (error) {
+      this.logger.warn(
+        "SurrealDB connection reset close failed",
+        createSurrealErrorLogFields(error, {
+          ...sanitizeSurrealConnectionConfig(this.config),
+        }),
+      );
+    }
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
 /**

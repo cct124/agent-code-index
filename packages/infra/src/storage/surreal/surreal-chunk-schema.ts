@@ -72,9 +72,8 @@ export class SurrealChunkSchema {
    * 确保 chunk 表及字段定义已经存在。
    */
   public async ensure(): Promise<void> {
-    await this.client.connect();
-    await this.client.driver.query(
-      createChunkSchema(this.embeddingVectorDimension),
+    await this.client.execute("chunk-schema-ensure", (driver) =>
+      driver.query(createChunkSchema(this.embeddingVectorDimension)),
     );
   }
 }

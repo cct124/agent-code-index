@@ -41,10 +41,10 @@ export class SurrealProjectMetadataRepository implements ProjectMetadataReposito
   public async getByProjectSpace(
     input: GetProjectMetadataInput,
   ): Promise<ProjectMetadata | null> {
-    await this.client.connect();
-
-    const record = await this.client.driver.select<StoredProjectMetadata>(
-      this.recordId(input.projectSpace),
+    const record = await this.client.execute(
+      "project-metadata-get-by-project-space",
+      (driver) =>
+        driver.select<StoredProjectMetadata>(this.recordId(input.projectSpace)),
     );
 
     return record ? this.toProjectMetadata(record) : null;
@@ -54,11 +54,13 @@ export class SurrealProjectMetadataRepository implements ProjectMetadataReposito
    * 创建或覆盖项目元数据记录。
    */
   public async save(metadata: ProjectMetadata): Promise<ProjectMetadata> {
-    await this.client.connect();
-
-    const record = await this.client.driver
-      .upsert<StoredProjectMetadata>(this.recordId(metadata.projectSpace))
-      .content({ ...metadata });
+    const record = await this.client.execute(
+      "project-metadata-save",
+      (driver) =>
+        driver
+          .upsert<StoredProjectMetadata>(this.recordId(metadata.projectSpace))
+          .content({ ...metadata }),
+    );
 
     return this.toProjectMetadata(record);
   }

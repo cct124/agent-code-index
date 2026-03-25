@@ -5,19 +5,38 @@ import { describe, expect, it, vi } from "vitest";
 
 import { SurrealProjectMetadataSchema } from "../../../src/storage/surreal/surreal-project-metadata-schema.js";
 
+function createPassthroughClient(
+  driver: Record<string, unknown>,
+  connect = vi.fn(async () => undefined),
+) {
+  return {
+    config: {} as never,
+    connect,
+    disconnect: vi.fn(async () => undefined),
+    execute: async <T>(
+      _operationName: string,
+      operation: (connectedDriver: never) => Promise<T>,
+    ) => {
+      await connect();
+      return operation(driver as never);
+    },
+    driver: driver as never,
+    healthCheck: vi.fn(async () => ({}) as never),
+  };
+}
+
 describe("SurrealProjectMetadataSchema", () => {
   it("executes explicit table and field definitions", async () => {
     const connect = vi.fn(async () => undefined);
     const query = vi.fn(async () => []);
-    const schema = new SurrealProjectMetadataSchema({
-      config: {} as never,
-      connect,
-      disconnect: vi.fn(async () => undefined),
-      driver: {
-        query,
-      } as never,
-      healthCheck: vi.fn(async () => ({}) as never),
-    });
+    const schema = new SurrealProjectMetadataSchema(
+      createPassthroughClient(
+        {
+          query,
+        },
+        connect,
+      ),
+    );
 
     await schema.ensure();
 

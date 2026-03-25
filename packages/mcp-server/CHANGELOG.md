@@ -1,5 +1,11 @@
 # @agent-code-index/mcp-server
 
+## 0.1.7
+
+### Patch Changes
+
+- Automatically reconnect and retry once when SurrealDB operations fail because the authenticated session became anonymous, reducing the need to restart the MCP server after stale session errors.
+
 ## 0.1.6
 
 ### Patch Changes

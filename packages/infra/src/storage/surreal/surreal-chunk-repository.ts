@@ -96,13 +96,13 @@ export class SurrealChunkRepository implements ChunkRepository {
     logger.info("Chunk upsert started");
 
     try {
-      await this.client.connect();
-
-      for (const chunk of chunks) {
-        await this.client.driver
-          .upsert<StoredChunk>(this.recordId(chunk))
-          .content(this.toStoredChunk(chunk));
-      }
+      await this.client.execute("chunk-upsert-many", async (driver) => {
+        for (const chunk of chunks) {
+          await driver
+            .upsert<StoredChunk>(this.recordId(chunk))
+            .content(this.toStoredChunk(chunk));
+        }
+      });
 
       logger.info("Chunk upsert completed");
     } catch (error) {
@@ -129,13 +129,10 @@ export class SurrealChunkRepository implements ChunkRepository {
     logger.info("Deleting repository chunks");
 
     try {
-      await this.client.connect();
-
-      await this.client.driver.query(
-        "DELETE chunk WHERE repositoryId = $repositoryId;",
-        {
+      await this.client.execute("chunk-delete-by-repository", (driver) =>
+        driver.query("DELETE chunk WHERE repositoryId = $repositoryId;", {
           repositoryId,
-        },
+        }),
       );
 
       logger.info("Repository chunk deletion completed");
@@ -172,32 +169,37 @@ export class SurrealChunkRepository implements ChunkRepository {
     }
 
     try {
-      await this.client.connect();
+      const deletedChunkCount = await this.client.execute(
+        "chunk-delete-by-file-paths",
+        async (driver) => {
+          const [records] = await driver.query<[StoredChunk[]]>(
+            [
+              "SELECT * FROM chunk",
+              "WHERE repositoryId = $repositoryId AND filePath INSIDE $filePaths;",
+            ].join(" "),
+            {
+              repositoryId: input.repositoryId,
+              filePaths,
+            },
+          );
+          const count = records?.length ?? 0;
 
-      const [records] = await this.client.driver.query<[StoredChunk[]]>(
-        [
-          "SELECT * FROM chunk",
-          "WHERE repositoryId = $repositoryId AND filePath INSIDE $filePaths;",
-        ].join(" "),
-        {
-          repositoryId: input.repositoryId,
-          filePaths,
+          if (count > 0) {
+            await driver.query(
+              [
+                "DELETE chunk",
+                "WHERE repositoryId = $repositoryId AND filePath INSIDE $filePaths;",
+              ].join(" "),
+              {
+                repositoryId: input.repositoryId,
+                filePaths,
+              },
+            );
+          }
+
+          return count;
         },
       );
-      const deletedChunkCount = records?.length ?? 0;
-
-      if (deletedChunkCount > 0) {
-        await this.client.driver.query(
-          [
-            "DELETE chunk",
-            "WHERE repositoryId = $repositoryId AND filePath INSIDE $filePaths;",
-          ].join(" "),
-          {
-            repositoryId: input.repositoryId,
-            filePaths,
-          },
-        );
-      }
 
       logger.info("File chunk deletion completed", {
         deletedChunkCount,
@@ -231,25 +233,30 @@ export class SurrealChunkRepository implements ChunkRepository {
     });
 
     try {
-      await this.client.connect();
+      const records = await this.client.execute(
+        "chunk-find-by-file-path",
+        async (driver) => {
+          const [result] = await driver.query<[StoredChunk[]]>(
+            [
+              "SELECT * FROM chunk",
+              "WHERE repositoryId = $repositoryId AND filePath = $filePath",
+              "ORDER BY startLine ASC, endLine ASC;",
+            ].join(" "),
+            {
+              repositoryId: input.repositoryId,
+              filePath: input.filePath,
+            },
+          );
 
-      const [records] = await this.client.driver.query<[StoredChunk[]]>(
-        [
-          "SELECT * FROM chunk",
-          "WHERE repositoryId = $repositoryId AND filePath = $filePath",
-          "ORDER BY startLine ASC, endLine ASC;",
-        ].join(" "),
-        {
-          repositoryId: input.repositoryId,
-          filePath: input.filePath,
+          return result ?? [];
         },
       );
 
       logger.info("Chunk lookup completed", {
-        chunkCount: records?.length ?? 0,
+        chunkCount: records.length,
       });
 
-      return (records ?? []).map((record) => this.toChunk(record));
+      return records.map((record) => this.toChunk(record));
     } catch (error) {
       logger.error(
         "Chunk lookup failed",

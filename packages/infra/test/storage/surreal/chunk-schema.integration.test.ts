@@ -2,20 +2,37 @@ import { describe, expect, it, vi } from "vitest";
 
 import { SurrealChunkSchema } from "../../../src/storage/surreal/surreal-chunk-schema.js";
 
+function createPassthroughClient(
+  driver: Record<string, unknown>,
+  connect = vi.fn(async () => undefined),
+) {
+  return {
+    config: {} as never,
+    connect,
+    disconnect: vi.fn(async () => undefined),
+    execute: async <T>(
+      _operationName: string,
+      operation: (connectedDriver: never) => Promise<T>,
+    ) => {
+      await connect();
+      return operation(driver as never);
+    },
+    driver: driver as never,
+    healthCheck: vi.fn(async () => ({}) as never),
+  };
+}
+
 describe("SurrealChunkSchema", () => {
   it("executes idempotent chunk table and index definitions", async () => {
     const connect = vi.fn(async () => undefined);
     const query = vi.fn(async () => []);
     const schema = new SurrealChunkSchema(
-      {
-        config: {} as never,
-        connect,
-        disconnect: vi.fn(async () => undefined),
-        driver: {
+      createPassthroughClient(
+        {
           query,
-        } as never,
-        healthCheck: vi.fn(async () => ({}) as never),
-      },
+        },
+        connect,
+      ),
       {
         embeddingVectorDimension: 4096,
       },

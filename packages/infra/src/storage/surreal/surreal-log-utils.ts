@@ -102,6 +102,7 @@ export function classifySurrealError(error: unknown): ClassifiedSurrealError {
   }
 
   if (
+    hasStructuredAuthDetails(error) ||
     httpStatus === 401 ||
     httpStatus === 403 ||
     /signin|authenticate|unauthorized|forbidden|credential|password|token|auth/.test(
@@ -144,6 +145,24 @@ export function classifySurrealError(error: unknown): ClassifiedSurrealError {
     retryable: false,
     httpStatus,
   };
+}
+
+function hasStructuredAuthDetails(error: unknown): boolean {
+  if (!isRecord(error) || !isRecord(error.details)) {
+    return false;
+  }
+
+  if (error.details.kind === "Auth") {
+    return true;
+  }
+
+  if (!isRecord(error.details.details)) {
+    return false;
+  }
+
+  const authDetails = error.details.details;
+
+  return authDetails.kind === "Auth";
 }
 
 /**
@@ -225,4 +244,8 @@ function extractHttpStatus(message: string): number | undefined {
 
   const parsed = Number.parseInt(match[1] ?? "", 10);
   return Number.isNaN(parsed) ? undefined : parsed;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }

@@ -89,4 +89,83 @@ describe("DefaultSurrealClient", () => {
       }),
     );
   });
+
+  it("reconnects and retries once when an authenticated session becomes anonymous", async () => {
+    const logger = createLogger();
+    const staleSessionError = Object.assign(
+      new Error(
+        "Anonymous access not allowed: Not enough permissions to perform this action",
+      ),
+      {
+        kind: "NotAllowed",
+        code: -32002,
+        details: {
+          kind: "Auth",
+          details: {
+            kind: "NotAllowed",
+            details: {
+              action: "process",
+              actor: "anonymous",
+              resource: "query",
+            },
+          },
+        },
+      },
+    );
+    const driver = {
+      connect: vi.fn(async () => undefined),
+      authenticate: vi.fn(async () => undefined),
+      signin: vi.fn(async () => undefined),
+      use: vi.fn(async () => undefined),
+      query: vi
+        .fn<(...args: unknown[]) => Promise<unknown[]>>()
+        .mockRejectedValueOnce(staleSessionError)
+        .mockResolvedValueOnce([true]),
+      close: vi.fn(async () => undefined),
+    } as never;
+    const client = new DefaultSurrealClient(createConfig(), driver, logger);
+
+    const result = await client.execute("test-query", (connectedDriver) =>
+      connectedDriver.query("RETURN true;"),
+    );
+
+    expect(result).toEqual([true]);
+    expect(driver.connect).toHaveBeenCalledTimes(2);
+    expect(driver.authenticate).toHaveBeenCalledTimes(2);
+    expect(driver.use).toHaveBeenCalledTimes(2);
+    expect(driver.close).toHaveBeenCalledTimes(1);
+    expect(logger.warn).toHaveBeenCalledWith(
+      "SurrealDB operation lost authenticated session, reconnecting and retrying once",
+      expect.objectContaining({
+        operationName: "test-query",
+        errCode: "surreal_auth_error",
+      }),
+    );
+  });
+
+  it("does not retry non-session auth failures", async () => {
+    const logger = createLogger();
+    const driver = {
+      connect: vi.fn(async () => undefined),
+      authenticate: vi.fn(async () => undefined),
+      signin: vi.fn(async () => undefined),
+      use: vi.fn(async () => undefined),
+      query: vi.fn(async () => {
+        throw new Error("401 unauthorized");
+      }),
+      close: vi.fn(async () => undefined),
+    } as never;
+    const client = new DefaultSurrealClient(createConfig(), driver, logger);
+
+    await expect(
+      client.execute("test-query", (connectedDriver) =>
+        connectedDriver.query("RETURN true;"),
+      ),
+    ).rejects.toThrow(/401/);
+
+    expect(driver.connect).toHaveBeenCalledTimes(1);
+    expect(driver.authenticate).toHaveBeenCalledTimes(1);
+    expect(driver.use).toHaveBeenCalledTimes(1);
+    expect(driver.close).not.toHaveBeenCalled();
+  });
 });

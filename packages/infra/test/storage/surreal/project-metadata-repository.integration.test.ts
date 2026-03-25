@@ -7,6 +7,26 @@ import type { ProjectMetadata } from "@agent-code-index/core";
 
 import { SurrealProjectMetadataRepository } from "../../../src/storage/surreal/surreal-project-metadata-repository.js";
 
+function createPassthroughClient(
+  driver: Record<string, unknown>,
+  connect = vi.fn(async () => undefined),
+) {
+  return {
+    config: {} as never,
+    connect,
+    disconnect: vi.fn(async () => undefined),
+    execute: async <T>(
+      _operationName: string,
+      operation: (connectedDriver: never) => Promise<T>,
+    ) => {
+      await connect();
+      return operation(driver as never);
+    },
+    driver: driver as never,
+    healthCheck: vi.fn(async () => ({}) as never),
+  };
+}
+
 function createMetadata(): ProjectMetadata {
   return {
     projectSpace: "demo-project",
@@ -39,16 +59,15 @@ describe("SurrealProjectMetadataRepository", () => {
       },
     }));
 
-    const repository = new SurrealProjectMetadataRepository({
-      config: {} as never,
-      connect,
-      disconnect: vi.fn(async () => undefined),
-      driver: {
-        select,
-        upsert,
-      } as never,
-      healthCheck: vi.fn(async () => ({}) as never),
-    });
+    const repository = new SurrealProjectMetadataRepository(
+      createPassthroughClient(
+        {
+          select,
+          upsert,
+        },
+        connect,
+      ),
+    );
 
     const metadata = createMetadata();
     await repository.save(metadata);

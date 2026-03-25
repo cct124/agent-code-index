@@ -173,8 +173,6 @@ export class SurrealSearchRepository implements SearchRepository {
     });
 
     try {
-      await this.client.connect();
-
       const filterState = buildFilterState(input.filters);
       const results = await this.nativeVectorSearch(input, filterState, logger);
 
@@ -224,12 +222,16 @@ export class SurrealSearchRepository implements SearchRepository {
       "ORDER BY distance;",
     ].join(" ");
 
-    const [records] = await this.client.driver.query<[StoredSearchChunk[]]>(
-      queryText,
-      {
-        repositoryId: input.repositoryId,
-        embedding: input.embedding,
-        ...filterState.bindings,
+    const records = await this.client.execute(
+      "semantic-search-native-vector",
+      async (driver) => {
+        const [result] = await driver.query<[StoredSearchChunk[]]>(queryText, {
+          repositoryId: input.repositoryId,
+          embedding: input.embedding,
+          ...filterState.bindings,
+        });
+
+        return result ?? [];
       },
     );
 
@@ -237,13 +239,13 @@ export class SurrealSearchRepository implements SearchRepository {
       searchStrategy: "surreal-native-vector",
       nativeVectorIndexUsed: true,
       vectorDistanceMetric: "COSINE",
-      candidateCount: records?.length ?? 0,
+      candidateCount: records.length,
       candidateK,
       efSearch,
     });
 
     return sortResults(
-      (records ?? []).flatMap((record) => {
+      records.flatMap((record) => {
         if (
           typeof record.distance !== "number" ||
           Number.isNaN(record.distance)
