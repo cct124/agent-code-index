@@ -5,7 +5,7 @@ import type { Chunk, PreparedChunk } from "../domain/chunk.js";
 import type { IndexRepositoryFailure } from "./index-repository-service.js";
 
 const DEFAULT_EMBEDDING_BATCH_SIZE = 32;
-const DEFAULT_EMBEDDING_CONCURRENCY = 1;
+const DEFAULT_EMBEDDING_CONCURRENCY = 16;
 
 /**
  * 文件级 chunk 准备输入。

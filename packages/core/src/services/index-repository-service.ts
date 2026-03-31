@@ -10,7 +10,7 @@ import { NOOP_LOGGER, type Logger } from "../contracts/logger.js";
  * 真实索引吞吐表现再调整。
  */
 const DEFAULT_EMBEDDING_BATCH_SIZE = 32;
-const DEFAULT_EMBEDDING_CONCURRENCY = 1;
+const DEFAULT_EMBEDDING_CONCURRENCY = 16;
 
 /**
  * 索引写入模式。

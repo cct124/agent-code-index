@@ -41,6 +41,13 @@ description: "Use when a software engineering agent needs code search, semantic 
 
 同时默认仓库已经完成索引，并使用了偏代码检索的 embedding model。
 
+工具调用约定：
+
+1. 调用 `index_repository` 或 `index_files` 时，推荐默认不要显式传 `embeddingBatchSize` 与 `embeddingConcurrency`
+2. 优先直接使用服务端默认值，避免不同调用方各自携带不一致的吞吐参数
+3. 只有在需要做压测、限流、问题定位或临时调优时，才显式覆盖这两个参数
+4. 当前 core 内置默认值为 `embeddingBatchSize=32`、`embeddingConcurrency=16`
+
 基于当前评测结果，默认推荐是：
 
 1. 默认生产选择：`voyage-code-3`

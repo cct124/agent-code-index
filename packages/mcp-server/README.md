@@ -560,7 +560,7 @@ corepack yarn mcp:dev
 参数含义：
 
 1. `embeddingBatchSize`：单次请求携带的 chunk 数量
-2. `embeddingConcurrency`：允许同时并发的批次数量，默认 `1`
+2. `embeddingConcurrency`：允许同时并发的批次数量，core 内置默认 `16`
 
 ### 3.1 已验证的默认值与覆盖规则
 
