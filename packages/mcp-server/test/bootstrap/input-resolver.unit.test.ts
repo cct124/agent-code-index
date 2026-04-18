@@ -27,6 +27,7 @@ function createConfig(): AppConfig {
     indexing: {
       defaultTopK: 10,
       ignorePatterns: [],
+      includePatterns: [],
       nativeCandidateMultiplier: 20,
       nativeEfSearchMin: 100,
     },
@@ -39,6 +40,8 @@ function createConfig(): AppConfig {
       pretty: true,
       filePath: undefined,
       filePretty: false,
+      fileRotateDaily: false,
+      fileRetentionDays: undefined,
     },
   };
 }

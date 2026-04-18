@@ -486,6 +486,8 @@ function createConfig(): AppConfig {
       pretty: true,
       filePath: undefined,
       filePretty: false,
+      fileRotateDaily: false,
+      fileRetentionDays: undefined,
     },
   };
 }

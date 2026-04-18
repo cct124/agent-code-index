@@ -89,6 +89,8 @@ function createConfig(): AppConfig {
       pretty: true,
       filePath: undefined,
       filePretty: false,
+      fileRotateDaily: false,
+      fileRetentionDays: undefined,
     },
   };
 }
@@ -147,6 +149,9 @@ function createTestContainer(events: string[]): AppContainer {
       disconnect: vi.fn(async () => {
         events.push("disconnect");
       }),
+      execute: vi.fn(async (_operationName: string, operation) =>
+        operation({} as never),
+      ),
       healthCheck: vi.fn(async () => {
         events.push("healthCheck");
         return healthStatus;
@@ -236,6 +241,7 @@ function createTestContainer(events: string[]): AppContainer {
     indexFilesService: {
       execute: vi.fn(async () => ({
         requestedFileCount: 0,
+        skippedFileCount: 0,
         indexedFileCount: 0,
         deletedChunkCount: 0,
         preparedChunkCount: 0,

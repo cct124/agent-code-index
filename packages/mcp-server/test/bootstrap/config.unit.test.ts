@@ -102,6 +102,8 @@ describe("loadConfig", () => {
       pretty: true,
       filePath: undefined,
       filePretty: false,
+      fileRotateDaily: false,
+      fileRetentionDays: undefined,
     });
   });
 
@@ -185,6 +187,26 @@ describe("loadConfig", () => {
       pretty: false,
       filePath: "/tmp/agent-code-index.log",
       filePretty: true,
+      fileRotateDaily: true,
+      fileRetentionDays: 7,
+    });
+  });
+
+  it("allows disabling daily file rotation explicitly", () => {
+    const config = loadConfig({
+      ...createBaseEnv(),
+      LOG_FILE_PATH: "/tmp/agent-code-index.log",
+      LOG_FILE_ROTATE_DAILY: "false",
+      LOG_FILE_RETENTION_DAYS: "14",
+    });
+
+    expect(config.logging).toEqual({
+      level: "info",
+      pretty: true,
+      filePath: "/tmp/agent-code-index.log",
+      filePretty: false,
+      fileRotateDaily: false,
+      fileRetentionDays: 14,
     });
   });
 

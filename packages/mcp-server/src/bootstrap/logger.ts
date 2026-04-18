@@ -1,5 +1,15 @@
-import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  statSync,
+} from "node:fs";
+import { dirname, join, parse } from "node:path";
+import { Writable } from "node:stream";
 
 import pino, {
   destination,
@@ -42,7 +52,7 @@ function createStreams(config: LoggingConfig) {
     return undefined;
   }
 
-  const streams = [
+  const streams: Array<{ stream: unknown }> = [
     {
       stream: createConsoleStream(config.pretty),
     },
@@ -55,7 +65,7 @@ function createStreams(config: LoggingConfig) {
     });
   }
 
-  return multistream(streams);
+  return multistream(streams as Parameters<typeof multistream>[0]);
 }
 
 function createConsoleStream(usePretty: boolean) {
@@ -78,24 +88,191 @@ function createFileStream(config: LoggingConfig) {
     );
   }
 
+  const fileStream = config.fileRotateDaily
+    ? new DailyRotatingFileStream({
+        filePath: config.filePath,
+        retentionDays: config.fileRetentionDays,
+      })
+    : destination({
+        dest: config.filePath,
+        mkdir: true,
+        sync: true,
+      });
+
   if (!config.filePretty) {
-    return destination({
-      dest: config.filePath,
-      mkdir: true,
-      sync: true,
-    });
+    return fileStream;
   }
 
   return pretty({
     colorize: false,
     ignore: PRETTY_IGNORE_FIELDS,
     translateTime: "SYS:standard",
-    destination: config.filePath,
+    destination: fileStream,
   });
 }
 
 function ensureParentDirectory(filePath: string): void {
   mkdirSync(dirname(filePath), { recursive: true });
+}
+
+interface DailyRotatingFileStreamOptions {
+  filePath: string;
+  retentionDays?: number;
+}
+
+class DailyRotatingFileStream extends Writable {
+  private currentDayKey?: string;
+
+  private readonly archivePattern: RegExp;
+
+  public constructor(private readonly options: DailyRotatingFileStreamOptions) {
+    super();
+    ensureParentDirectory(options.filePath);
+    this.archivePattern = createArchivePattern(options.filePath);
+  }
+
+  public override _write(
+    chunk: string | Buffer,
+    encoding: BufferEncoding,
+    callback: (error?: Error | null) => void,
+  ): void {
+    try {
+      this.rotateIfNeeded();
+
+      if (typeof chunk === "string") {
+        appendFileSync(this.options.filePath, chunk, encoding);
+      } else {
+        appendFileSync(this.options.filePath, chunk);
+      }
+
+      callback();
+    } catch (error) {
+      callback(asError(error));
+    }
+  }
+
+  private rotateIfNeeded(): void {
+    const todayKey = toDayKey(new Date());
+
+    if (this.currentDayKey === undefined) {
+      this.archiveStaleActiveFile(todayKey);
+      this.currentDayKey = todayKey;
+      this.cleanupExpiredArchives(todayKey);
+      return;
+    }
+
+    if (this.currentDayKey === todayKey) {
+      return;
+    }
+
+    this.archiveActiveFile(this.currentDayKey);
+    this.currentDayKey = todayKey;
+    this.cleanupExpiredArchives(todayKey);
+  }
+
+  private archiveStaleActiveFile(todayKey: string): void {
+    if (!existsSync(this.options.filePath)) {
+      return;
+    }
+
+    const activeFileDayKey = toDayKey(statSync(this.options.filePath).mtime);
+
+    if (activeFileDayKey === todayKey) {
+      return;
+    }
+
+    this.archiveActiveFile(activeFileDayKey);
+  }
+
+  private archiveActiveFile(dayKey: string): void {
+    if (!existsSync(this.options.filePath)) {
+      return;
+    }
+
+    const archivePath = buildArchivePath(this.options.filePath, dayKey);
+
+    if (existsSync(archivePath)) {
+      appendFileSync(archivePath, readFileSync(this.options.filePath));
+      rmSync(this.options.filePath);
+      return;
+    }
+
+    renameSync(this.options.filePath, archivePath);
+  }
+
+  private cleanupExpiredArchives(todayKey: string): void {
+    const { retentionDays } = this.options;
+
+    if (retentionDays === undefined) {
+      return;
+    }
+
+    const retentionCutoff = startOfDay(
+      addDays(parseDayKey(todayKey), -(retentionDays - 1)),
+    );
+    const directoryPath = dirname(this.options.filePath);
+
+    for (const entry of readdirSync(directoryPath)) {
+      const match = entry.match(this.archivePattern);
+
+      if (!match) {
+        continue;
+      }
+
+      if (parseDayKey(match[1]) < retentionCutoff) {
+        rmSync(join(directoryPath, entry), { force: true });
+      }
+    }
+  }
+}
+
+function buildArchivePath(filePath: string, dayKey: string): string {
+  const parsedPath = parse(filePath);
+  return join(parsedPath.dir, `${parsedPath.name}.${dayKey}${parsedPath.ext}`);
+}
+
+function createArchivePattern(filePath: string): RegExp {
+  const parsedPath = parse(filePath);
+  return new RegExp(
+    `^${escapeRegex(parsedPath.name)}\\.(\\d{4}-\\d{2}-\\d{2})${escapeRegex(parsedPath.ext)}$`,
+  );
+}
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function toDayKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function parseDayKey(dayKey: string): Date {
+  const [year, month, day] = dayKey
+    .split("-")
+    .map((value) => Number.parseInt(value, 10));
+  return new Date(year, month - 1, day);
+}
+
+function addDays(date: Date, days: number): Date {
+  const value = new Date(date);
+  value.setDate(value.getDate() + days);
+  return value;
+}
+
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function asError(error: unknown): Error {
+  if (error instanceof Error) {
+    return error;
+  }
+
+  return new Error(String(error));
 }
 
 /**

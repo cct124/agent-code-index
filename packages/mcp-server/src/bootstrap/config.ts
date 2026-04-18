@@ -105,6 +105,10 @@ export interface LoggingConfig {
   filePath?: string;
   /** 文件日志是否使用 pretty 格式。 */
   filePretty: boolean;
+  /** 是否按天轮转文件日志。 */
+  fileRotateDaily: boolean;
+  /** 按天轮转时保留的历史日志天数。 */
+  fileRetentionDays?: number;
 }
 
 /**
@@ -168,6 +172,13 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
 
   validateEmbeddingConfig(embedding);
 
+  const filePath = optionalEnv(env, "LOG_FILE_PATH");
+  const fileRotateDaily = booleanEnv(
+    env,
+    "LOG_FILE_ROTATE_DAILY",
+    filePath !== undefined,
+  );
+
   return {
     projectSpace,
     surreal,
@@ -203,8 +214,12 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
     logging: {
       level: logLevelEnv(env, "LOG_LEVEL", "info"),
       pretty: booleanEnv(env, "LOG_PRETTY", true),
-      filePath: optionalEnv(env, "LOG_FILE_PATH"),
+      filePath,
       filePretty: booleanEnv(env, "LOG_FILE_PRETTY", false),
+      fileRotateDaily,
+      fileRetentionDays: fileRotateDaily
+        ? integerEnv(env, "LOG_FILE_RETENTION_DAYS", 7)
+        : optionalIntegerEnv(env, "LOG_FILE_RETENTION_DAYS"),
     },
   };
 }

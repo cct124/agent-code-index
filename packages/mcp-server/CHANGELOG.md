@@ -1,5 +1,11 @@
 # @agent-code-index/mcp-server
 
+## 0.1.8
+
+### Patch Changes
+
+- Rotate file logs daily when LOG_FILE_PATH is configured, retain recent archives by default, and support startup rollover of stale active log files via LOG_FILE_ROTATE_DAILY and LOG_FILE_RETENTION_DAYS.
+
 ## 0.1.7
 
 ### Patch Changes

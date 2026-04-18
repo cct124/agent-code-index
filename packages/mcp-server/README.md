@@ -333,6 +333,8 @@ src/
 16. `LOG_PRETTY`
 17. `LOG_FILE_PATH`
 18. `LOG_FILE_PRETTY`
+19. `LOG_FILE_ROTATE_DAILY`
+20. `LOG_FILE_RETENTION_DAYS`
 
 其中：
 
@@ -346,13 +348,15 @@ src/
 8. `embeddingConcurrency` 的解析优先级应为：tool 输入值 > `DEFAULT_EMBEDDING_CONCURRENCY` > core 默认值
 9. `LOG_FILE_PATH` 若配置，则当前 server 会额外把日志写入本地文件，默认写结构化 JSON
 10. `LOG_FILE_PRETTY=true` 时，文件日志会改为 pretty 文本格式，便于本地人工阅读
-11. `DEFAULT_SCAN_IGNORE_PATTERNS` 用于在内置默认排除列表之后追加自定义规则；内置列表始终包含 `node_modules`、`.git`、`dist`、`build`、`.next`、`.yarn` 与 `*.tsbuildinfo`
-12. `DEFAULT_SCAN_INCLUDE_PATTERNS` 用于补充扫描阶段的白名单规则，采用逗号分隔；一旦命中，会覆盖 `DEFAULT_SCAN_IGNORE_PATTERNS` 与 `.gitignore` 的排除结果；该规则同时作用于 `index_repository` 与 `index_files`
-13. `DEFAULT_SCAN_GITIGNORE_PATH` 若配置，则会读取该绝对路径指向的根 `.gitignore`，并将其中的排除规则并入扫描忽略集合
-14. 如果未配置 `DEFAULT_SCAN_GITIGNORE_PATH`，但配置了 `MCP_REPOSITORY_ROOT`，则启动时会自动尝试读取 `MCP_REPOSITORY_ROOT/.gitignore`
-15. 如果自动推导出的 `.gitignore` 文件不存在，则扫描器会忽略该步骤，不会导致启动失败
-16. 如果没有配置 `MCP_DEFAULT_REPOSITORY_ID`，且调用 MCP tool 时也没有传 `repositoryId`，adapter 应直接返回校验错误，而不是猜测仓库身份
-17. 如果没有配置 `MCP_REPOSITORY_ROOT`，且调用 `index_repository` / `index_files` 时也没有传 `rootPath`，adapter 应直接返回校验错误，而不是依赖工作目录推断仓库根目录
+11. `LOG_FILE_ROTATE_DAILY` 在配置了 `LOG_FILE_PATH` 时默认开启，会把活跃日志持续写入当前文件，并在跨天时自动归档为 `name.YYYY-MM-DD.ext`
+12. `LOG_FILE_RETENTION_DAYS` 控制按天轮转后保留的历史文件天数；默认保留最近 7 天
+13. `DEFAULT_SCAN_IGNORE_PATTERNS` 用于在内置默认排除列表之后追加自定义规则；内置列表始终包含 `node_modules`、`.git`、`dist`、`build`、`.next`、`.yarn` 与 `*.tsbuildinfo`
+14. `DEFAULT_SCAN_INCLUDE_PATTERNS` 用于补充扫描阶段的白名单规则，采用逗号分隔；一旦命中，会覆盖 `DEFAULT_SCAN_IGNORE_PATTERNS` 与 `.gitignore` 的排除结果；该规则同时作用于 `index_repository` 与 `index_files`
+15. `DEFAULT_SCAN_GITIGNORE_PATH` 若配置，则会读取该绝对路径指向的根 `.gitignore`，并将其中的排除规则并入扫描忽略集合
+16. 如果未配置 `DEFAULT_SCAN_GITIGNORE_PATH`，但配置了 `MCP_REPOSITORY_ROOT`，则启动时会自动尝试读取 `MCP_REPOSITORY_ROOT/.gitignore`
+17. 如果自动推导出的 `.gitignore` 文件不存在，则扫描器会忽略该步骤，不会导致启动失败
+18. 如果没有配置 `MCP_DEFAULT_REPOSITORY_ID`，且调用 MCP tool 时也没有传 `repositoryId`，adapter 应直接返回校验错误，而不是猜测仓库身份
+19. 如果没有配置 `MCP_REPOSITORY_ROOT`，且调用 `index_repository` / `index_files` 时也没有传 `rootPath`，adapter 应直接返回校验错误，而不是依赖工作目录推断仓库根目录
 
 ### 推荐的 mcp.json 形态
 
