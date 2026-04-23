@@ -242,7 +242,9 @@ describe("VoyageEmbeddingProvider", () => {
       values: ["alpha"],
       purpose: "query",
     });
-    const expectation = expect(promise).rejects.toThrow("The operation was aborted");
+    const expectation = expect(promise).rejects.toThrow(
+      "The operation was aborted",
+    );
 
     await vi.advanceTimersByTimeAsync(27_000);
 

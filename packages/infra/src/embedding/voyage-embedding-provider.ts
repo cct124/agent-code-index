@@ -164,15 +164,18 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
           throw error;
         }
 
-        this.logger.warn("Voyage embedding request hit retryable network error", {
-          valueCount: input.values.length,
-          purpose: input.purpose,
-          attempt,
-          nextDelayMs: delayMs,
-          failureStage: "network",
-          requestTimeoutMs: REQUEST_TIMEOUT_MS,
-          error: error instanceof Error ? error : new Error(String(error)),
-        });
+        this.logger.warn(
+          "Voyage embedding request hit retryable network error",
+          {
+            valueCount: input.values.length,
+            purpose: input.purpose,
+            attempt,
+            nextDelayMs: delayMs,
+            failureStage: "network",
+            requestTimeoutMs: REQUEST_TIMEOUT_MS,
+            error: error instanceof Error ? error : new Error(String(error)),
+          },
+        );
         await sleep(delayMs);
         delayMs = Math.min(delayMs * 2, MAX_RETRY_DELAY_MS);
         attempt += 1;
