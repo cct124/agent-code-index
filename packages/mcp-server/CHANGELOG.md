@@ -1,5 +1,11 @@
 # @agent-code-index/mcp-server
 
+## 0.1.9
+
+### Patch Changes
+
+- Improve resilience for transient upstream failures by adding silent retry handling for Voyage embedding requests and SurrealDB reconnect paths, and make Surreal retry tuning configurable through runtime settings.
+
 ## 0.1.8
 
 ### Patch Changes
