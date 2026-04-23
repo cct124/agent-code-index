@@ -7,6 +7,15 @@ import {
   type SurrealConnectionConfig,
 } from "../../../src/storage/surreal/surreal-client.js";
 
+type MockSurrealDriver = {
+  connect: ReturnType<typeof vi.fn>;
+  authenticate: ReturnType<typeof vi.fn>;
+  signin: ReturnType<typeof vi.fn>;
+  use: ReturnType<typeof vi.fn>;
+  query: ReturnType<typeof vi.fn>;
+  close: ReturnType<typeof vi.fn>;
+};
+
 function createConfig(): SurrealConnectionConfig {
   return {
     url: "ws://127.0.0.1:8000/rpc",
@@ -32,7 +41,51 @@ function createLogger(): Logger {
   };
 }
 
+function asSurrealDriver(driver: MockSurrealDriver): never {
+  return driver as never;
+}
+
 describe("DefaultSurrealClient", () => {
+  it("silently retries retryable connection errors during connect", async () => {
+    vi.useFakeTimers();
+
+    const logger = createLogger();
+    const driver = {
+      connect: vi
+        .fn()
+        .mockRejectedValueOnce(new Error("ECONNREFUSED websocket closed"))
+        .mockResolvedValue(async () => undefined),
+      authenticate: vi.fn(async () => undefined),
+      signin: vi.fn(async () => undefined),
+      use: vi.fn(async () => undefined),
+      query: vi.fn(async () => [true]),
+      close: vi.fn(async () => undefined),
+    };
+    const client = new DefaultSurrealClient(
+      createConfig(),
+      asSurrealDriver(driver),
+      logger,
+    );
+
+    const promise = client.healthCheck();
+
+    await vi.advanceTimersByTimeAsync(250);
+
+    await expect(promise).resolves.toEqual(
+      expect.objectContaining({ ok: true }),
+    );
+    expect(driver.connect).toHaveBeenCalledTimes(2);
+    expect(logger.warn).toHaveBeenCalledWith(
+      "SurrealDB connection attempt failed, retrying silently",
+      expect.objectContaining({
+        attempt: 1,
+        errCode: "surreal_connection_error",
+        retryable: true,
+        nextDelayMs: 250,
+      }),
+    );
+  });
+
   it("logs sanitized connection context on successful health check", async () => {
     const logger = createLogger();
     const driver = {
@@ -42,8 +95,12 @@ describe("DefaultSurrealClient", () => {
       use: vi.fn(async () => undefined),
       query: vi.fn(async () => [true]),
       close: vi.fn(async () => undefined),
-    } as never;
-    const client = new DefaultSurrealClient(createConfig(), driver, logger);
+    };
+    const client = new DefaultSurrealClient(
+      createConfig(),
+      asSurrealDriver(driver),
+      logger,
+    );
 
     const health = await client.healthCheck();
 
@@ -76,8 +133,12 @@ describe("DefaultSurrealClient", () => {
         throw new Error("status 401 unauthorized");
       }),
       close: vi.fn(async () => undefined),
-    } as never;
-    const client = new DefaultSurrealClient(createConfig(), driver, logger);
+    };
+    const client = new DefaultSurrealClient(
+      createConfig(),
+      asSurrealDriver(driver),
+      logger,
+    );
 
     await expect(client.healthCheck()).rejects.toThrow(/401/);
     expect(logger.error).toHaveBeenCalledWith(
@@ -90,7 +151,7 @@ describe("DefaultSurrealClient", () => {
     );
   });
 
-  it("reconnects and retries once when an authenticated session becomes anonymous", async () => {
+  it("silently reconnects and retries when an authenticated session becomes anonymous", async () => {
     const logger = createLogger();
     const staleSessionError = Object.assign(
       new Error(
@@ -122,8 +183,12 @@ describe("DefaultSurrealClient", () => {
         .mockRejectedValueOnce(staleSessionError)
         .mockResolvedValueOnce([true]),
       close: vi.fn(async () => undefined),
-    } as never;
-    const client = new DefaultSurrealClient(createConfig(), driver, logger);
+    };
+    const client = new DefaultSurrealClient(
+      createConfig(),
+      asSurrealDriver(driver),
+      logger,
+    );
 
     const result = await client.execute("test-query", (connectedDriver) =>
       connectedDriver.query("RETURN true;"),
@@ -135,10 +200,49 @@ describe("DefaultSurrealClient", () => {
     expect(driver.use).toHaveBeenCalledTimes(2);
     expect(driver.close).toHaveBeenCalledTimes(1);
     expect(logger.warn).toHaveBeenCalledWith(
-      "SurrealDB operation lost authenticated session, reconnecting and retrying once",
+      "SurrealDB operation lost authenticated session, reconnecting and retrying silently",
       expect.objectContaining({
         operationName: "test-query",
         errCode: "surreal_auth_error",
+      }),
+    );
+  });
+
+  it("silently reconnects and retries when an operation hits a retryable connection error", async () => {
+    const logger = createLogger();
+    const driver = {
+      connect: vi.fn(async () => undefined),
+      authenticate: vi.fn(async () => undefined),
+      signin: vi.fn(async () => undefined),
+      use: vi.fn(async () => undefined),
+      query: vi
+        .fn<(...args: unknown[]) => Promise<unknown[]>>()
+        .mockRejectedValueOnce(new Error("websocket connection closed"))
+        .mockResolvedValueOnce([true]),
+      close: vi.fn(async () => undefined),
+    };
+    const client = new DefaultSurrealClient(
+      createConfig(),
+      asSurrealDriver(driver),
+      logger,
+    );
+
+    const result = await client.execute("test-query", (connectedDriver) =>
+      connectedDriver.query("RETURN true;"),
+    );
+
+    expect(result).toEqual([true]);
+    expect(driver.connect).toHaveBeenCalledTimes(2);
+    expect(driver.authenticate).toHaveBeenCalledTimes(2);
+    expect(driver.use).toHaveBeenCalledTimes(2);
+    expect(driver.close).toHaveBeenCalledTimes(1);
+    expect(logger.warn).toHaveBeenCalledWith(
+      "SurrealDB operation hit retryable connection error, reconnecting and retrying silently",
+      expect.objectContaining({
+        operationName: "test-query",
+        attempt: 1,
+        errCode: "surreal_connection_error",
+        retryable: true,
       }),
     );
   });
@@ -154,8 +258,12 @@ describe("DefaultSurrealClient", () => {
         throw new Error("401 unauthorized");
       }),
       close: vi.fn(async () => undefined),
-    } as never;
-    const client = new DefaultSurrealClient(createConfig(), driver, logger);
+    };
+    const client = new DefaultSurrealClient(
+      createConfig(),
+      asSurrealDriver(driver),
+      logger,
+    );
 
     await expect(
       client.execute("test-query", (connectedDriver) =>

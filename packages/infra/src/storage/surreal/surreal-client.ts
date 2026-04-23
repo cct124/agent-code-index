@@ -10,6 +10,11 @@ import {
   sanitizeSurrealConnectionConfig,
 } from "./surreal-log-utils.js";
 
+const MAX_CONNECT_RETRY_ATTEMPTS = 4;
+const INITIAL_CONNECT_RETRY_DELAY_MS = 250;
+const MAX_CONNECT_RETRY_DELAY_MS = 1_000;
+const MAX_OPERATION_RETRY_ATTEMPTS = 3;
+
 /**
  * SurrealDB 的部署模式。
  */
@@ -121,28 +126,54 @@ export class DefaultSurrealClient implements SurrealClient {
       sanitizeSurrealConnectionConfig(this.config),
     );
 
-    try {
-      await this.driver.connect(this.config.url);
-      await this.authenticate();
-      await this.driver.use({
-        namespace: this.config.namespace,
-        database: this.config.database,
-      });
+    let attempt = 1;
+    let delayMs = INITIAL_CONNECT_RETRY_DELAY_MS;
 
-      this.isConnected = true;
-      this.logger.info(
-        "SurrealDB connection established",
-        sanitizeSurrealConnectionConfig(this.config),
-      );
-    } catch (error) {
-      this.logger.error(
-        "SurrealDB connection failed",
-        createSurrealErrorLogFields(
-          error,
+    while (true) {
+      try {
+        await this.driver.connect(this.config.url);
+        await this.authenticate();
+        await this.driver.use({
+          namespace: this.config.namespace,
+          database: this.config.database,
+        });
+
+        this.isConnected = true;
+        this.logger.info(
+          "SurrealDB connection established",
           sanitizeSurrealConnectionConfig(this.config),
-        ),
-      );
-      throw error;
+        );
+        return;
+      } catch (error) {
+        await this.resetConnection();
+
+        const classified = classifySurrealError(error);
+
+        if (!classified.retryable || attempt >= MAX_CONNECT_RETRY_ATTEMPTS) {
+          this.logger.error(
+            "SurrealDB connection failed",
+            createSurrealErrorLogFields(error, {
+              attempt,
+              retryable: classified.retryable,
+              ...sanitizeSurrealConnectionConfig(this.config),
+            }),
+          );
+          throw error;
+        }
+
+        this.logger.warn(
+          "SurrealDB connection attempt failed, retrying silently",
+          createSurrealErrorLogFields(error, {
+            attempt,
+            nextDelayMs: delayMs,
+            ...sanitizeSurrealConnectionConfig(this.config),
+          }),
+        );
+
+        await sleep(delayMs);
+        delayMs = Math.min(delayMs * 2, MAX_CONNECT_RETRY_DELAY_MS);
+        attempt += 1;
+      }
     }
   }
 
@@ -177,27 +208,34 @@ export class DefaultSurrealClient implements SurrealClient {
     operationName: string,
     operation: (driver: Surreal) => Promise<T>,
   ): Promise<T> {
-    await this.connect();
+    let attempt = 1;
 
-    try {
-      return await operation(this.driver);
-    } catch (error) {
-      if (!this.shouldReconnectAfterOperationError(error)) {
-        throw error;
-      }
-
-      this.logger.warn(
-        "SurrealDB operation lost authenticated session, reconnecting and retrying once",
-        createSurrealErrorLogFields(error, {
-          operationName,
-          ...sanitizeSurrealConnectionConfig(this.config),
-        }),
-      );
-
-      await this.resetConnection();
+    while (true) {
       await this.connect();
 
-      return operation(this.driver);
+      try {
+        return await operation(this.driver);
+      } catch (error) {
+        const retryReason = this.getOperationRetryReason(error);
+
+        if (!retryReason || attempt >= MAX_OPERATION_RETRY_ATTEMPTS) {
+          throw error;
+        }
+
+        this.logger.warn(
+          retryReason === "session"
+            ? "SurrealDB operation lost authenticated session, reconnecting and retrying silently"
+            : "SurrealDB operation hit retryable connection error, reconnecting and retrying silently",
+          createSurrealErrorLogFields(error, {
+            operationName,
+            attempt,
+            ...sanitizeSurrealConnectionConfig(this.config),
+          }),
+        );
+
+        await this.resetConnection();
+        attempt += 1;
+      }
     }
   }
 
@@ -264,20 +302,26 @@ export class DefaultSurrealClient implements SurrealClient {
   /**
    * 在本地已认为连接可用时，仅对明显的会话失效错误执行一次恢复。
    */
-  private shouldReconnectAfterOperationError(error: unknown): boolean {
+  private getOperationRetryReason(
+    error: unknown,
+  ): "session" | "connection" | undefined {
     if (!this.isConnected) {
-      return false;
+      return undefined;
     }
 
     const classified = classifySurrealError(error);
     const hasAnonymousAuthDetails = this.hasAnonymousAuthDetails(error);
 
     if (hasAnonymousAuthDetails) {
-      return true;
+      return "session";
+    }
+
+    if (classified.errCode === "surreal_connection_error") {
+      return "connection";
     }
 
     if (classified.errCode !== "surreal_auth_error") {
-      return false;
+      return undefined;
     }
 
     const message = classified.error.message.toLowerCase();
@@ -287,10 +331,10 @@ export class DefaultSurrealClient implements SurrealClient {
         message,
       )
     ) {
-      return true;
+      return "session";
     }
 
-    return false;
+    return undefined;
   }
 
   /**
@@ -338,6 +382,12 @@ export class DefaultSurrealClient implements SurrealClient {
       );
     }
   }
+}
+
+function sleep(delayMs: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, delayMs);
+  });
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
