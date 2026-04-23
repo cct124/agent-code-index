@@ -6,7 +6,7 @@ import { registerAgentCodeIndexTools } from "./adapters/tools/register-tools.js"
 import { createApp, type App } from "./bootstrap/app.js";
 
 const SERVER_NAME = "agent-code-index";
-const SERVER_VERSION = "0.1.9";
+const SERVER_VERSION = "0.1.10";
 
 /**
  * 基于已装配应用创建 MCP server，并注册当前可用 tools。

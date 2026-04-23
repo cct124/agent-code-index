@@ -1,5 +1,11 @@
 # @agent-code-index/mcp-server
 
+## 0.1.10
+
+### Patch Changes
+
+- Make Voyage query and document timeouts configurable, use a longer default timeout for document indexing requests, and document the new MCP runtime configuration examples.
+
 ## 0.1.9
 
 ### Patch Changes
