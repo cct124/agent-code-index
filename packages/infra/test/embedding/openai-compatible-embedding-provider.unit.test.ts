@@ -186,6 +186,101 @@ describe("OpenAICompatibleEmbeddingProvider", () => {
     );
   });
 
+  it("retries when fetch fails with a retryable network error and eventually succeeds", async () => {
+    vi.useFakeTimers();
+
+    const logger = createLogger();
+    const networkError = Object.assign(new TypeError("fetch failed"), {
+      cause: Object.assign(new Error("socket hang up"), {
+        code: "ECONNRESET",
+      }),
+    });
+
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(networkError)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [{ embedding: [1, 0, 0] }],
+        }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const provider = new OpenAICompatibleEmbeddingProvider(
+      {
+        provider: "openai-compatible",
+        model: "text-embedding-3-large",
+        vectorDimension: 3,
+        apiKey: "test-key",
+      },
+      logger,
+    );
+
+    const promise = provider.generateEmbeddings({
+      values: ["alpha"],
+      purpose: "query",
+    });
+
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    await expect(promise).resolves.toEqual([[1, 0, 0]]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(logger.warn).toHaveBeenCalledWith(
+      "OpenAI-compatible embedding request hit retryable network error",
+      expect.objectContaining({
+        attempt: 1,
+        failureStage: "network",
+        nextDelayMs: 1_000,
+      }),
+    );
+  });
+
+  it("fails after retryable network errors exhaust retry attempts", async () => {
+    vi.useFakeTimers();
+
+    const logger = createLogger();
+    const networkError = Object.assign(new TypeError("fetch failed"), {
+      cause: Object.assign(new Error("socket hang up"), {
+        code: "ECONNRESET",
+      }),
+    });
+
+    const fetchMock = vi.fn().mockRejectedValue(networkError);
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const provider = new OpenAICompatibleEmbeddingProvider(
+      {
+        provider: "openai-compatible",
+        model: "text-embedding-3-large",
+        vectorDimension: 3,
+        apiKey: "test-key",
+      },
+      logger,
+    );
+
+    const promise = provider.generateEmbeddings({
+      values: ["alpha"],
+      purpose: "query",
+    });
+    const expectation = expect(promise).rejects.toThrow("fetch failed");
+
+    await vi.advanceTimersByTimeAsync(7_000);
+
+    await expectation;
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(logger.error).toHaveBeenCalledWith(
+      "OpenAI-compatible embedding request failed",
+      expect.objectContaining({
+        attempt: 4,
+        retryable: true,
+        failureStage: "network",
+      }),
+    );
+  });
+
   it("fails when OpenAI-compatible API returns an embedding with unexpected dimension", async () => {
     vi.stubGlobal(
       "fetch",

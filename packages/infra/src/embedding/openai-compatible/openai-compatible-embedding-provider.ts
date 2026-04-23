@@ -6,6 +6,20 @@ import type {
 import { NOOP_LOGGER } from "@agent-code-index/core";
 
 const DEFAULT_OPENAI_COMPATIBLE_BASE_URL = "https://api.openai.com/v1";
+const MAX_RETRY_ATTEMPTS = 4;
+const INITIAL_RETRY_DELAY_MS = 1_000;
+const MAX_RETRY_DELAY_MS = 8_000;
+const RETRYABLE_NETWORK_ERROR_CODES = new Set([
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "ECONNABORTED",
+  "EPIPE",
+  "ETIMEDOUT",
+  "ENETUNREACH",
+  "EHOSTUNREACH",
+  "EAI_AGAIN",
+]);
+const RETRYABLE_NETWORK_ERROR_NAMES = new Set(["AbortError", "TimeoutError"]);
 
 interface OpenAICompatibleEmbeddingResponseItem {
   embedding: number[];
@@ -98,31 +112,13 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
       ...inputStats,
     });
 
-    let response: Response;
-
-    try {
-      response = await fetch(`${this.baseUrl}/embeddings`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: requestBody,
-      });
-    } catch (error) {
-      this.logger.error("OpenAI-compatible embedding request failed", {
-        valueCount: input.values.length,
-        purpose: input.purpose,
-        embeddingModel: this.model,
-        baseUrl: this.baseUrl,
-        requestBodyLength,
-        durationMs: Date.now() - startedAt,
-        failureStage: "network",
-        ...inputStats,
-        error: error instanceof Error ? error : new Error(String(error)),
-      });
-      throw error;
-    }
+    const response = await this.executeWithRetry({
+      input,
+      requestBody,
+      requestBodyLength,
+      startedAt,
+      inputStats,
+    });
 
     if (!response.ok) {
       const responseBodyPreview = await readResponseBodyPreview(response);
@@ -178,6 +174,71 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
     });
 
     return embeddings;
+  }
+
+  private async executeWithRetry(input: {
+    input: GenerateEmbeddingsInput;
+    requestBody: string;
+    requestBodyLength: number;
+    startedAt: number;
+    inputStats: ReturnType<typeof summarizeInputValues>;
+  }): Promise<Response> {
+    let attempt = 1;
+    let delayMs = INITIAL_RETRY_DELAY_MS;
+
+    while (true) {
+      try {
+        const response = await fetch(`${this.baseUrl}/embeddings`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: input.requestBody,
+        });
+
+        return response;
+      } catch (error) {
+        const retryable = isRetryableNetworkError(error);
+
+        if (!retryable || attempt >= MAX_RETRY_ATTEMPTS) {
+          this.logger.error("OpenAI-compatible embedding request failed", {
+            valueCount: input.input.values.length,
+            purpose: input.input.purpose,
+            embeddingModel: this.model,
+            baseUrl: this.baseUrl,
+            requestBodyLength: input.requestBodyLength,
+            durationMs: Date.now() - input.startedAt,
+            failureStage: "network",
+            attempt,
+            retryable,
+            ...input.inputStats,
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
+          throw error;
+        }
+
+        this.logger.warn(
+          "OpenAI-compatible embedding request hit retryable network error",
+          {
+            valueCount: input.input.values.length,
+            purpose: input.input.purpose,
+            embeddingModel: this.model,
+            baseUrl: this.baseUrl,
+            requestBodyLength: input.requestBodyLength,
+            attempt,
+            nextDelayMs: delayMs,
+            failureStage: "network",
+            ...input.inputStats,
+            error: error instanceof Error ? error : new Error(String(error)),
+          },
+        );
+
+        await sleep(delayMs);
+        delayMs = Math.min(delayMs * 2, MAX_RETRY_DELAY_MS);
+        attempt += 1;
+      }
+    }
   }
 }
 
@@ -280,4 +341,42 @@ async function readResponseBodyPreview(
   } catch (error) {
     return `failed to read response body: ${String(error)}`;
   }
+}
+
+function isRetryableNetworkError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  if (RETRYABLE_NETWORK_ERROR_NAMES.has(error.name)) {
+    return true;
+  }
+
+  const errorCode = getErrorCode(error);
+
+  return errorCode ? RETRYABLE_NETWORK_ERROR_CODES.has(errorCode) : false;
+}
+
+function getErrorCode(error: Error): string | undefined {
+  const errorWithCode = error as Error & { code?: unknown; cause?: unknown };
+
+  if (typeof errorWithCode.code === "string") {
+    return errorWithCode.code;
+  }
+
+  if (errorWithCode.cause instanceof Error) {
+    const causeWithCode = errorWithCode.cause as Error & { code?: unknown };
+
+    if (typeof causeWithCode.code === "string") {
+      return causeWithCode.code;
+    }
+  }
+
+  return undefined;
+}
+
+function sleep(delayMs: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, delayMs);
+  });
 }

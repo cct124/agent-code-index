@@ -9,6 +9,18 @@ const DEFAULT_VOYAGE_BASE_URL = "https://api.voyageai.com/v1";
 const MAX_RETRY_ATTEMPTS = 4;
 const INITIAL_RETRY_DELAY_MS = 1_000;
 const MAX_RETRY_DELAY_MS = 8_000;
+const REQUEST_TIMEOUT_MS = 5_000;
+const RETRYABLE_NETWORK_ERROR_CODES = new Set([
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "ECONNABORTED",
+  "EPIPE",
+  "ETIMEDOUT",
+  "ENETUNREACH",
+  "EHOSTUNREACH",
+  "EAI_AGAIN",
+]);
+const RETRYABLE_NETWORK_ERROR_NAMES = new Set(["AbortError", "TimeoutError"]);
 
 interface VoyageEmbeddingResponseItem {
   embedding: number[];
@@ -114,18 +126,62 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
     let delayMs = INITIAL_RETRY_DELAY_MS;
 
     while (true) {
-      const response = await fetch(`${this.baseUrl}/embeddings`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          input: input.values,
-          model: this.model,
-          input_type: input.purpose,
-        }),
-      });
+      let response: Response;
+      let timeoutHandle: NodeJS.Timeout | undefined;
+      const controller = new AbortController();
+
+      try {
+        timeoutHandle = setTimeout(() => {
+          controller.abort();
+        }, REQUEST_TIMEOUT_MS);
+
+        response = await fetch(`${this.baseUrl}/embeddings`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            input: input.values,
+            model: this.model,
+            input_type: input.purpose,
+          }),
+          signal: controller.signal,
+        });
+      } catch (error) {
+        const retryable = isRetryableNetworkError(error);
+
+        if (!retryable || attempt >= MAX_RETRY_ATTEMPTS) {
+          this.logger.error("Voyage embedding request failed", {
+            valueCount: input.values.length,
+            purpose: input.purpose,
+            attempt,
+            retryable,
+            failureStage: "network",
+            requestTimeoutMs: REQUEST_TIMEOUT_MS,
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
+          throw error;
+        }
+
+        this.logger.warn("Voyage embedding request hit retryable network error", {
+          valueCount: input.values.length,
+          purpose: input.purpose,
+          attempt,
+          nextDelayMs: delayMs,
+          failureStage: "network",
+          requestTimeoutMs: REQUEST_TIMEOUT_MS,
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
+        await sleep(delayMs);
+        delayMs = Math.min(delayMs * 2, MAX_RETRY_DELAY_MS);
+        attempt += 1;
+        continue;
+      } finally {
+        if (timeoutHandle) {
+          clearTimeout(timeoutHandle);
+        }
+      }
 
       if (response.ok) {
         return response;
@@ -218,6 +274,42 @@ function assertEmbeddingDimensions(
 
 function isRetryableStatus(status: number): boolean {
   return status === 429 || status >= 500;
+}
+
+function isRetryableNetworkError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  if (RETRYABLE_NETWORK_ERROR_NAMES.has(error.name)) {
+    return true;
+  }
+
+  const errorCode = getErrorCode(error);
+
+  if (errorCode && RETRYABLE_NETWORK_ERROR_CODES.has(errorCode)) {
+    return true;
+  }
+
+  return false;
+}
+
+function getErrorCode(error: Error): string | undefined {
+  const errorWithCode = error as Error & { code?: unknown; cause?: unknown };
+
+  if (typeof errorWithCode.code === "string") {
+    return errorWithCode.code;
+  }
+
+  if (errorWithCode.cause instanceof Error) {
+    const causeWithCode = errorWithCode.cause as Error & { code?: unknown };
+
+    if (typeof causeWithCode.code === "string") {
+      return causeWithCode.code;
+    }
+  }
+
+  return undefined;
 }
 
 function sleep(delayMs: number): Promise<void> {
