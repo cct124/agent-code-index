@@ -135,8 +135,8 @@
         "LOG_FILE_ROTATE_DAILY": "true",
 
         // 文件日志按天轮转时保留的历史天数。
-        "LOG_FILE_RETENTION_DAYS": "7"
-      }
+        "LOG_FILE_RETENTION_DAYS": "7",
+      },
     },
     "agent-code-index-voyage": {
       // MCP server 类型。当前示例按 stdio 方式启动子进程。
@@ -265,8 +265,8 @@
         "LOG_FILE_ROTATE_DAILY": "true",
 
         // 文件日志按天轮转时保留的历史天数。
-        "LOG_FILE_RETENTION_DAYS": "7"
-      }
-    }
-  }
+        "LOG_FILE_RETENTION_DAYS": "7",
+      },
+    },
+  },
 }

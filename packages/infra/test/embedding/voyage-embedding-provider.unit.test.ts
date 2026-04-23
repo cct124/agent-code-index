@@ -256,11 +256,19 @@ describe("VoyageEmbeddingProvider", () => {
     vi.useFakeTimers();
 
     let aborted = false;
-    let resolveFetch: ((value: { ok: true; json: () => Promise<{ data: Array<{ embedding: number[] }> }> }) => void) | undefined;
+    let resolveFetch:
+      | ((value: {
+          ok: true;
+          json: () => Promise<{ data: Array<{ embedding: number[] }> }>;
+        }) => void)
+      | undefined;
 
     const fetchMock = vi.fn(
       async (_url: string, init?: { signal?: AbortSignal }) =>
-        new Promise<{ ok: true; json: () => Promise<{ data: Array<{ embedding: number[] }> }> }>((resolve, reject) => {
+        new Promise<{
+          ok: true;
+          json: () => Promise<{ data: Array<{ embedding: number[] }> }>;
+        }>((resolve, reject) => {
           resolveFetch = resolve;
           init?.signal?.addEventListener(
             "abort",
