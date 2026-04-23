@@ -88,6 +88,11 @@ function buildStartupSummary(config: AppConfig): LogFields {
     nativeEfSearchMin: config.indexing.nativeEfSearchMin,
     defaultRepositoryId: config.mcp.defaultRepositoryId,
     repositoryRoot: config.mcp.repositoryRoot,
+    surrealConnectRetryAttempts: config.surreal.connectRetryAttempts,
+    surrealInitialConnectRetryDelayMs:
+      config.surreal.initialConnectRetryDelayMs,
+    surrealMaxConnectRetryDelayMs: config.surreal.maxConnectRetryDelayMs,
+    surrealOperationRetryAttempts: config.surreal.operationRetryAttempts,
   };
 }
 

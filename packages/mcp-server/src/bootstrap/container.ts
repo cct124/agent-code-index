@@ -211,6 +211,10 @@ function toSurrealConnectionConfig(config: AppConfig): SurrealConnectionConfig {
     token: config.surreal.token,
     useTls: config.surreal.useTls,
     deploymentMode: config.surreal.deploymentMode,
+    connectRetryAttempts: config.surreal.connectRetryAttempts,
+    initialConnectRetryDelayMs: config.surreal.initialConnectRetryDelayMs,
+    maxConnectRetryDelayMs: config.surreal.maxConnectRetryDelayMs,
+    operationRetryAttempts: config.surreal.operationRetryAttempts,
   };
 }
 

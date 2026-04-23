@@ -76,6 +76,10 @@ describe("loadConfig", () => {
 
     expect(config.projectSpace).toBe("demo-project");
     expect(config.surreal.namespace).toBe("demo_project");
+    expect(config.surreal.connectRetryAttempts).toBe(4);
+    expect(config.surreal.initialConnectRetryDelayMs).toBe(250);
+    expect(config.surreal.maxConnectRetryDelayMs).toBe(1000);
+    expect(config.surreal.operationRetryAttempts).toBe(3);
     expect(config.embedding.model).toBe("voyage-code-3");
     expect(config.indexing.ignorePatterns).toEqual([
       "node_modules",
@@ -160,6 +164,21 @@ describe("loadConfig", () => {
 
     expect(config.indexing.nativeCandidateMultiplier).toBe(12);
     expect(config.indexing.nativeEfSearchMin).toBe(180);
+  });
+
+  it("loads surreal retry tuning configuration", () => {
+    const config = loadConfig({
+      ...createBaseEnv(),
+      SURREAL_CONNECT_RETRY_ATTEMPTS: "6",
+      SURREAL_INITIAL_CONNECT_RETRY_DELAY_MS: "400",
+      SURREAL_MAX_CONNECT_RETRY_DELAY_MS: "1600",
+      SURREAL_OPERATION_RETRY_ATTEMPTS: "5",
+    });
+
+    expect(config.surreal.connectRetryAttempts).toBe(6);
+    expect(config.surreal.initialConnectRetryDelayMs).toBe(400);
+    expect(config.surreal.maxConnectRetryDelayMs).toBe(1600);
+    expect(config.surreal.operationRetryAttempts).toBe(5);
   });
 
   it("leaves indexing defaults undefined when embedding defaults are not configured", () => {
@@ -284,6 +303,37 @@ describe("loadConfig", () => {
         DEFAULT_EMBEDDING_CONCURRENCY: "-1",
       }),
     ).toThrow(/DEFAULT_EMBEDDING_CONCURRENCY/);
+  });
+
+  it("fails when surreal retry tuning values are invalid", () => {
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        SURREAL_CONNECT_RETRY_ATTEMPTS: "0",
+      }),
+    ).toThrow(/SURREAL_CONNECT_RETRY_ATTEMPTS/);
+
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        SURREAL_INITIAL_CONNECT_RETRY_DELAY_MS: "0",
+      }),
+    ).toThrow(/SURREAL_INITIAL_CONNECT_RETRY_DELAY_MS/);
+
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        SURREAL_MAX_CONNECT_RETRY_DELAY_MS: "100",
+        SURREAL_INITIAL_CONNECT_RETRY_DELAY_MS: "200",
+      }),
+    ).toThrow(/SURREAL_MAX_CONNECT_RETRY_DELAY_MS/);
+
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        SURREAL_OPERATION_RETRY_ATTEMPTS: "-1",
+      }),
+    ).toThrow(/SURREAL_OPERATION_RETRY_ATTEMPTS/);
   });
 
   it("accepts surreal token auth without username and password", () => {

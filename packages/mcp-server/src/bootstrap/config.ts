@@ -30,6 +30,14 @@ export interface SurrealConfig {
   useTls: boolean;
   /** 当前使用的是本地部署还是云端部署。 */
   deploymentMode: SurrealDeploymentMode;
+  /** 建连阶段的最大重试次数。 */
+  connectRetryAttempts: number;
+  /** 建连阶段首次重试延迟。 */
+  initialConnectRetryDelayMs: number;
+  /** 建连阶段最大重试延迟。 */
+  maxConnectRetryDelayMs: number;
+  /** 单次数据库操作允许的最大重试次数。 */
+  operationRetryAttempts: number;
 }
 
 /**
@@ -150,9 +158,26 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
     token: optionalEnv(env, "SURREAL_TOKEN"),
     useTls: booleanEnv(env, "SURREAL_USE_TLS", false),
     deploymentMode: deploymentModeEnv(env, "SURREAL_DEPLOYMENT_MODE", "local"),
+    connectRetryAttempts: integerEnv(env, "SURREAL_CONNECT_RETRY_ATTEMPTS", 4),
+    initialConnectRetryDelayMs: integerEnv(
+      env,
+      "SURREAL_INITIAL_CONNECT_RETRY_DELAY_MS",
+      250,
+    ),
+    maxConnectRetryDelayMs: integerEnv(
+      env,
+      "SURREAL_MAX_CONNECT_RETRY_DELAY_MS",
+      1000,
+    ),
+    operationRetryAttempts: integerEnv(
+      env,
+      "SURREAL_OPERATION_RETRY_ATTEMPTS",
+      3,
+    ),
   };
 
   validateSurrealAuth(surreal);
+  validateSurrealRetryConfig(surreal);
 
   const embeddingProvider = embeddingProviderEnv(
     env,
@@ -497,6 +522,14 @@ function validateSurrealAuth(config: SurrealConfig): void {
   if (!hasUserPassword && !hasToken) {
     throw new Error(
       "SurrealDB authentication requires either SURREAL_USERNAME and SURREAL_PASSWORD, or SURREAL_TOKEN",
+    );
+  }
+}
+
+function validateSurrealRetryConfig(config: SurrealConfig): void {
+  if (config.maxConnectRetryDelayMs < config.initialConnectRetryDelayMs) {
+    throw new Error(
+      "SURREAL_MAX_CONNECT_RETRY_DELAY_MS must be greater than or equal to SURREAL_INITIAL_CONNECT_RETRY_DELAY_MS",
     );
   }
 }

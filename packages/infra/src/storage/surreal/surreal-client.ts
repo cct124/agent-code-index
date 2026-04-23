@@ -10,10 +10,10 @@ import {
   sanitizeSurrealConnectionConfig,
 } from "./surreal-log-utils.js";
 
-const MAX_CONNECT_RETRY_ATTEMPTS = 4;
-const INITIAL_CONNECT_RETRY_DELAY_MS = 250;
-const MAX_CONNECT_RETRY_DELAY_MS = 1_000;
-const MAX_OPERATION_RETRY_ATTEMPTS = 3;
+const DEFAULT_CONNECT_RETRY_ATTEMPTS = 4;
+const DEFAULT_INITIAL_CONNECT_RETRY_DELAY_MS = 250;
+const DEFAULT_MAX_CONNECT_RETRY_DELAY_MS = 1_000;
+const DEFAULT_OPERATION_RETRY_ATTEMPTS = 3;
 
 /**
  * SurrealDB 的部署模式。
@@ -40,6 +40,14 @@ export interface SurrealConnectionConfig {
   useTls: boolean;
   /** 当前部署模式。 */
   deploymentMode: SurrealDeploymentMode;
+  /** 建连阶段的最大重试次数。 */
+  connectRetryAttempts?: number;
+  /** 建连阶段首次重试延迟。 */
+  initialConnectRetryDelayMs?: number;
+  /** 建连阶段最大重试延迟。 */
+  maxConnectRetryDelayMs?: number;
+  /** 单次数据库操作允许的最大重试次数。 */
+  operationRetryAttempts?: number;
 }
 
 /**
@@ -93,6 +101,17 @@ export class DefaultSurrealClient implements SurrealClient {
   /** 结构化日志接口。 */
   private readonly logger: Logger;
 
+  /** 标准化后的重试配置。 */
+  private readonly retryConfig: Required<
+    Pick<
+      SurrealConnectionConfig,
+      | "connectRetryAttempts"
+      | "initialConnectRetryDelayMs"
+      | "maxConnectRetryDelayMs"
+      | "operationRetryAttempts"
+    >
+  >;
+
   private isConnected = false;
 
   /**
@@ -105,6 +124,7 @@ export class DefaultSurrealClient implements SurrealClient {
   ) {
     this.config = config;
     this.driver = driver;
+    this.retryConfig = normalizeRetryConfig(config);
     this.logger = logger.child({
       package: "infra",
       module: "surreal-client",
@@ -127,7 +147,7 @@ export class DefaultSurrealClient implements SurrealClient {
     );
 
     let attempt = 1;
-    let delayMs = INITIAL_CONNECT_RETRY_DELAY_MS;
+    let delayMs = this.retryConfig.initialConnectRetryDelayMs;
 
     while (true) {
       try {
@@ -149,7 +169,10 @@ export class DefaultSurrealClient implements SurrealClient {
 
         const classified = classifySurrealError(error);
 
-        if (!classified.retryable || attempt >= MAX_CONNECT_RETRY_ATTEMPTS) {
+        if (
+          !classified.retryable ||
+          attempt >= this.retryConfig.connectRetryAttempts
+        ) {
           this.logger.error(
             "SurrealDB connection failed",
             createSurrealErrorLogFields(error, {
@@ -171,7 +194,10 @@ export class DefaultSurrealClient implements SurrealClient {
         );
 
         await sleep(delayMs);
-        delayMs = Math.min(delayMs * 2, MAX_CONNECT_RETRY_DELAY_MS);
+        delayMs = Math.min(
+          delayMs * 2,
+          this.retryConfig.maxConnectRetryDelayMs,
+        );
         attempt += 1;
       }
     }
@@ -218,7 +244,10 @@ export class DefaultSurrealClient implements SurrealClient {
       } catch (error) {
         const retryReason = this.getOperationRetryReason(error);
 
-        if (!retryReason || attempt >= MAX_OPERATION_RETRY_ATTEMPTS) {
+        if (
+          !retryReason ||
+          attempt >= this.retryConfig.operationRetryAttempts
+        ) {
           throw error;
         }
 
@@ -402,4 +431,67 @@ export function createSurrealClient(
   logger: Logger = NOOP_LOGGER,
 ): SurrealClient {
   return new DefaultSurrealClient(config, new Surreal(), logger);
+}
+
+function normalizeRetryConfig(
+  config: SurrealConnectionConfig,
+): Required<
+  Pick<
+    SurrealConnectionConfig,
+    | "connectRetryAttempts"
+    | "initialConnectRetryDelayMs"
+    | "maxConnectRetryDelayMs"
+    | "operationRetryAttempts"
+  >
+> {
+  const connectRetryAttempts = normalizePositiveInteger(
+    config.connectRetryAttempts,
+    DEFAULT_CONNECT_RETRY_ATTEMPTS,
+    "connectRetryAttempts",
+  );
+  const initialConnectRetryDelayMs = normalizePositiveInteger(
+    config.initialConnectRetryDelayMs,
+    DEFAULT_INITIAL_CONNECT_RETRY_DELAY_MS,
+    "initialConnectRetryDelayMs",
+  );
+  const maxConnectRetryDelayMs = normalizePositiveInteger(
+    config.maxConnectRetryDelayMs,
+    DEFAULT_MAX_CONNECT_RETRY_DELAY_MS,
+    "maxConnectRetryDelayMs",
+  );
+
+  if (maxConnectRetryDelayMs < initialConnectRetryDelayMs) {
+    throw new Error(
+      "SurrealDB retry config requires maxConnectRetryDelayMs to be greater than or equal to initialConnectRetryDelayMs",
+    );
+  }
+
+  return {
+    connectRetryAttempts,
+    initialConnectRetryDelayMs,
+    maxConnectRetryDelayMs,
+    operationRetryAttempts: normalizePositiveInteger(
+      config.operationRetryAttempts,
+      DEFAULT_OPERATION_RETRY_ATTEMPTS,
+      "operationRetryAttempts",
+    ),
+  };
+}
+
+function normalizePositiveInteger(
+  value: number | undefined,
+  fallback: number,
+  fieldName: string,
+): number {
+  if (value === undefined) {
+    return fallback;
+  }
+
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(
+      `SurrealDB retry config field ${fieldName} must be a positive integer`,
+    );
+  }
+
+  return value;
 }

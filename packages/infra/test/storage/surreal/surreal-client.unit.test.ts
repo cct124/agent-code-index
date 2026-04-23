@@ -86,6 +86,53 @@ describe("DefaultSurrealClient", () => {
     );
   });
 
+  it("honors custom surreal retry configuration", async () => {
+    vi.useFakeTimers();
+
+    const logger = createLogger();
+    const driver = {
+      connect: vi
+        .fn()
+        .mockRejectedValueOnce(new Error("websocket connection closed"))
+        .mockResolvedValue(async () => undefined),
+      authenticate: vi.fn(async () => undefined),
+      signin: vi.fn(async () => undefined),
+      use: vi.fn(async () => undefined),
+      query: vi
+        .fn<(...args: unknown[]) => Promise<unknown[]>>()
+        .mockRejectedValueOnce(new Error("socket connection closed"))
+        .mockResolvedValueOnce([true]),
+      close: vi.fn(async () => undefined),
+    };
+    const client = new DefaultSurrealClient(
+      {
+        ...createConfig(),
+        connectRetryAttempts: 2,
+        initialConnectRetryDelayMs: 50,
+        maxConnectRetryDelayMs: 50,
+        operationRetryAttempts: 2,
+      },
+      asSurrealDriver(driver),
+      logger,
+    );
+
+    const promise = client.execute("test-query", (connectedDriver) =>
+      connectedDriver.query("RETURN true;"),
+    );
+
+    await vi.advanceTimersByTimeAsync(50);
+
+    await expect(promise).resolves.toEqual([true]);
+    expect(driver.connect).toHaveBeenCalledTimes(3);
+    expect(logger.warn).toHaveBeenCalledWith(
+      "SurrealDB connection attempt failed, retrying silently",
+      expect.objectContaining({
+        attempt: 1,
+        nextDelayMs: 50,
+      }),
+    );
+  });
+
   it("logs sanitized connection context on successful health check", async () => {
     const logger = createLogger();
     const driver = {
