@@ -252,6 +252,104 @@ describe("VoyageEmbeddingProvider", () => {
     expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
+  it("uses a longer default timeout for document embeddings", async () => {
+    vi.useFakeTimers();
+
+    let aborted = false;
+    let resolveFetch: ((value: { ok: true; json: () => Promise<{ data: Array<{ embedding: number[] }> }> }) => void) | undefined;
+
+    const fetchMock = vi.fn(
+      async (_url: string, init?: { signal?: AbortSignal }) =>
+        new Promise<{ ok: true; json: () => Promise<{ data: Array<{ embedding: number[] }> }> }>((resolve, reject) => {
+          resolveFetch = resolve;
+          init?.signal?.addEventListener(
+            "abort",
+            () => {
+              aborted = true;
+              reject(
+                Object.assign(new Error("The operation was aborted"), {
+                  name: "AbortError",
+                }),
+              );
+            },
+            { once: true },
+          );
+        }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const provider = new VoyageEmbeddingProvider({
+      provider: "voyage",
+      model: "voyage-code-3",
+      vectorDimension: 3,
+      apiKey: "test-key",
+    });
+
+    const promise = provider.generateEmbeddings({
+      values: ["alpha"],
+      purpose: "document",
+    });
+
+    await vi.advanceTimersByTimeAsync(5_000);
+
+    expect(aborted).toBe(false);
+
+    resolveFetch?.({
+      ok: true,
+      json: async () => ({
+        data: [{ embedding: [1, 0, 0] }],
+      }),
+    });
+
+    await expect(promise).resolves.toEqual([[1, 0, 0]]);
+  });
+
+  it("uses configured timeout overrides for query embeddings", async () => {
+    vi.useFakeTimers();
+
+    const fetchMock = vi.fn(
+      async (_url: string, init?: { signal?: AbortSignal }) =>
+        new Promise<never>((_resolve, reject) => {
+          init?.signal?.addEventListener(
+            "abort",
+            () => {
+              reject(
+                Object.assign(new Error("The operation was aborted"), {
+                  name: "AbortError",
+                }),
+              );
+            },
+            { once: true },
+          );
+        }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const provider = new VoyageEmbeddingProvider({
+      provider: "voyage",
+      model: "voyage-code-3",
+      vectorDimension: 3,
+      apiKey: "test-key",
+      queryTimeoutMs: 100,
+      documentTimeoutMs: 200,
+    });
+
+    const promise = provider.generateEmbeddings({
+      values: ["alpha"],
+      purpose: "query",
+    });
+    const expectation = expect(promise).rejects.toThrow(
+      "The operation was aborted",
+    );
+
+    await vi.advanceTimersByTimeAsync(7_400);
+
+    await expectation;
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+  });
+
   it("fails when Voyage returns an embedding with unexpected dimension", async () => {
     vi.stubGlobal(
       "fetch",

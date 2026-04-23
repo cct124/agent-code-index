@@ -9,7 +9,8 @@ const DEFAULT_VOYAGE_BASE_URL = "https://api.voyageai.com/v1";
 const MAX_RETRY_ATTEMPTS = 4;
 const INITIAL_RETRY_DELAY_MS = 1_000;
 const MAX_RETRY_DELAY_MS = 8_000;
-const REQUEST_TIMEOUT_MS = 5_000;
+const DEFAULT_QUERY_TIMEOUT_MS = 5_000;
+const DEFAULT_DOCUMENT_TIMEOUT_MS = 30_000;
 const RETRYABLE_NETWORK_ERROR_CODES = new Set([
   "ECONNRESET",
   "ECONNREFUSED",
@@ -44,6 +45,10 @@ export interface VoyageEmbeddingProviderConfig {
   apiKey?: string;
   /** 可选的 Voyage API 基础地址。 */
   baseUrl?: string;
+  /** query embedding 请求超时。 */
+  queryTimeoutMs?: number;
+  /** document embedding 请求超时。 */
+  documentTimeoutMs?: number;
 }
 
 /**
@@ -64,6 +69,10 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
 
   /** Voyage API 基础地址。 */
   private readonly baseUrl: string;
+  /** query embedding 请求超时。 */
+  private readonly queryTimeoutMs: number;
+  /** document embedding 请求超时。 */
+  private readonly documentTimeoutMs: number;
   /** 结构化日志接口。 */
   private readonly logger: Logger;
 
@@ -82,6 +91,16 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
     this.vectorDimension = config.vectorDimension;
     this.apiKey = config.apiKey;
     this.baseUrl = normalizeBaseUrl(config.baseUrl);
+    this.queryTimeoutMs = normalizeTimeoutMs(
+      config.queryTimeoutMs,
+      DEFAULT_QUERY_TIMEOUT_MS,
+      "queryTimeoutMs",
+    );
+    this.documentTimeoutMs = normalizeTimeoutMs(
+      config.documentTimeoutMs,
+      DEFAULT_DOCUMENT_TIMEOUT_MS,
+      "documentTimeoutMs",
+    );
     this.logger = logger;
   }
 
@@ -124,6 +143,7 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
   ): Promise<Response> {
     let attempt = 1;
     let delayMs = INITIAL_RETRY_DELAY_MS;
+    const requestTimeoutMs = this.getRequestTimeoutMs(input.purpose);
 
     while (true) {
       let response: Response;
@@ -133,7 +153,7 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
       try {
         timeoutHandle = setTimeout(() => {
           controller.abort();
-        }, REQUEST_TIMEOUT_MS);
+        }, requestTimeoutMs);
 
         response = await fetch(`${this.baseUrl}/embeddings`, {
           method: "POST",
@@ -158,7 +178,7 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
             attempt,
             retryable,
             failureStage: "network",
-            requestTimeoutMs: REQUEST_TIMEOUT_MS,
+            requestTimeoutMs,
             error: error instanceof Error ? error : new Error(String(error)),
           });
           throw error;
@@ -172,7 +192,7 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
             attempt,
             nextDelayMs: delayMs,
             failureStage: "network",
-            requestTimeoutMs: REQUEST_TIMEOUT_MS,
+            requestTimeoutMs,
             error: error instanceof Error ? error : new Error(String(error)),
           },
         );
@@ -217,6 +237,14 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
       attempt += 1;
     }
   }
+
+  private getRequestTimeoutMs(
+    purpose: GenerateEmbeddingsInput["purpose"],
+  ): number {
+    return purpose === "document"
+      ? this.documentTimeoutMs
+      : this.queryTimeoutMs;
+  }
 }
 
 /**
@@ -225,6 +253,24 @@ export class VoyageEmbeddingProvider implements EmbeddingProvider {
 function normalizeBaseUrl(baseUrl?: string): string {
   const value = baseUrl?.trim() || DEFAULT_VOYAGE_BASE_URL;
   return value.endsWith("/") ? value.slice(0, -1) : value;
+}
+
+function normalizeTimeoutMs(
+  value: number | undefined,
+  fallback: number,
+  fieldName: string,
+): number {
+  if (value === undefined) {
+    return fallback;
+  }
+
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(
+      `Voyage embedding provider config field ${fieldName} must be a positive integer`,
+    );
+  }
+
+  return value;
 }
 
 /**

@@ -43,11 +43,27 @@
         // 用户名密码认证方式下的密码。
         "SURREAL_PASSWORD": "surrealdb",
 
+        // 如果你使用 Token 认证，可改为提供 SURREAL_TOKEN，
+        // 并删除或留空 SURREAL_USERNAME / SURREAL_PASSWORD。
+        // "SURREAL_TOKEN": "your-surreal-token",
+
         // 是否使用 TLS 连接 SurrealDB；必须是字符串 "true" 或 "false"。
         "SURREAL_USE_TLS": "false",
 
         // SurrealDB 部署模式；当前支持 local 或 cloud。
         "SURREAL_DEPLOYMENT_MODE": "local",
+
+        // SurrealDB 建连阶段的最大重试次数。
+        "SURREAL_CONNECT_RETRY_ATTEMPTS": "4",
+
+        // SurrealDB 建连阶段首次重试延迟，单位毫秒。
+        "SURREAL_INITIAL_CONNECT_RETRY_DELAY_MS": "250",
+
+        // SurrealDB 建连阶段最大重试延迟，单位毫秒。
+        "SURREAL_MAX_CONNECT_RETRY_DELAY_MS": "1000",
+
+        // 单次 SurrealDB 操作允许的最大重试次数。
+        "SURREAL_OPERATION_RETRY_ATTEMPTS": "3",
 
         // Embedding provider 配置。
         // embedding provider，可选 voyage 或 openai-compatible。
@@ -68,6 +84,12 @@
         // 检索与日志默认参数。
         // 默认检索返回数量。
         "DEFAULT_TOP_K": "10",
+
+        // 默认 embedding 批量大小；未显式传入时供 index_repository / index_files 使用。
+        "DEFAULT_EMBEDDING_BATCH_SIZE": "16",
+
+        // 默认 embedding 并发批次数；未显式传入时供 index_repository / index_files 使用。
+        "DEFAULT_EMBEDDING_CONCURRENCY": "2",
 
         // 单仓库部署时可选的默认 repositoryId。
         // 当 MCP tool 调用未显式传 repositoryId 时，adapter 可回填此值。
@@ -108,7 +130,13 @@
 
         // 文件日志是否使用 pretty 格式；默认建议 false，保留结构化 JSON 更适合排查。
         "LOG_FILE_PRETTY": "false",
-      },
+
+        // 是否按天轮转文件日志；设置 LOG_FILE_PATH 后默认就是 true。
+        "LOG_FILE_ROTATE_DAILY": "true",
+
+        // 文件日志按天轮转时保留的历史天数。
+        "LOG_FILE_RETENTION_DAYS": "7"
+      }
     },
     "agent-code-index-voyage": {
       // MCP server 类型。当前示例按 stdio 方式启动子进程。
@@ -140,11 +168,27 @@
         // 用户名密码认证方式下的密码。
         "SURREAL_PASSWORD": "surrealdb",
 
+        // 如果你使用 Token 认证，可改为提供 SURREAL_TOKEN，
+        // 并删除或留空 SURREAL_USERNAME / SURREAL_PASSWORD。
+        // "SURREAL_TOKEN": "your-surreal-token",
+
         // 是否使用 TLS 连接 SurrealDB；必须是字符串 "true" 或 "false"。
         "SURREAL_USE_TLS": "false",
 
         // SurrealDB 部署模式；当前支持 local 或 cloud。
         "SURREAL_DEPLOYMENT_MODE": "local",
+
+        // SurrealDB 建连阶段的最大重试次数。
+        "SURREAL_CONNECT_RETRY_ATTEMPTS": "4",
+
+        // SurrealDB 建连阶段首次重试延迟，单位毫秒。
+        "SURREAL_INITIAL_CONNECT_RETRY_DELAY_MS": "250",
+
+        // SurrealDB 建连阶段最大重试延迟，单位毫秒。
+        "SURREAL_MAX_CONNECT_RETRY_DELAY_MS": "1000",
+
+        // 单次 SurrealDB 操作允许的最大重试次数。
+        "SURREAL_OPERATION_RETRY_ATTEMPTS": "3",
 
         // embedding provider，可选 voyage 或 openai-compatible。
         "EMBEDDING_PROVIDER": "voyage",
@@ -158,8 +202,24 @@
         // embedding 服务访问密钥；真实环境中不要直接提交明文值。
         "EMBEDDING_API_KEY": "${input:agentCodeIndexVoyageApiKey}",
 
+        // embedding 服务基础地址；使用 Voyage 官方默认地址时可省略。
+        // "EMBEDDING_BASE_URL": "https://api.voyageai.com/v1",
+
+        // Voyage query 请求超时，单位毫秒。
+        "VOYAGE_QUERY_TIMEOUT_MS": "5000",
+
+        // Voyage document 请求超时，单位毫秒。
+        // index_repository / index_files 通常走 document 路径，默认建议比 query 更长。
+        "VOYAGE_DOCUMENT_TIMEOUT_MS": "30000",
+
         // 默认检索返回数量。
         "DEFAULT_TOP_K": "10",
+
+        // 默认 embedding 批量大小；未显式传入时供 index_repository / index_files 使用。
+        "DEFAULT_EMBEDDING_BATCH_SIZE": "16",
+
+        // 默认 embedding 并发批次数；未显式传入时供 index_repository / index_files 使用。
+        "DEFAULT_EMBEDDING_CONCURRENCY": "2",
 
         // 单仓库部署时可选的默认 repositoryId。
         // 当 MCP tool 调用未显式传 repositoryId 时，adapter 可回填此值。
@@ -200,7 +260,13 @@
 
         // 文件日志是否使用 pretty 格式；默认建议 false，保留结构化 JSON 更适合排查。
         "LOG_FILE_PRETTY": "false",
-      },
-    },
-  },
+
+        // 是否按天轮转文件日志；设置 LOG_FILE_PATH 后默认就是 true。
+        "LOG_FILE_ROTATE_DAILY": "true",
+
+        // 文件日志按天轮转时保留的历史天数。
+        "LOG_FILE_RETENTION_DAYS": "7"
+      }
+    }
+  }
 }

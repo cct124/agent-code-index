@@ -101,6 +101,8 @@ export function createContainer(config: AppConfig): AppContainer {
       vectorDimension: config.embedding.vectorDimension,
       apiKey: config.embedding.apiKey,
       baseUrl: config.embedding.baseUrl,
+      queryTimeoutMs: config.embedding.voyageQueryTimeoutMs,
+      documentTimeoutMs: config.embedding.voyageDocumentTimeoutMs,
     },
     logger.child({ module: "embedding" }),
   );

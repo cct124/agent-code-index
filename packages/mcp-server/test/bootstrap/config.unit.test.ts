@@ -80,6 +80,8 @@ describe("loadConfig", () => {
     expect(config.surreal.initialConnectRetryDelayMs).toBe(250);
     expect(config.surreal.maxConnectRetryDelayMs).toBe(1000);
     expect(config.surreal.operationRetryAttempts).toBe(3);
+    expect(config.embedding.voyageQueryTimeoutMs).toBe(5000);
+    expect(config.embedding.voyageDocumentTimeoutMs).toBe(30000);
     expect(config.embedding.model).toBe("voyage-code-3");
     expect(config.indexing.ignorePatterns).toEqual([
       "node_modules",
@@ -164,6 +166,17 @@ describe("loadConfig", () => {
 
     expect(config.indexing.nativeCandidateMultiplier).toBe(12);
     expect(config.indexing.nativeEfSearchMin).toBe(180);
+  });
+
+  it("loads voyage timeout configuration", () => {
+    const config = loadConfig({
+      ...createBaseEnv(),
+      VOYAGE_QUERY_TIMEOUT_MS: "7000",
+      VOYAGE_DOCUMENT_TIMEOUT_MS: "45000",
+    });
+
+    expect(config.embedding.voyageQueryTimeoutMs).toBe(7000);
+    expect(config.embedding.voyageDocumentTimeoutMs).toBe(45000);
   });
 
   it("loads surreal retry tuning configuration", () => {
@@ -273,6 +286,30 @@ describe("loadConfig", () => {
         EMBEDDING_VECTOR_DIMENSION: "0",
       }),
     ).toThrow(/EMBEDDING_VECTOR_DIMENSION/);
+  });
+
+  it("fails when voyage timeout values are invalid", () => {
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        VOYAGE_QUERY_TIMEOUT_MS: "0",
+      }),
+    ).toThrow(/VOYAGE_QUERY_TIMEOUT_MS/);
+
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        VOYAGE_DOCUMENT_TIMEOUT_MS: "-1",
+      }),
+    ).toThrow(/VOYAGE_DOCUMENT_TIMEOUT_MS/);
+
+    expect(() =>
+      loadConfig({
+        ...createBaseEnv(),
+        VOYAGE_QUERY_TIMEOUT_MS: "7000",
+        VOYAGE_DOCUMENT_TIMEOUT_MS: "6000",
+      }),
+    ).toThrow(/VOYAGE_DOCUMENT_TIMEOUT_MS/);
   });
 
   it("fails when native search tuning values are not positive integers", () => {

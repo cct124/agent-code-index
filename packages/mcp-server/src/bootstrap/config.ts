@@ -59,6 +59,10 @@ export interface EmbeddingConfig {
   apiKey?: string;
   /** 第三方 embedding 服务的可选基础地址。 */
   baseUrl?: string;
+  /** Voyage query 请求超时。 */
+  voyageQueryTimeoutMs: number;
+  /** Voyage document 请求超时。 */
+  voyageDocumentTimeoutMs: number;
 }
 
 /**
@@ -193,6 +197,12 @@ export function loadConfig(env: EnvMap = process.env): AppConfig {
     vectorDimension: integerEnv(env, "EMBEDDING_VECTOR_DIMENSION"),
     apiKey: optionalEnv(env, "EMBEDDING_API_KEY"),
     baseUrl: optionalEnv(env, "EMBEDDING_BASE_URL"),
+    voyageQueryTimeoutMs: integerEnv(env, "VOYAGE_QUERY_TIMEOUT_MS", 5_000),
+    voyageDocumentTimeoutMs: integerEnv(
+      env,
+      "VOYAGE_DOCUMENT_TIMEOUT_MS",
+      30_000,
+    ),
   };
 
   validateEmbeddingConfig(embedding);
@@ -547,5 +557,11 @@ function validateEmbeddingConfig(config: EmbeddingConfig): void {
       case "voyage":
         throw new Error("Voyage embedding requires EMBEDDING_API_KEY");
     }
+  }
+
+  if (config.voyageDocumentTimeoutMs < config.voyageQueryTimeoutMs) {
+    throw new Error(
+      "VOYAGE_DOCUMENT_TIMEOUT_MS must be greater than or equal to VOYAGE_QUERY_TIMEOUT_MS",
+    );
   }
 }

@@ -73,6 +73,8 @@ function buildStartupSummary(config: AppConfig): LogFields {
     provider: config.embedding.provider,
     embeddingModel: config.embedding.model,
     embeddingVectorDimension: config.embedding.vectorDimension,
+    voyageQueryTimeoutMs: config.embedding.voyageQueryTimeoutMs,
+    voyageDocumentTimeoutMs: config.embedding.voyageDocumentTimeoutMs,
     logLevel: config.logging.level,
     logPretty: config.logging.pretty,
     logFilePath: config.logging.filePath,
